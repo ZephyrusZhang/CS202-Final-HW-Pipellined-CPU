@@ -20,28 +20,28 @@ module instruction_mem #(parameter
     )(
     input clk, rst_n,
 
-    input uart_hazard,                          // from hazard_unit (UART hazard)
-    input uart_clk,                             // from uart_unit (upg_clk_i)
-    input uart_write_enable,                    // from uart_unit (upg_wen_i)
-    input [`ISA_WIDTH - 1:0] uart_data,         // from uart_unit (upg_dat_i)
-    input [ROM_DEPTH:0] uart_addr,              // from uart_unit (upg_adr_i)
+    input      uart_hazard,                             // from hazard_unit (UART hazard)
+    input      uart_clk,                                // from uart_unit (upg_clk_i)
+    input      uart_write_enable,                       // from uart_unit (upg_wen_i)
+    input      [`ISA_WIDTH - 1:0] uart_data,            // from uart_unit (upg_dat_i)
+    input      [ROM_DEPTH:0] uart_addr,                 // from uart_unit (upg_adr_i)
+    
+    input      pc_offset,                               // from id_ex_reg (from control_unit)
+    input      [`ISA_WIDTH - 1:0] pc_offset_value,      // from id_ex_reg (from operand_2)
+    
+    input      pc_overload,                             // from id_ex_reg (from control_unit)
+    input      [`ISA_WIDTH - 1:0] pc_overload_value,    // from id_ex_reg (from operand_1)
+    
+    input      pc_hold,                                 // from hazard_unit (discard pc reuslt and pause if)
+    output reg no_op,                                   // for if_id_reg (stop id operations)
 
-    input pc_offset,                            // from id_ex_reg (from control_unit)
-    input [`ISA_WIDTH - 1:0] pc_offset_value,   // from id_ex_reg (from operand_2)
-
-    input pc_overload,                          // from id_ex_reg (from control_unit)
-    input [`ISA_WIDTH - 1:0] pc_overload_value, // from id_ex_reg (from operand_1)
-
-    input pc_hold,                              // from hazard_unit (discard pc reuslt and pause if)
-
-    output reg pc_4,                            // for if_id_reg (pc + 4)
-    output reg [`ISA_WIDTH - 1:0] pc,           // for hazard_unit (to detect UART hazard)
-    output [`ISA_WIDTH - 1:0] instruction       // for if_id_reg (the current instruction)
+    output reg pc_4,                                    // for if_id_reg (pc + 4)
+    output reg [`ISA_WIDTH - 1:0] pc,                   // for hazard_unit (to detect UART hazard)
+    output     [`ISA_WIDTH - 1:0] instruction           // for if_id_reg (the current instruction)
     );
 
     wire uart_instruction_write_enable = uart_write_enable & ~uart_addr[ROM_DEPTH];
     reg [`ISA_WIDTH - 1:0] pc_next;
-    reg no_op;
 
     ROM rom(
         .ena    (~no_op), // disabled unpon hold

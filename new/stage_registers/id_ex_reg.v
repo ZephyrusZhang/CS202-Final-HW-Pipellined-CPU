@@ -11,6 +11,7 @@ module id_ex_reg (
     input clk, rst_n,
 
     input      id_hold,                                     // from hazard_unit (discard id result and pause ex)
+    input      id_no_op,                                    // from if_id_reg (the operations of id have been stoped)
     output reg ex_no_op,                                    // for alu (stop opeartions)
 
     input      [`ISA_WIDTH - 1:0] id_pc_4,                  // from instruction_mem (the current program counter)
@@ -47,7 +48,9 @@ module id_ex_reg (
     input      [`REGISTER_SIZE - 1:0] id_dest_reg,          // from if_id_reg (index of destination resgiter)
     output reg [`REGISTER_SIZE - 1:0] ex_src_reg_1,         // for forwarding_unit
     output reg [`REGISTER_SIZE - 1:0] ex_src_reg_2,         // for forwarding_unit
-    output reg [`REGISTER_SIZE - 1:0] ex_dest_reg,          // for forwarding_unit and hazrad_unit
+    output reg [`REGISTER_SIZE - 1:0] ex_dest_reg,          // for (1) forwarding_unit
+                                                            //     (2) hazrad_unit
+                                                            //     (3) ex_mem_reg
     );
 
     always @(posedge clk) begin
@@ -67,7 +70,9 @@ module id_ex_reg (
                 ex_src_reg_2,
                 ex_dest_reg
             }                   <= 0;
-        end else if (~id_hold) begin
+        end else if (id_hold | id_no_op)
+            id_no_op            <= 1;
+        else begin
             ex_no_op            <= 0;
             ex_pc_4             <= id_pc_4;
 
@@ -88,8 +93,7 @@ module id_ex_reg (
             ex_src_reg_1        <= id_src_reg_1;
             ex_src_reg_2        <= id_immediate_instruction ? 0 : id_src_reg_2;
             ex_dest_reg         <= id_dest_reg;
-        end else
-            id_no_op            <= 1;
+        end
     end
     
 endmodule
