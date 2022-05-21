@@ -5,8 +5,10 @@
 `define IO_END_BIT          31
 `define IO_HIGH_ADDR        22'h3FFFFF
 `define IO_TYPE_BIT         4
-`define ALU_CONTROL_WIDTH   6
+`define ALU_CONTROL_WIDTH   6               // width of alu exe code
+`define OP_CODE_WIDTH       6
 `define REGISTER_SIZE       5
+`define FUNC_CODE_WIDTH     6
 
 // ALU opcode: used to determine what operations the ALU will execute
 `define EXE_SLL             6'b00_0000
