@@ -10,6 +10,9 @@ this is the stage register between:
 module id_ex_reg (
     input clk, rst_n,
 
+    input      id_hold,                                     // from hazard_unit (discard id result and pause ex)
+    output reg ex_no_op,                                    // for alu (stop opeartions)
+
     input      [`ISA_WIDTH - 1:0] id_pc,                    // from instruction_mem (the current program counter)
     output reg [`ISA_WIDTH - 1:0] ex_pc,                    // for ex_mem_reg
 
@@ -57,14 +60,24 @@ module id_ex_reg (
                 ex_src_reg_1,
                 ex_src_reg_2,
                 ex_dest_reg
-            }              <= 0;
+            }                   <= 0;
         end else if (~(if_hold | pc_offset)) begin
-            id_no_op       <= 0;
+            ex_no_op            <= 0;
+            ex_pc               <= id_pc;
 
-            id_pc          <= if_pc;
-            id_instruction <= if_instruction;
+            pc_offset           <= id_condition_satisfied & id_branch_instruction;
+            ex_reg_write_enable <= id_reg_write_enable;
+            ex_mem_control      <= id_mem_control;
+            ex_alu_control      <= id_alu_control;
+
+            ex_operand_1        <= id_reg_1;
+            ex_operand_2        <= id_immediate_instruction ? id_sign_extend_result : id_reg_2;
+
+            ex_src_reg_1        <= id_src_reg_1;
+            ex_src_reg_2        <= id_immediate_instruction ? 0 : id_src_reg_2;
+            ex_dest_reg         <= id_dest_reg;
         end else
-            id_no_op       <= 1;
+            id_no_op            <= 1;
     end
     
 endmodule
