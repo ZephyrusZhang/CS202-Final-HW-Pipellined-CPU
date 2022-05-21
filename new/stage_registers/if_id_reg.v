@@ -1,4 +1,4 @@
-`include "definitions.v"
+`include "../definitions.v"
 `timescale 1ns / 1ps
 
 /*
