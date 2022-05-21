@@ -34,8 +34,8 @@ module instruction_mem #(parameter
 
     input pc_hold,                              // from hazard_unit (discard pc reuslt and pause if)
 
-    output reg [`ISA_WIDTH - 1:0] pc,           // for (1) if_id_reg (the current program counter)
-                                                //     (2) hazard_unit (to detect UART hazard)
+    output pc_4,                                // for if_id_reg (pc + 4)
+    output reg [`ISA_WIDTH - 1:0] pc,           // for hazard_unit (to detect UART hazard)
     output [`ISA_WIDTH - 1:0] instruction       // for if_id_reg (the current instruction)
     );
 
@@ -47,18 +47,19 @@ module instruction_mem #(parameter
         .ena    (~no_op), // disabled unpon hold
 
         .clka   (uart_hazard ? uart_clk                   : clk),
-        .addra  (uart_hazard ? uart_addr[ROM_DEPTH - 1:0] : pc[ROM_DEPTH - 1:0]), // pc address is in unit of words
+        .addra  (uart_hazard ? uart_addr[ROM_DEPTH + 1:2] : pc[ROM_DEPTH + 1:2]), // pc address is in unit of bytes
         .douta  (instruction),
 
         .dina   (uart_hazard ? uart_data                     : 0),
         .wea    (uart_hazard ? uart_instruction_write_enable : 0)
     );
     
+    assign pc_4 = pc + 4;
     always @(*) begin
         case ({pc_offset, pc_overload})
-            2'b10:   pc_next <= pc + pc_offset_value;
-            2'b01:   pc_next <= pc_overload_value + 1;
-            default: pc_next <= pc + 1;
+            2'b10:   pc_next <= pc_4 + (pc_offset_value << 2);
+            2'b01:   pc_next <= pc_overload_value;
+            default: pc_next <= pc_4;
         endcase
     end
     

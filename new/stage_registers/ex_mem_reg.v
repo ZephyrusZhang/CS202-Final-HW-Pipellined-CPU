@@ -13,8 +13,8 @@ module id_ex_reg (
     input      ex_hold,                                     // from hazard_unit (discard id result and pause ex)
     output reg mem_no_op,                                   // for alu (stop opeartions)
 
-    input      [`ISA_WIDTH - 1:0] ex_pc,                    // from instruction_mem (the current program counter)
-    output reg [`ISA_WIDTH - 1:0] mem_pc,                   // for ex_mem_reg
+    input      [`ISA_WIDTH - 1:0] ex_pc_4,                  // from instruction_mem (the current program counter)
+    output reg [`ISA_WIDTH - 1:0] mem_pc_4,                 // for ex_mem_reg
 
     input      id_condition_satisfied,                      // from condition_check (whether the branch condition is met)
     input      id_branch_instruction,                       // from control_unit (whether it is a branch instruction)
@@ -49,7 +49,7 @@ module id_ex_reg (
         if (~rst_n) begin
             {
                 ex_no_op,
-                ex_pc,
+                ex_pc_4,
 
                 pc_offset,
                 ex_reg_write_enable,
@@ -63,7 +63,7 @@ module id_ex_reg (
             }                   <= 0;
         end else if (~(if_hold | pc_offset)) begin
             ex_no_op            <= 0;
-            ex_pc               <= id_pc;
+            ex_pc_4             <= id_pc_4;
 
             pc_offset           <= id_condition_satisfied & id_branch_instruction;
             ex_reg_write_enable <= id_reg_write_enable;
