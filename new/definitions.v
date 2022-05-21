@@ -10,6 +10,11 @@
 `define REGISTER_SIZE       5
 `define FUNC_CODE_WIDTH     6
 
+`define MEM_WRITE_BIT       0
+`define MEM_READ_BIT        1
+
+`define ADDRES_WIDTH        26
+
 // ALU opcode: used to determine what operations the ALU will execute
 `define EXE_SLL             6'b00_0000
 `define EXE_SRL             6'b00_0010

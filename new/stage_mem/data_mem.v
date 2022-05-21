@@ -1,4 +1,4 @@
-`include "definitions.v"
+`include "../definitions.v"
 `timescale 1ns / 1ps
 
 /*
@@ -45,7 +45,7 @@ module data_mem #(parameter
     output [`ISA_WIDTH - 1:0] vga_store_data    // data to vga
     );
 
-    wire io_active = (store_address[`IO_START_BIT:`IO_END_BIT] == `IO_HIGH_ADDR);
+    wire io_active = (mem_store_address[`IO_START_BIT:`IO_END_BIT] == `IO_HIGH_ADDR);
 
     assign keypad_read_enable = ~mem_store_address[`IO_TYPE_BIT] & io_active & mem_read_enable;
     assign vga_write_enable   =  mem_store_address[`IO_TYPE_BIT] & io_active & mem_write_enable;
