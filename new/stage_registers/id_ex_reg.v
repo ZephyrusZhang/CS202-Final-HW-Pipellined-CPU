@@ -19,7 +19,7 @@ module id_ex_reg (
     input [1:0] id_mem_control,                     // from control_unit ([0] write, [1] read)
     input [`ALU_CONTROL_WIDTH - 1:0] id_alu_control,// from control_unit (alu control signals)
 
-    input [`ISA_WIDTH]:0] id_reg_1,                 // from general_reg (first register's value)
+    input [`ISA_WIDTH:0] id_reg_1,                 // from general_reg (first register's value)
 
     input id_sign_extend_instruction,               // from control_unit (whether it is a I type instruction)
     input [`ISA_WIDTH:0] id_reg_2,                  // from general_reg (second register's value)

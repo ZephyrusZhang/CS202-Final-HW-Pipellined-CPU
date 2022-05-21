@@ -1,4 +1,4 @@
-`include "definitions.v"
+`include "../definitions.v"
 `timescale 1ns / 1ps
 
 /*
@@ -67,7 +67,7 @@ module instruction_mem #(parameter
             pc      <= 0;
             pc_next <= 0;
             no_op   <= 0;
-        end else if (~hold) begin
+        end else if (~pc_hold) begin
             pc      <= pc_next;
             no_op   <= 0;
         end else
