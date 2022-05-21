@@ -40,6 +40,8 @@ module id_ex_reg (
     input      [`ISA_WIDTH - 1:0] id_sign_extend_result,    // from sign_extend (16 bit sign extend result)
     output reg [`ISA_WIDTH - 1:0] ex_operand_2,             // for alu (second oprand for alu)
 
+    output reg [`ISA_WIDTH - 1:0] ex_store_data,            // for ex_mem_reg (the data to be store into memory)
+
     input      [`REGISTER_SIZE - 1:0] id_src_reg_1,         // from if_id_reg (index of first source register)
     input      [`REGISTER_SIZE - 1:0] id_src_reg_2,         // from if_id_reg (index of second source register)
     input      [`REGISTER_SIZE - 1:0] id_dest_reg,          // from if_id_reg (index of destination resgiter)
@@ -56,15 +58,16 @@ module id_ex_reg (
 
                 pc_offset,
                 ex_reg_write_enable,
-                ex_mem_control,
+                  ex_mem_control,
                 ex_alu_control,
                 ex_operand_1,
                 ex_operand_2,
+                ex_store_data,
                 ex_src_reg_1,
                 ex_src_reg_2,
                 ex_dest_reg
             }                   <= 0;
-        end else if (~(if_hold | pc_offset)) begin
+        end else if (~id_hold) begin
             ex_no_op            <= 0;
             ex_pc_4             <= id_pc_4;
 
@@ -80,6 +83,7 @@ module id_ex_reg (
                                             2'b0
                                         }                                           : id_reg_1;
             ex_operand_2        <= id_immediate_instruction ? id_sign_extend_result : id_reg_2;
+            ex_store_data       <= id_reg_2;
 
             ex_src_reg_1        <= id_src_reg_1;
             ex_src_reg_2        <= id_immediate_instruction ? 0 : id_src_reg_2;
