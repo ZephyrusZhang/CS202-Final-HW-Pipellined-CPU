@@ -15,6 +15,8 @@
 
 `define ADDRES_WIDTH        26
 
+
+//----------------------------------ALU-----------------------------------------//
 // ALU opcode: used to determine what operations the ALU will execute
 `define EXE_SLL             6'b00_0000
 `define EXE_SRL             6'b00_0010
@@ -40,3 +42,11 @@
 `define EXE_ORI             6'b00_1101
 `define EXE_XORI            6'b00_1110
 `define EXE_LUI             6'b00_1111
+//------------------------------------------------------------------------------//
+
+//--------------------------------Forwarding------------------------------------//
+`define FORW_SEL_WIDTH      2                   //width of forwarding select signal
+`define FORW_SEL_INPUT      2'b00               //indicate to select register(or immediate) input
+`define FORW_SEL_ALU_RES    2'b01               //indicate to select ALU result
+`define FORW_SEL_MEM_RES    2'b10               //indicate to select data fetched from memory 
+//------------------------------------------------------------------------------//
