@@ -17,7 +17,7 @@ module if_id_reg (
     
     input if_hold,                                  // from hazard_unit (discard if result and pause id)
 
-    output reg id_no_op,                            // for general_reg and control_unit (stop opeartions)
+    output reg id_no_op,                            // for general_reg (stop opeartions)
 
     output reg [`ISA_WIDTH - 1:0] id_pc,            // for id_ex_reg
     output reg [`ISA_WIDTH - 1:0] id_instruction    // for control_unit (the current instruction)
