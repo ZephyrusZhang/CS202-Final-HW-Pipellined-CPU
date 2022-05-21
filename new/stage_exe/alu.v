@@ -20,7 +20,7 @@
     Output:
         alu_output: Result calculated by ALU
 */
-module alu(
+module alu (
     input [`ALU_CONTROL_WIDTH - 1:0]    alu_opcode,
     input [`ISA_WIDTH - 1 : 0]          alu_result, mem_result,
     input [`FORW_SEL_WIDTH - 1 : 0]     val1_sel, val2_sel,
@@ -30,7 +30,7 @@ module alu(
 
 reg [`ISA_WIDTH - 1 : 0] val1, val2, sw_val;
 
-always @(alu_opcode or a_input or b_input) begin
+always @(*) begin
     case (val1_sel)
         `FORW_SEL_INPUT:    val1 = a_input;
         `FORW_SEL_ALU_RES:  val1 = alu_result;

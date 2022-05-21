@@ -15,6 +15,9 @@
 
 `define ADDRES_WIDTH        26
 
+//------------------------------Register File-----------------------------------//
+`define REG_FILE_ADDR_WIDTH 5               // width of register address(idx)
+//------------------------------------------------------------------------------//
 
 //----------------------------------ALU-----------------------------------------//
 // ALU opcode: used to determine what operations the ALU will execute

@@ -1,24 +1,5 @@
 `include "../definitions.v"
 `timescale 1ns / 1ps
-//////////////////////////////////////////////////////////////////////////////////
-// Company: 
-// Engineer: 
-// 
-// Create Date: 2022/05/15 15:21:28
-// Design Name: 
-// Module Name: alu
-// Project Name: 
-// Target Devices: 
-// Tool Versions: 
-// Description: 
-// 
-// Dependencies: 
-// 
-// Revision:
-// Revision 0.01 - File Created
-// Additional Comments:
-// 
-//////////////////////////////////////////////////////////////////////////////////
 
 /*
     Input:
@@ -33,7 +14,7 @@
         offset:         tell PC to use offset. 1 => use
         overload:       tell PC to use overload, 1 => use
 */
-module control(
+module control (
     input [`OP_CODE_WIDTH - 1 : 0] opcode,
     input [`FUNC_CODE_WIDTH - 1 : 0] func,
     input rst_n,
