@@ -27,10 +27,10 @@ module instruction_mem #(parameter
     input [ROM_DEPTH:0] uart_addr,              // from uart_unit (upg_adr_i)
 
     input pc_offset,                            // from id_ex_reg (from control_unit)
-    input [`ISA_WIDTH - 1:0] pc_offset_value,   // from id_ex_reg (from sign_extend)
+    input [`ISA_WIDTH - 1:0] pc_offset_value,   // from id_ex_reg (from operand_2)
 
     input pc_overload,                          // from id_ex_reg (from control_unit)
-    input [`ISA_WIDTH - 1:0] pc_overload_value, // from id_ex_reg (by the 31st register)
+    input [`ISA_WIDTH - 1:0] pc_overload_value, // from id_ex_reg (from operand_1)
 
     input pc_hold,                              // from hazard_unit (discard pc reuslt and pause if)
 
