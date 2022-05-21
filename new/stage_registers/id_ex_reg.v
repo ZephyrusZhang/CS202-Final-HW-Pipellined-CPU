@@ -14,15 +14,15 @@ module id_ex_reg (
     input      id_no_op,                                    // from if_id_reg (the operations of id have been stoped)
     output reg ex_no_op,                                    // for alu (stop opeartions)
 
-    input      [`ISA_WIDTH - 1:0] id_pc_4,                  // from instruction_mem (the current program counter)
-    output reg [`ISA_WIDTH - 1:0] ex_pc_4,                  // for ex_mem_reg
+    input      [`ISA_WIDTH - 1:0] id_pc_4,                  // from if_id_reg (pc + 4)
+    output reg [`ISA_WIDTH - 1:0] ex_pc_4,                  // for ex_mem_reg (to store into 31st register)
 
     input      id_condition_satisfied,                      // from condition_check (whether the branch condition is met)
     input      id_branch_instruction,                       // from control_unit (whether it is a branch instruction)
     output reg pc_offset,                                   // for if_id_reg (whether the branch is taken)
 
-    input      id_reg_write_enable,                         // from control_unit (whether it needs to read from memory)
-    output reg ex_reg_write_enable,                         // for ex_mem_reg (whether it needs to read from memory)
+    input      id_reg_write_enable,                         // from control_unit (whether it needs write to register)
+    output reg ex_reg_write_enable,                         // for ex_mem_reg
 
     input      [1:0] id_mem_control,                        // from control_unit ([0] write, [1] read)
     output reg [1:0] ex_mem_control,                        // for ex_mem_reg

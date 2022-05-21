@@ -14,11 +14,11 @@ module ex_mem_reg (
     input      ex_no_op,                                    // from id_ex_reg (the operations of ex have been stoped)
     output reg mem_no_op,                                   // for alu (stop opeartions)
 
-    input      [`ISA_WIDTH - 1:0] ex_pc_4,                  // from instruction_mem (the current program counter)
-    output reg [`ISA_WIDTH - 1:0] mem_pc_4,                 // for ex_mem_reg
+    input      [`ISA_WIDTH - 1:0] ex_pc_4,                  // from id_ex_reg (pc + 4)
+    output reg [`ISA_WIDTH - 1:0] mem_pc_4,                 // for mem_wb_reg (to store into 31st register)
 
-    input      ex_reg_write_enable,                         // from id_ex_reg (whether it needs to read from memory)
-    output reg mem_reg_write_enable,                        // for mem_wb_reg (whether it needs to read from memory)
+    input      ex_reg_write_enable,                         // from id_ex_reg (whether it needs write to register)
+    output reg mem_reg_write_enable,                        // for mem_wb_reg
 
     input      [1:0] ex_mem_control,                        // from id_ex_reg ([0] write, [1] read)
     output reg [1:0] mem_mem_control,                       // for (1) data_mem: both read and write
@@ -27,6 +27,7 @@ module ex_mem_reg (
     input      [`ISA_WIDTH - 1:0] ex_alu_result,            // from alu
     output reg [`ISA_WIDTH - 1:0] mem_alu_result,           // for (1) data_mem (the read or write address)
                                                             //     (2) mem_wb_reg (the result of alu)
+                                                            //     (3) alu (forwarding)
 
     input      [`FORW_SEL_WIDTH - 1:0] store_data_select,   // from forwarding_unit (select which data to store)
     input      [`ISA_WIDTH - 1:0] ex_store_data,            // from id_ex_reg (data read from rt register, for sw)

@@ -10,48 +10,55 @@ this is the stage register between:
 module mem_wb_reg (
     input clk, rst_n,
 
-    input mem_read_enable,                          // from ex_mem_reg (from control_unit)
-    input mem_reg_write_enable,                     // from ex_mem_reg (from control_unit)
+    input      mem_hold,                                    // from hazard_unit (discard mem result and pause wb)
+    input      mem_no_op,                                   // from ex_mem_reg (the operations of mem have been stopped)
+    output reg wb_no_op,                                    // for general_reg (stop write opeartions)
 
-    input [`ISA_WIDTH - 1:0] mem_pc,                // from ex_mem_reg (the current progam counter)
-    input [`ISA_WIDTH - 1:0] mem_read_data,         // from data_mem (from RAM or keypad)
-    input [`ISA_WIDTH - 1:0] mem_alu_result,        // from ex_mem_reg (from alu)
+    input      [`ISA_WIDTH - 1:0] mem_pc_4,                 // from ex_mem_reg (pc + 4)
+    output reg [`ISA_WIDTH - 1:0] wb_pc_4,                  // for general_reg (to store into 31st register)
 
-    input mem_hold,                                 // from hazard_unit (discard mem result and pause wb)
+    input      mem_reg_write_enable,                        // from ex_mem_reg (whether it needs write to register)
+    output reg wb_reg_write_enable,                         // for general_reg
 
-    output reg wb_no_op,                            // for general_reg (stop write oepration)
+    input      mem_mem_read_enable,                         // from ex_mem_reg (whether data is read from memory)
+    output     wb_mem_read_enable,                          // for reg_write_select (to select data from memory)
 
-    output reg wb_read_enable,                      //
-    output reg wb_reg_write_enable,                 // for general_reg (update the resgister)
+    input      [`ISA_WIDTH - 1:0] mem_alu_result,           // from alu
+    output reg [`ISA_WIDTH - 1:0] wb_alu_result,            // for (1) reg_write_select (result from alu)
+                                                            //     (2) alu (forwarding)
 
-    output reg [`ISA_WIDTH - 1:0] wb_pc,
-    output reg [`ISA_WIDTH - 1:0] wb_read_data,     // for id_ex_reg
-    output reg [`ISA_WIDTH - 1:0] wb_alu_result     // for control_unit (the current instruction)
+    input      [`ISA_WIDTH - 1:0] mem_mem_read_data,        // from data_mem (data read)
+    output reg [`ISA_WIDTH - 1:0] wb_mem_read_data,         // for reg_write_select (data from memory)
+
+    input      [`REGISTER_SIZE - 1:0] mem_dest_reg,         // from ex_mem_reg (index of destination resgiter)
+    output reg [`REGISTER_SIZE - 1:0] wb_dest_reg           // for (1) forwarding_unit
+                                                            //     (2) general_reg
     );
 
     always @(posedge clk) begin
         if (~rst_n) begin
             {
                 wb_no_op,
-                
-                wb_read_enable,
+                wb_pc_4,
+
                 wb_reg_write_enable,
-
-                wb_pc,
-                wb_read_data,
-                wb_alu_result
+                wb_mem_read_enable,
+                wb_alu_result,
+                wb_mem_read_data,
+                wb_dest_reg
             }                   <= 0;
-        end else if (~mem_hold) begin
-            wb_no_op            <= 0;
-            
-            wb_read_enable      <= mem_read_enable;
-            wb_reg_write_enable <= mem_reg_write_enable;
-
-            wb_pc               <= mem_pc;
-            wb_read_data        <= mem_read_data;
-            wb_alu_result       <= mem_alu_result;
-        end else
+        end else if (mem_hold | mem_no_op)
             wb_no_op            <= 1;
+        else begin
+            wb_no_op            <= 0;
+            wb_pc_4             <= mem_pc_4;
+
+            wb_reg_write_enable <= mem_reg_write_enable;
+            wb_mem_read_enable  <= mem_mem_read_enable;
+            wb_alu_result       <= mem_alu_result;
+            wb_mem_read_data    <= mem_mem_read_data;
+            wb_dest_reg         <= mem_dest_reg;
+        end
     end
     
 endmodule
