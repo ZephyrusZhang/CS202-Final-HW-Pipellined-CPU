@@ -13,6 +13,7 @@ always @(*) begin
     case (condition_type)
         `CONDITION_TYPE_BEQ: condition_result <= eq;
         `CONDITION_TYPE_BNQ: condition_result <= ~eq;
+        default:             condition_result <= 0;
     endcase
 end
 
