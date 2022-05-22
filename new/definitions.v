@@ -1,27 +1,39 @@
-`define DEFAULT_RAM_DEPTH   14              // ram size
-`define DEFAULT_ROM_DEPTH   14              // rom size
-`define ISA_WIDTH           32
-`define IO_START_BIT        10
-`define IO_END_BIT          31
-`define IO_HIGH_ADDR        22'h3FFFFF
-`define IO_TYPE_BIT         4
-`define ALU_CONTROL_WIDTH   6               // width of alu exe code
-`define OP_CODE_WIDTH       6
-`define FUNC_CODE_WIDTH     6
+//----------------------------ISA Specifications--------------------------------//
+`define ISA_WIDTH           32              // width of a word in the ISA
+`define ADDRES_WIDTH        26              // address lenth in instruction for j and jal extension
+//------------------------------------------------------------------------------//
 
-`define MEM_WRITE_BIT       0
-`define MEM_READ_BIT        1
+//---------------------------------Memory---------------------------------------//
+`define DEFAULT_RAM_DEPTH   14              // ram size = 2^DEFAULT_RAM_DEPTH
+`define DEFAULT_ROM_DEPTH   14              // rom size = 2^DEFAULT_ROM_DEPTH
+//------------------------------------------------------------------------------//
 
-`define HAZD_HOLD_BIT       0
-`define HAZD_NO_OP_BIT      1
+//-----------------------------------IO-----------------------------------------//
+`define IO_START_BIT        10              // lowest bit of memory_mapped IO address
+`define IO_END_BIT          31              // highest bit of memory-mapped IO address
+`define IO_HIGH_ADDR        22'h3FFFFF      // address used identify memory-mapped IO
+`define IO_TYPE_BIT         4               // bit for determining IO type 
+//------------------------------------------------------------------------------//
 
-`define ADDRES_WIDTH        26
+//---------------------------------Control--------------------------------------//
+`define OP_CODE_WIDTH       6               // width of oepration code
+`define FUNC_CODE_WIDTH     6               // width of function code
+
+`define MEM_WRITE_BIT       0               // bit for determining memory write enable
+`define MEM_READ_BIT        1               // bit for determining memory read enable
+//------------------------------------------------------------------------------//
+
+//---------------------------------Hazard---------------------------------------//
+`define HAZD_HOLD_BIT       0               // bit for determining hazard hold signal
+`define HAZD_NO_OP_BIT      1               // bit for determining hazard no operation signal
+//------------------------------------------------------------------------------//
 
 //------------------------------Register File-----------------------------------//
 `define REG_FILE_ADDR_WIDTH 5               // width of register address(idx)
 //------------------------------------------------------------------------------//
 
 //----------------------------------ALU-----------------------------------------//
+`define ALU_CONTROL_WIDTH   6               // width of alu exe code
 // ALU opcode: used to determine what operations the ALU will execute
 `define EXE_SLL             6'b00_0000
 `define EXE_SRL             6'b00_0010
