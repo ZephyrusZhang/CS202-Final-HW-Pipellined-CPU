@@ -10,7 +10,8 @@ this is the stage register between:
 module id_ex_reg (
     input clk, rst_n,
 
-    input      id_hold,                                     // from hazard_unit (discard id result and pause ex)
+    input      [1:0] hazard_control,                        // from hazard_unit [HAZD_HOLD_BIT] discard id result
+                                                            //                  [HAZD_NO_OP_BIT] pause ex stage
     input      id_no_op,                                    // from if_id_reg (the operations of id have been stoped)
     output reg ex_no_op,                                    // for alu (stop opeartions)
 
@@ -70,10 +71,9 @@ module id_ex_reg (
                 ex_src_reg_2,
                 ex_dest_reg
             }                   <= 0;
-        end else if (id_hold | id_no_op)
-            id_no_op            <= 1;
+        end else if (hazard_control[HAZD_HOLD_BIT])
+            ex_pc_4             <= ex_pc_4; // prevent auto latches
         else begin
-            ex_no_op            <= 0;
             ex_pc_4             <= id_pc_4;
 
             pc_offset           <= id_condition_satisfied & id_branch_instruction;
@@ -94,6 +94,8 @@ module id_ex_reg (
             ex_src_reg_2        <= id_immediate_instruction ? 0 : id_src_reg_2;
             ex_dest_reg         <= id_dest_reg;
         end
+
+        ex_no_op <= hazard_control[HAZD_NO_OP_BIT] | id_no_op;
     end
     
 endmodule

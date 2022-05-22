@@ -13,6 +13,9 @@
 `define MEM_WRITE_BIT       0
 `define MEM_READ_BIT        1
 
+`define HAZD_HOLD_BIT       0
+`define HAZD_NO_OP_BIT      1
+
 `define ADDRES_WIDTH        26
 
 //------------------------------Register File-----------------------------------//
@@ -49,7 +52,7 @@
 
 //--------------------------------Forwarding------------------------------------//
 `define FORW_SEL_WIDTH      2                   //width of forwarding select signal
-`define FORW_SEL_INPUT      2'b00               //indicate to select register(or immediate) input
+`define FORW_SEL_INPUT      2'b00               //indicate to select register input
 `define FORW_SEL_ALU_RES    2'b01               //indicate to select ALU result
 `define FORW_SEL_MEM_RES    2'b10               //indicate to select data fetched from memory 
 //------------------------------------------------------------------------------//

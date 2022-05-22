@@ -10,7 +10,8 @@ this is the stage register between:
 module mem_wb_reg (
     input clk, rst_n,
 
-    input      mem_hold,                                    // from hazard_unit (discard mem result and pause wb)
+    input      [1:0] hazard_control,                        // from hazard_unit [HAZD_HOLD_BIT] discard mem result
+                                                            //                  [HAZD_NO_OP_BIT] pause wb stage
     input      mem_no_op,                                   // from ex_mem_reg (the operations of mem have been stopped)
     output reg wb_no_op,                                    // for general_reg (stop write opeartions)
 
@@ -47,10 +48,9 @@ module mem_wb_reg (
                 wb_mem_read_data,
                 wb_dest_reg
             }                   <= 0;
-        end else if (mem_hold | mem_no_op)
-            wb_no_op            <= 1;
+        end else if (hazard_control[HAZD_HOLD_BIT])
+            wb_pc_4             <= wb_pc_4; // prevent auto latches
         else begin
-            wb_no_op            <= 0;
             wb_pc_4             <= mem_pc_4;
 
             wb_reg_write_enable <= mem_reg_write_enable;
@@ -59,6 +59,8 @@ module mem_wb_reg (
             wb_mem_read_data    <= mem_mem_read_data;
             wb_dest_reg         <= mem_dest_reg;
         end
+
+        wb_no_op <= mem_no_op | hazard_control[HAZD_NO_OP_BIT];
     end
     
 endmodule
