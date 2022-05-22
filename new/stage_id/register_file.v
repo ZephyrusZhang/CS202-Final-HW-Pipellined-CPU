@@ -16,13 +16,13 @@
 */
 module register_file (
     input clk, rst_n,
-    input [`REG_FILE_ADDR_WIDTH - 1 : 0] rs, rt, rd,
-    input [`ISA_WIDTH - 1 : 0] write_data,
-    input i_type,
-    input write_en,
-    input sw,
-    input jal,
-    output [`ISA_WIDTH - 1 : 0] read_data_1, read_data_2
+    input [`REG_FILE_ADDR_WIDTH - 1 : 0]    rs, rt, rd,
+    input [`ISA_WIDTH - 1 : 0]              write_data,
+    input                                   i_type,
+    input                                   write_en,
+    input                                   sw,
+    input                                   jal,
+    output [`ISA_WIDTH - 1 : 0]             read_data_1, read_data_2
 );
 
 reg [`REG_FILE_ADDR_WIDTH - 1 : 0] read_reg_addr_1, read_reg_addr_2, write_reg_addr;
@@ -43,11 +43,12 @@ assign read_data_2 = registers[rt];
 
 always @(posedge clk) begin
     if (~rst_n) begin
-        for (i = 0; i < `ISA_WIDTH; i = i + 1)
+        for (i = 1; i < `ISA_WIDTH; i = i + 1)
             registers[i] <= 0;
     end else
         if (write_en)
             registers[write_reg_addr] <= write_data;
+    registers[0] <= 0;
 end
 
 endmodule
