@@ -56,3 +56,8 @@
 `define FORW_SEL_ALU_RES    2'b01               //indicate to select ALU result
 `define FORW_SEL_MEM_RES    2'b10               //indicate to select data fetched from memory 
 //------------------------------------------------------------------------------//
+
+//----------------------------Condition Check-----------------------------------//
+`define CONDITION_TYPE_BEQ 0
+`define CONDITION_TYPE_BNQ 1
+//------------------------------------------------------------------------------//
