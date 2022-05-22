@@ -61,6 +61,7 @@ module id_ex_reg (
     );
 
     wire i_type_abnormal = store_instruction | branch_instruction;
+    wire j
 
     always @(posedge clk) begin
         if (~rst_n) begin
@@ -90,7 +91,7 @@ module id_ex_reg (
             ex_mem_control      <= id_mem_control;
             ex_alu_control      <= id_alu_control;
 
-            ex_operand_1        <= j_instruction ? {
+            ex_operand_1        <= (j_instruction | jal_instruction) ? {
                                             pc_4[`ISA_WIDTH - 1:`ADDRES_WIDTH + 2],
                                             id_instruction[`ADDRES_WIDTH - 1:0], 
                                             2'b00
