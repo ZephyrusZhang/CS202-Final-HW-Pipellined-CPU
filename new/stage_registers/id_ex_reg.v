@@ -18,6 +18,7 @@ module id_ex_reg (
     // output reg [`ISA_WIDTH - 1:0] ex_pc,                  // for ex_mem_reg (to store into 31st register)
 
     input      i_type_instruction,                          // from control_unit (whether it is a I type instruction)
+    input      r_type_instruction,                          // from control_unit (whether it is a R type instruction)
     input      j_instruction,                               // from control_unit (whether it is a jump instruction)
     input      jr_instruction,                              // from control_unit (whether it is a jr instruction)
     input      jal_instruction,                             // from control_unit (whether it is a jal insutrction)
@@ -50,12 +51,12 @@ module id_ex_reg (
 
     output reg [`ISA_WIDTH - 1:0] ex_store_data,            // for ex_mem_reg (the data to be store into memory)
 
-    input      [`REGISTER_SIZE - 1:0] id_src_reg_1,         // from if_id_reg (index of first source register)
-    input      [`REGISTER_SIZE - 1:0] id_src_reg_2,         // from if_id_reg (index of second source register)
-    input      [`REGISTER_SIZE - 1:0] id_dest_reg,          // from if_id_reg (index of destination resgiter)
-    output reg [`REGISTER_SIZE - 1:0] ex_src_reg_1,         // for forwarding_unit
-    output reg [`REGISTER_SIZE - 1:0] ex_src_reg_2,         // for forwarding_unit
-    output reg [`REGISTER_SIZE - 1:0] ex_dest_reg,          // for (1) forwarding_unit
+    input      [`REGISTER_SIZE - 1:0] id_reg_1_idx,         // from if_id_reg (index of first source register)
+    input      [`REGISTER_SIZE - 1:0] id_reg_2_idx,         // from if_id_reg (index of second source register)
+    input      [`REGISTER_SIZE - 1:0] id_reg_dest_idx,      // from if_id_reg (index of destination resgiter)
+    output reg [`REGISTER_SIZE - 1:0] ex_reg_1_idx,         // for forwarding_unit
+    output reg [`REGISTER_SIZE - 1:0] ex_reg_2_idx,         // for forwarding_unit
+    output reg [`REGISTER_SIZE - 1:0] ex_reg_dest_idx,      // for (1) forwarding_unit
                                                             //     (2) hazrad_unit
                                                             //     (3) ex_mem_reg
     );
@@ -75,9 +76,9 @@ module id_ex_reg (
                 ex_operand_1,
                 ex_operand_2,
                 ex_store_data,
-                ex_src_reg_1,
-                ex_src_reg_2,
-                ex_dest_reg
+                ex_reg_1_idx,
+                ex_reg_2_idx,
+                ex_reg_dest_idx
             }                   <= 0;
         end else if (hazard_control[HAZD_HOLD_BIT])
             ex_pc               <= ex_pc; // prevent auto latches
@@ -99,19 +100,18 @@ module id_ex_reg (
             ex_operand_2        <= i_type_instruction ? id_sign_extend_result : id_reg_2;
             ex_store_data       <= id_reg_2;
 
-            ex_src_reg_1        <= id_src_reg_1;
-            ex_src_reg_2        <= i_type_instruction ? 0 : id_src_reg_2;
-            ex_dest_reg         <= id_dest_reg;
-        end
+            ex_reg_1_idx        <= j_type_normal      ? 0 : id_reg_1_idx;
+            ex_reg_2_idx        <= (r_type_instruction | i_type_abnormal) ? id_reg_2_idx : 0;
 
-        always @(*) begin
-    read_reg_addr_1 = rs;
-    read_reg_addr_2 = rt;
-    if (i_type)     write_reg_addr = rt;
-    else if (jal)   write_reg_addr = 31;
-    else if (sw)    write_reg_addr = 0;
-    else            write_reg_addr = rd;
-end
+            case ({i_type_instruction, i_type_abnormal, jal_instruction, jr_instruction})
+                4'b1000: ex_reg_dest_idx <= id_reg_2_idx;   // I type instruction
+                4'b0100: ex_reg_dest_idx <= 0;              // store or branch instruction
+                4'b0010: ex_reg_dest_idx <= 31;             // jump and link store to 31st register
+                4'b0001: ex_reg_dest_idx <= id_reg_1_idx;   // jump register reterives from 1st register
+                default: ex_reg_dest_idx <= id_reg_dest_idx;    // R type instruction
+            endcase
+            
+        end
 
         ex_no_op <= hazard_control[HAZD_NO_OP_BIT] | id_no_op;
     end
