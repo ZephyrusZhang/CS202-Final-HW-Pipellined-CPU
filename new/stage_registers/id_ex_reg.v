@@ -113,7 +113,7 @@ module id_ex_reg (
             
             ex_store_data       <= id_reg_2;
 
-            ex_reg_1_idx        <= j_type_normal      ? 0 : id_reg_1_idx;
+            ex_reg_1_idx        <= j_type_normal                          ? 0 : id_reg_1_idx;
             ex_reg_2_idx        <= (r_type_instruction | i_type_abnormal) ? id_reg_2_idx : 0;
 
             case ({i_type_instruction, i_type_abnormal, jal_instruction, jr_instruction})
