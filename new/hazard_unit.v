@@ -9,25 +9,26 @@ module data_mem (
     input clk, rst_n,
 
     input uart_complete,            // from uart_unit (upg_done_i)
-    output reg []
+    output 
+    output reg [1:0] cpu_state,     // for vga_unit (the state the CPU is in)
+    output reg [2:0] issue_type     // for vga_unit (both hazard and interrupt)
     );
-
-    reg [1:0] hazard_unit_state;
-    localparam  IDLE      = 2'b00,
-                EXECUTE   = 2'b01,
-                HAZARD    = 2'b10,
-                INTERRUPT = 2'b11;
     
     always (negedge clk) {
         if (~rst_n) begin
             hazard_unit_state <= IDLE;
+            issue_type        <= NONE;
         end else begin
             case (hazard_unit_state) 
-                IDLE:       hazard_unit_state <= EXECUTE;
-                EXECUTE:    
+                IDLE: 
+                    hazard_unit_state <= EXECUTE;
+                EXECUTE: begin
+                    
+                end
                 HAZARD:     
                 INTERRUPT:  
-                default:    
+                default: 
+            endcase   
         end
     }
 endmodule

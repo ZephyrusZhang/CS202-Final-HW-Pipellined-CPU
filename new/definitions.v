@@ -26,6 +26,21 @@
 //---------------------------------Hazard---------------------------------------//
 `define HAZD_HOLD_BIT       0               // bit for determining hazard hold signal
 `define HAZD_NO_OP_BIT      1               // bit for determining hazard no operation signal
+
+// states for cpu_state 
+`define IDLE                2'b00
+`define EXECUTE             2'b01
+`define HAZARD              2'b10
+`define INTERRUPT           2'b11
+
+// values of issue_type 
+`define NONE                3'b000
+`define DATA                3'b001
+`define CONTROL             3'b010
+`define UART                3'b011
+`define PAUSE               3'b100
+`define VGA                 3'b101
+`define KEYPAD              3'b110
 //------------------------------------------------------------------------------//
 
 //------------------------------Register File-----------------------------------//

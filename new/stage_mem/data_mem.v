@@ -26,7 +26,6 @@ module data_mem #(parameter
     )(
     input clk, rst_n,
 
-
     input      uart_hazard,                             // from hazard_unit (UART hazard)
     input      uart_clk,                                // from uart_unit (upg_clk_i)
     input      uart_write_enable,                       // from uart_unit (upg_wen_i)
@@ -52,6 +51,7 @@ module data_mem #(parameter
 
     wire io_active = (mem_address[`IO_START_BIT:`IO_END_BIT] == `IO_HIGH_ADDR);
     wire uart_instruction_write_enable = uart_write_enable & uart_addr[ROM_DEPTH];
+    wire [`ISA_WIDTH - 1:0] ram_read_data;
 
     assign keypad_read_enable = ~mem_address[`IO_TYPE_BIT] & io_active & mem_read_enable;
     assign vga_write_enable   =  mem_address[`IO_TYPE_BIT] & io_active & mem_write_enable;
@@ -61,7 +61,7 @@ module data_mem #(parameter
 
         .clka   (uart_hazard ? uart_clk                   : clk),
         .addra  (uart_hazard ? uart_addr[ROM_DEPTH + 1:2] : mem_address[ROM_DEPTH + 1:2]), // address unit in bytes
-        .douta  (mem_read_data),
+        .douta  (ram_read_data),
 
         .dina   (uart_hazard      ? uart_data                     : (
                  vga_write_enable ? 0                             : mem_store_data)),
@@ -70,5 +70,5 @@ module data_mem #(parameter
     );
 
     assign vga_store_data = mem_store_data;
-    
+    assign mem_read_data  = keypad_read_enable ? keypad_read_data : ram_read_data;
 endmodule
