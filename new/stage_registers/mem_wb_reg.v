@@ -31,8 +31,8 @@ module mem_wb_reg (
     input      [`ISA_WIDTH - 1:0] mem_mem_read_data,        // from data_mem (data read)
     output reg [`ISA_WIDTH - 1:0] wb_mem_read_data,         // for reg_write_select (data from memory)
 
-    input      [`REGISTER_SIZE - 1:0] mem_dest_reg,         // from ex_mem_reg (index of destination resgiter)
-    output reg [`REGISTER_SIZE - 1:0] wb_dest_reg           // for (1) forwarding_unit
+    input      [`REG_FILE_ADDR_WIDTH - 1:0] mem_dest_reg,   // from ex_mem_reg (index of destination resgiter)
+    output reg [`REG_FILE_ADDR_WIDTH - 1:0] wb_dest_reg     // for (1) forwarding_unit
                                                             //     (2) general_reg
     );
 

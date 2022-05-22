@@ -7,7 +7,6 @@
 `define IO_TYPE_BIT         4
 `define ALU_CONTROL_WIDTH   6               // width of alu exe code
 `define OP_CODE_WIDTH       6
-`define REGISTER_SIZE       5
 `define FUNC_CODE_WIDTH     6
 
 `define MEM_WRITE_BIT       0

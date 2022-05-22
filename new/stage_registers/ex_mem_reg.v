@@ -36,8 +36,8 @@ module ex_mem_reg (
     input      [`ISA_WIDTH - 1:0] wb_reg_write_data,        // from reg_write_select (the data to write to general_reg)
     output reg [`ISA_WIDTH - 1:0] mem_store_data;           // for data_mem (the data to be stored)
 
-    input      [`REGISTER_SIZE - 1:0] ex_dest_reg,          // from id_ex_reg (index of destination resgiter)
-    output reg [`REGISTER_SIZE - 1:0] mem_dest_reg          // for (1) forwarding_unit
+    input      [`REG_FILE_ADDR_WIDTH - 1:0] ex_dest_reg,    // from id_ex_reg (index of destination resgiter)
+    output reg [`REG_FILE_ADDR_WIDTH - 1:0] mem_dest_reg    // for (1) forwarding_unit
                                                             //     (2) harard_unit
                                                             //     (3) mem_wb_reg
     );
