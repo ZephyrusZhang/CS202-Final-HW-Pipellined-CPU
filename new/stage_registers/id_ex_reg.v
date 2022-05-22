@@ -61,7 +61,7 @@ module id_ex_reg (
     );
 
     wire i_type_abnormal = store_instruction | branch_instruction;
-    wire j
+    wire j_type_normal   = j_instruction | jal_instruction;
 
     always @(posedge clk) begin
         if (~rst_n) begin
@@ -85,17 +85,17 @@ module id_ex_reg (
             ex_pc               <= id_pc;
 
             pc_offset           <= condition_satisfied & branch_instruction;
-            pc_overload         <= j_instruction | jr_instruction | jal_instruction;
+            pc_overload         <= j_type_normal | jr_instruction;
 
             ex_reg_write_enable <= id_reg_write_enable;
             ex_mem_control      <= id_mem_control;
             ex_alu_control      <= id_alu_control;
 
-            ex_operand_1        <= (j_instruction | jal_instruction) ? {
-                                            pc_4[`ISA_WIDTH - 1:`ADDRES_WIDTH + 2],
-                                            id_instruction[`ADDRES_WIDTH - 1:0], 
-                                            2'b00
-                                        } : id_reg_1; // for J type instruction address extension 
+            ex_operand_1        <= j_type_normal ? {
+                                        pc_4[`ISA_WIDTH - 1:`ADDRES_WIDTH + 2],
+                                        id_instruction[`ADDRES_WIDTH - 1:0], 
+                                        2'b00
+                                    } : id_reg_1; // for J type instruction address extension 
             ex_operand_2        <= i_type_instruction ? id_sign_extend_result : id_reg_2;
             ex_store_data       <= id_reg_2;
 
