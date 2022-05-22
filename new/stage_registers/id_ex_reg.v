@@ -15,12 +15,20 @@ module id_ex_reg (
     input      id_no_op,                                    // from if_id_reg (the operations of id have been stoped)
     output reg ex_no_op,                                    // for alu (stop opeartions)
 
-    input      [`ISA_WIDTH - 1:0] id_pc_4,                  // from if_id_reg (pc + 4)
-    output reg [`ISA_WIDTH - 1:0] ex_pc_4,                  // for ex_mem_reg (to store into 31st register)
+    // output reg [`ISA_WIDTH - 1:0] ex_pc,                  // for ex_mem_reg (to store into 31st register)
 
-    input      id_condition_satisfied,                      // from condition_check (whether the branch condition is met)
-    input      id_branch_instruction,                       // from control_unit (whether it is a branch instruction)
-    output reg pc_offset,                                   // for if_id_reg (whether the branch is taken)
+    input      i_type_instruction,                          // from control_unit (whether it is a I type instruction)
+    input      j_instruction,                               // from control_unit (whether it is a jump instruction)
+    input      jr_instruction,                              // from control_unit (whether it is a jr instruction)
+    input      jal_instruction,                             // from control_unit (whether it is a jal insutrction)
+    input      branch_instruction,                          // from control_unit (whether it is a branch instruction)
+    input      store_instruction,                           // from control_unit (whether it is a strore instruction)
+
+    input      condition_satisfied,                         // from condition_check (whether the branch condition is met)
+    output reg pc_offset,                                   // for (1) if_id_reg (whether the branch is taken thus prediction failed)
+                                                            //     (2) instruction_mem (whether the pc should be offsetted)
+    output reg pc_overload,                                 // for (1) if_id_reg (whether a jump occured thus prediction failed)
+                                                            //     (2) instruction_mem (whether the pc should be overloaded)
 
     input      id_reg_write_enable,                         // from control_unit (whether it needs write to register)
     output reg ex_reg_write_enable,                         // for ex_mem_reg
@@ -33,10 +41,8 @@ module id_ex_reg (
 
     input      [`ISA_WIDTH - 1:0] id_reg_1,                 // from general_reg (first register's value)
     input      [`ISA_WIDTH - 1:0] id_instruction,           // from if_id_reg (the current instruction)
+    input      [`ISA_WIDTH - 1:0] id_pc,                    // from if_id_reg (pc)
     output reg [`ISA_WIDTH - 1:0] ex_operand_1,             // for alu (first oprand for alu)
-
-    input      id_immediate_instruction,                    // from control_unit (whether it is a I type instruction)
-    input      id_jump_instruction,                         // from control_unit (whether it is a J type instruction)
 
     input      [`ISA_WIDTH - 1:0] id_reg_2,                 // from general_reg (second register's value)
     input      [`ISA_WIDTH - 1:0] id_sign_extend_result,    // from sign_extend (16 bit sign extend result)
@@ -54,15 +60,16 @@ module id_ex_reg (
                                                             //     (3) ex_mem_reg
     );
 
+    wire i_type_abnormal = store_instruction | branch_instruction;
+
     always @(posedge clk) begin
         if (~rst_n) begin
             {
                 ex_no_op,
-                ex_pc_4,
 
                 pc_offset,
                 ex_reg_write_enable,
-                  ex_mem_control,
+                ex_mem_control,
                 ex_alu_control,
                 ex_operand_1,
                 ex_operand_2,
@@ -72,28 +79,38 @@ module id_ex_reg (
                 ex_dest_reg
             }                   <= 0;
         end else if (hazard_control[HAZD_HOLD_BIT])
-            ex_pc_4             <= ex_pc_4; // prevent auto latches
+            ex_pc               <= ex_pc; // prevent auto latches
         else begin
-            ex_pc_4             <= id_pc_4;
+            ex_pc               <= id_pc;
 
-            pc_offset           <= id_condition_satisfied & id_branch_instruction;
+            pc_offset           <= condition_satisfied & branch_instruction;
+            pc_overload         <= j_instruction | jr_instruction | jal_instruction;
+
             ex_reg_write_enable <= id_reg_write_enable;
             ex_mem_control      <= id_mem_control;
             ex_alu_control      <= id_alu_control;
 
-            ex_operand_1        <= id_jump_instruction ? 
-                                        {
-                                            pc_4[`ISA_WIDTH - 1:`ISA_WIDTH - `ADDRES_WIDTH + 2],
+            ex_operand_1        <= j_instruction ? {
+                                            pc_4[`ISA_WIDTH - 1:`ADDRES_WIDTH + 2],
                                             id_instruction[`ADDRES_WIDTH - 1:0], 
-                                            2'b0
-                                        }                                           : id_reg_1;
-            ex_operand_2        <= id_immediate_instruction ? id_sign_extend_result : id_reg_2;
+                                            2'b00
+                                        } : id_reg_1; // for J type instruction address extension 
+            ex_operand_2        <= i_type_instruction ? id_sign_extend_result : id_reg_2;
             ex_store_data       <= id_reg_2;
 
             ex_src_reg_1        <= id_src_reg_1;
-            ex_src_reg_2        <= id_immediate_instruction ? 0 : id_src_reg_2;
+            ex_src_reg_2        <= i_type_instruction ? 0 : id_src_reg_2;
             ex_dest_reg         <= id_dest_reg;
         end
+
+        always @(*) begin
+    read_reg_addr_1 = rs;
+    read_reg_addr_2 = rt;
+    if (i_type)     write_reg_addr = rt;
+    else if (jal)   write_reg_addr = 31;
+    else if (sw)    write_reg_addr = 0;
+    else            write_reg_addr = rd;
+end
 
         ex_no_op <= hazard_control[HAZD_NO_OP_BIT] | id_no_op;
     end

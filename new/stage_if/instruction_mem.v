@@ -35,8 +35,8 @@ module instruction_mem #(parameter
     input      pc_hold,                                 // from hazard_unit (discard pc reuslt and pause if)
     output reg no_op,                                   // for if_id_reg (stop id operations)
 
-    output reg pc_4,                                    // for if_id_reg (pc + 4)
-    output reg [`ISA_WIDTH - 1:0] pc,                   // for hazard_unit (to detect UART hazard)
+    output reg [`ISA_WIDTH - 1:0] pc,                   // for (1) hazard_unit (to detect UART hazard)
+                                                        //     (2) if_id_reg (jal store into 31st register)
     output     [`ISA_WIDTH - 1:0] instruction           // for if_id_reg (the current instruction)
     );
 
@@ -56,21 +56,19 @@ module instruction_mem #(parameter
     
     always @(*) begin
         case ({pc_offset, pc_overload})
-            2'b10:   pc_next <= pc_4 + (pc_offset_value << 2);
+            2'b10:   pc_next <= pc + 4 + (pc_offset_value << 2);
             2'b01:   pc_next <= pc_overload_value;
-            default: pc_next <= pc_4;
+            default: pc_next <= pc + 4;
         endcase
     end
     
     always @(posedge clk) begin
         if (~rst_n) begin
             pc      <= 0;
-            pc_4    <= 4;
             pc_next <= 0;
             no_op   <= 0;
         end else if (~pc_hold) begin
             pc      <= pc_next;
-            pc_4    <= pc_next + 4;
             no_op   <= 0;
         end else
             no_op   <= 1;
