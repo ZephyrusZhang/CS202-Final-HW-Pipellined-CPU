@@ -4,51 +4,39 @@
 /*
     Input:
         clk:        clock signal
-        rs, rt, rd:
+        read_reg_addr_1, read_reg_addr_2, write_reg_addr: 
         write_data: the data to be written into register, which comes from alu result or memory
-        i_type:     indicate whether the current instruction is I type. 0 => not, 1 => yes
-        write_en:   indicate whether be able to write data into register
-        sw:         whether instruction sw
-        jal:        whether instruction jal
+
     Output:
         read_data_1: comes from rs
         read_data_2: comes from rt
 */
 module register_file (
     input clk, rst_n,
-    input [`REG_FILE_ADDR_WIDTH - 1 : 0]    rs, rt, rd,
+    input [`REG_FILE_ADDR_WIDTH - 1 : 0]    read_reg_addr_1, read_reg_addr_2, write_reg_addr,
     input [`ISA_WIDTH - 1 : 0]              write_data,
-    input                                   i_type,
     input                                   write_en,
-    input                                   sw,
-    input                                   jal,
-    output [`ISA_WIDTH - 1 : 0]             read_data_1, read_data_2
+    input                                   wb_no_op, id_no_op,
+    output reg [`ISA_WIDTH - 1 : 0]         read_data_1, read_data_2
 );
 
-reg [`REG_FILE_ADDR_WIDTH - 1 : 0] read_reg_addr_1, read_reg_addr_2, write_reg_addr;
-always @(*) begin
-    read_reg_addr_1 = rs;
-    read_reg_addr_2 = rt;
-    if (i_type)     write_reg_addr = rt;
-    else if (jal)   write_reg_addr = 31;
-    else if (sw)    write_reg_addr = 0;
-    else            write_reg_addr = rd;
+reg [`ISA_WIDTH - 1 : 0] registers [0 : `ISA_WIDTH - 1];
+
+always @(negedge clk) begin
+    if (~id_no_op) begin
+        read_data_1 <= registers[read_reg_addr_1];
+        read_data_2 <= registers[read_reg_addr_2];
+    end
 end
 
-reg [`ISA_WIDTH - 1 : 0] registers [0 : `ISA_WIDTH - 1];
 integer i;
-
-assign read_data_1 = registers[rs];
-assign read_data_2 = registers[rt];
-
 always @(posedge clk) begin
     if (~rst_n) begin
-        for (i = 1; i < `ISA_WIDTH; i = i + 1)
+        for (i = 0; i < `ISA_WIDTH; i = i + 1)
             registers[i] <= 0;
     end else
-        if (write_en)
+        if (write_en && ~wb_no_op && write_reg_addr != 0)
             registers[write_reg_addr] <= write_data;
-    registers[0] <= 0;
 end
 
 endmodule
