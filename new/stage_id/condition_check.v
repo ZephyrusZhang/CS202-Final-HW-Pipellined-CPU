@@ -1,6 +1,12 @@
 `include "../definitions.v"
 `timescale 1ns / 1ps
 
+/*
+    Input:
+        condition_type: beq or bnq
+        read_data_1, read_data_2: data got from register files
+        condition_result:
+*/
 module condition_check (
     input                       condition_type,
     input [`ISA_WIDTH - 1 : 0]  read_data_1, read_data_2,
