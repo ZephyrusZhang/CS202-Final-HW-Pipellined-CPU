@@ -9,9 +9,6 @@ module data_mem (
     input clk, rst_n,
 
     input uart_complete,                                        // from uart_unit (upg_done_i)
-    output reg [1:0] hazard_control [4:0]                       // hazard control signal for each stage register
-    output reg [1:0] cpu_state,                                 // for vga_unit (the state the CPU is in)
-    output reg [2:0] issue_type,                                // for vga_unit (both hazard and interrupt)
 
     input      i_type_instruction,                              // from control_unit (whether it is a I type instruction)
     input      r_type_instruction,                              // from control_unit (whether it is a R type instruction)
@@ -31,15 +28,27 @@ module data_mem (
     input      [`REG_FILE_ADDR_WIDTH - 1:0] id_reg_2_idx,       // from if_id_reg (index of second source register)
     input      [`REG_FILE_ADDR_WIDTH - 1:0] id_reg_dest_idx,    // from if_id_reg (index of destination resgiter)
     input      [`REG_FILE_ADDR_WIDTH - 1:0] ex_reg_dest_idx,    // from id_ex_reg (index of destination resgiter)
-    input      [`REG_FILE_ADDR_WIDTH - 1:0] mem_reg_dest_idx    // from ex_mem_reg (index of destination resgiter)
+    input      [`REG_FILE_ADDR_WIDTH - 1:0] mem_reg_dest_idx,   // from ex_mem_reg (index of destination resgiter)
+
+    input      [`ISA_WIDTH - 1:0] pc,                           // from instruction_mem  
+    
+    output reg [1:0] hazard_control [4:0]                       // hazard control signal for each stage register
+    output reg [1:0] cpu_state,                                 // for vga_unit (the state the CPU is in)
+    output reg [2:0] issue_type                                 // for vga_unit (both hazard and interrupt)
     );
 
     wire reg_1_valid = ~(j_instruction | jal_instruction);
     wire reg_2_valid = r_type_instruction | i_type_abnormal;
 
-    wire mem_hazard = mem_reg_write_enable & ((reg_1_valid & id_reg_1_idx == mem_reg_dest_idx) | (reg_2_valid & id_reg_2_idx == mem_reg_dest_idx));
-    wire ex_hazard  = ex_reg_write_enable  & ((reg_1_valid & id_reg_1_idx == ex_reg_dest_idx)  | (reg_2_valid & id_reg_2_idx == ex_reg_dest_idx));
-    wire hazard     = ex_hazard | mem_hazard;
+    wire mem_conflict = mem_reg_write_enable &                                  // wirte enabled
+                        ((reg_1_valid & id_reg_1_idx == mem_reg_dest_idx) |     // valid and conflict
+                         (reg_2_valid & id_reg_2_idx == mem_reg_dest_idx));     // valid and conflict
+    wire ex_conflict  = ex_reg_write_enable  &                                  // wirte enabled
+                        ((reg_1_valid & id_reg_1_idx == ex_reg_dest_idx)  |     // valid and conflict
+                         (reg_2_valid & id_reg_2_idx == ex_reg_dest_idx));      // valid and conflict
+    wire hazard       = (branch_instruction & (ex_conflict | mem_conflict)) |   // data hazard when branch depends on data from previous stages 
+                        (ex_mem_read_enable & ex_conflict);                     // data hazard when alu depends on data from memory at the next stage
+    wire pc_overflow  = `PC_MAX_VALUE < pc;
 
     always (negedge clk) {
         if (~rst_n) begin
@@ -52,7 +61,11 @@ module data_mem (
                 IDLE: 
                     hazard_unit_state <= EXECUTE;
                 EXECUTE: begin
-                    hazard_detected = (branch_instruction & hazard) | (mem_read_enable & mem_hazard);
+                    case ({hazard, pc_overflow})
+                        : 
+                        default: 
+                    endcase
+                    if (hazard)
                 end
                 HAZARD:     
                 INTERRUPT:  
