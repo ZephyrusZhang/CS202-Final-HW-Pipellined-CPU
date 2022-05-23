@@ -55,7 +55,7 @@ module ex_mem_reg (
                 mem_store_data,
                 mem_dest_reg
             }                        <= 0;
-        end else if (hazard_control[HAZD_HOLD_BIT]) 
+        end else if (hazard_control[`HAZD_HOLD_BIT]) 
             mem_pc_4             <= mem_pc_4; // prevent auto latches
         else begin
             mem_pc_4             <= ex_pc_4;
@@ -74,7 +74,7 @@ module ex_mem_reg (
             endcase
         end
         
-        mem_no_op <= hazard_control[HAZD_NO_OP_BIT] | ex_no_op;
+        mem_no_op <= hazard_control[`HAZD_NO_OP_BIT] | ex_no_op;
     end
     
 endmodule

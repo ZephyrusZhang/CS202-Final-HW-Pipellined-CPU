@@ -32,8 +32,9 @@ module instruction_mem #(parameter
     input      pc_overload,                             // from id_ex_reg (from control_unit)
     input      [`ISA_WIDTH - 1:0] pc_overload_value,    // from id_ex_reg (from operand_1)
     
-    input      pc_hold,                                 // from hazard_unit (discard pc reuslt and pause if)
-    output reg no_op,                                   // for if_id_reg (stop id operations)
+    input      [1:0] hazard_control,                    // from hazard_unit [HAZD_HOLD_BIT] discard pc_next result
+                                                        //                  [HAZD_if_no_op_BIT] pause if stage
+    output reg if_no_op,                                // for if_id_reg (stop id operations)
 
     output reg [`ISA_WIDTH - 1:0] pc,                   // for (1) hazard_unit (to detect UART hazard)
                                                         //     (2) if_id_reg (jal store into 31st register)
@@ -44,7 +45,7 @@ module instruction_mem #(parameter
     reg [`ISA_WIDTH - 1:0] pc_next;
 
     ROM rom(
-        .ena    (~no_op), // disabled unpon hold
+        .ena    (~if_no_op), // disabled unpon hold
 
         .clka   (uart_hazard ? uart_clk                   : clk),
         .addra  (uart_hazard ? uart_addr[ROM_DEPTH + 1:2] : pc[ROM_DEPTH + 1:2]), // pc address is in unit of bytes
@@ -64,14 +65,12 @@ module instruction_mem #(parameter
     
     always @(posedge clk) begin
         if (~rst_n) begin
-            pc      <= 0;
-            pc_next <= 0;
-            no_op   <= 0;
-        end else if (~pc_hold) begin
-            pc      <= pc_next;
-            no_op   <= 0;
-        end else
-            no_op   <= 1;
+            pc       <= 0;
+            if_no_op <= 0;
+        end else if (hazard_control[`HAZD_HOLD_BIT]) pc <= pc;
+        else                                         pc <= pc_next;
+
+        if_no_op <= hazard_control[`HAZD_NO_OP_BIT];
     end
     
 endmodule

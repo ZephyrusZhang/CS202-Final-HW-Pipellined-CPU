@@ -48,7 +48,7 @@ module mem_wb_reg (
                 wb_mem_read_data,
                 wb_dest_reg
             }                   <= 0;
-        end else if (hazard_control[HAZD_HOLD_BIT])
+        end else if (hazard_control[`HAZD_HOLD_BIT])
             wb_pc_4             <= wb_pc_4; // prevent auto latches
         else begin
             wb_pc_4             <= mem_pc_4;
@@ -60,7 +60,7 @@ module mem_wb_reg (
             wb_dest_reg         <= mem_dest_reg;
         end
 
-        wb_no_op <= mem_no_op | hazard_control[HAZD_NO_OP_BIT];
+        wb_no_op <= hazard_control[`HAZD_NO_OP_BIT] | mem_no_op;
     end
     
 endmodule

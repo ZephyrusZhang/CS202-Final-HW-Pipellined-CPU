@@ -35,7 +35,7 @@ module if_id_reg (
                 id_pc,
                 id_instruction
             }              <= 0;
-        end else if (if_hold | pc_abnormal) 
+        end else if (hazard_control[`HAZD_HOLD_BIT] | pc_abnormal) 
             id_pc          <= id_pc; // prevent auto latches
         else begin
             id_pc          <= if_pc;
@@ -43,7 +43,7 @@ module if_id_reg (
         end
 
         id_no_op <= if_no_op |                         // previous stage have stopped
-                    hazard_control[HAZD_NO_OP_BIT] |   // or hazard detected
+                    hazard_control[`HAZD_NO_OP_BIT] |   // or hazard detected
                     pc_abnormal;                       // or the next insturction (pc + 4) is not valid
     end
     

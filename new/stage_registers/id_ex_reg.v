@@ -88,7 +88,7 @@ module id_ex_reg (
                 ex_reg_2_idx,
                 ex_reg_dest_idx
             }                   <= 0;
-        end else if (hazard_control[HAZD_HOLD_BIT])
+        end else if (hazard_control[`HAZD_HOLD_BIT])
             ex_pc               <= ex_pc; // prevent auto latches
         else begin
             ex_pc               <= id_pc;
@@ -127,7 +127,7 @@ module id_ex_reg (
             endcase
         end
 
-        ex_no_op <= hazard_control[HAZD_NO_OP_BIT] | id_no_op;
+        ex_no_op <= hazard_control[`HAZD_NO_OP_BIT] | id_no_op;
     end
     
 endmodule
