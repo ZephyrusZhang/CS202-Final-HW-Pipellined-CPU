@@ -8,7 +8,9 @@ module keypad_unit (
 
     input      keypad_read_enable,                      // from data_mem (the keypad input will be memory data)
     output reg [`ISA_WIDTH - 1:0] keypad_read_data,     // for data_mem (data from user input)
-    output reg 
+    output reg keypad_read_complete,
+    output reg cpu_pause,
+    output reg cpu_resume
     );
 
 endmodule

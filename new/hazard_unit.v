@@ -35,7 +35,6 @@ module data_mem (
     input      keypad_read_complete,                            // from keypad_unit (user pressed enter)
     input      cpu_pause,                                       // from keypad_unit (user pressed pause)
     input      cpu_resume,                                      // from keypad_unit (user pressed resume [pause again])
-    input      uart_start,                                      // from keypad_unit (user pressed start UART)
 
     output reg pc_reset,                                        // for instruction_mem (reset the pc to 0)
     output reg [1:0] hazard_control [`STAGE_CNT - 1:0]          // hazard control signal for each stage register
@@ -52,13 +51,13 @@ module data_mem (
     
     wire data_hazard    = (branch_instruction & (ex_conflict | mem_conflict)) |     // data hazard when branch depends on data from previous stages 
                           (ex_mem_read_enable & ex_conflict);                       // data hazard when alu depends on data from memory at the next stage
-    assign uart_hazard  = `PC_MAX_VALUE < pc_next | uart_start;                     // next instruction not in instruction memory or user wants to rewrite
+    wire uart_hazard    = `PC_MAX_VALUE < pc_next;                                  // next instruction not in instruction memory
 
     wire keypad_interrupt = keypad_read_enable & ~keypad_read_complete;
 
     wire data_resolved    = issue_type == `DATA   & ~data_hazard;
     wire uart_resolved    = issue_type == `UART   & uart_complete;
-    wire pause_resolved   = issue_type == `PAUSE  & cpu_resume;
+    wire pause_resolved   = issue_type == `PAUSE  & cpu_resume & uart_complete;
     wire keypad_resolved  = issue_type == `KEYPAD & keypad_read_complete;
 
     always @(negedge clk) begin
@@ -81,14 +80,14 @@ module data_mem (
                             harard_control[`HAZD_ID_IDX] <= `HOLD;  // id stage will not be a bubble
                             harard_control[`HAZD_EX_IDX] <= `NO_OP; // ex stage will be a bubble (the instruction in ex will enter wb by then)
                         end
-                        // no data hazard but the user paused the CPU
+                        // the user paused the CPU, the user can do UART rewrite during this period
                         4'b01xx: begin
                             issue_type   <= `PAUSE;
                             cpu_state    <= `HAZARD;
                             uart_disable <= 0;
                             harard_control[`HAZD_IF_IDX] <= `NO_OP; // start pumping no_op signals into the pipeline
                         end
-                        // the user did not pause the CPU but the pc overflowed
+                        // the user did not pause the CPU but the pc overflowed, the CPU will automatically resume upon UART completion
                         4'b001x: begin
                             issue_type   <= `UART;
                             cpu_state    <= `HAZARD;
@@ -107,25 +106,25 @@ module data_mem (
                     endcase
                 end
                 `HAZARD: begin
-                    case ({data_resolved, pause_resolved, uart_resolved})
-                        3'b100 : begin
+                    case ({data_resolved, pause_resolved | uart_resolved})
+                        2'b10  : begin
                             issue_type   <= `NONE;
                             cpu_state    <= `EXECUTE;
                             hazard_control[`HAZD_IF_IDX] <= `NORMAL;
                             harard_control[`HAZD_ID_IDX] <= `NORMAL;
                             harard_control[`HAZD_EX_IDX] <= `NORMAL;
                         end
-                        3'b010 : begin
+                        2'b01  : begin
                             issue_type   <= `NONE;
                             cpu_state    <= `EXECUTE;
                             uart_disable <= 1;
                             harard_control[`HAZD_IF_IDX] <= `NORMAL;
                         end
-                        3'b001 : begin
-                            
-                        end
                         default: 
-                            issue_type   <= issue_type; // prevent auto latches
+                            if (issue_type == `UART & cpu_pause) 
+                                issue_type <= `PAUSE;       // pause after pc overflow which then the CPU must wait for the user to resume it
+                            else 
+                                issue_type <= issue_type;   // prevent auto latches
                     endcase
                 end   
                 `INTERRUPT: begin
