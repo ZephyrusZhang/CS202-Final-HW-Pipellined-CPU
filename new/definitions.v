@@ -29,12 +29,18 @@
 `define HAZD_HOLD_BIT       0               // bit for determining hazard hold signal
 `define HAZD_NO_OP_BIT      1               // bit for determining hazard no operation signal
 
-// bits for the specific stage registers (both hold and no_op)
-`define HAZD_IF_BIT         0
-`define HAZD_ID_BIT         1
-`define HAZD_EX_BIT         2
-`define HAZD_MEM_BIT        3
-`define HAZD_WB_BIT         4
+// index for the specific stage registers (both hold and no_op)
+`define HAZD_IF_IDX         0
+`define HAZD_ID_IDX         1
+`define HAZD_EX_IDX         2
+`define HAZD_MEM_IDX        3
+`define HAZD_WB_IDX         4
+
+// signals for the stage registers
+`define NORMAL              2'b00
+`define HOLD                2'b10
+`define NO_OP               2'b11
+`define NO_OP_ONLY          2'b01           // normally should not be used as no_op implies hold
 
 // states for cpu_state 
 `define IDLE                2'b00

@@ -34,13 +34,13 @@ module data_mem (
 
     input      cpu_pause,                                       // from keypad_unit
     
-    output reg [1:0] hazard_control [4:0]                       // hazard control signal for each stage register
+    output reg [1:0] hazard_control [`STAGE_CNT - 1:0]          // hazard control signal for each stage register
     output reg [1:0] cpu_state,                                 // for vga_unit (the state the CPU is in)
     output reg [2:0] issue_type                                 // for vga_unit (both hazard and interrupt)
     );
 
     wire reg_1_valid = ~(j_instruction | jal_instruction);
-    wire reg_2_valid = r_type_instruction | i_type_abnormal;
+    wire reg_2_valid = r_type_instruction | store_instruction | branch_instruction;
 
     wire mem_conflict = mem_reg_write_enable &                                  // wirte enabled
                         ((reg_1_valid & id_reg_1_idx == mem_reg_dest_idx) |     // valid and conflict
@@ -51,7 +51,6 @@ module data_mem (
     
     wire data_hazard    = (branch_instruction & (ex_conflict | mem_conflict)) |     // data hazard when branch depends on data from previous stages 
                           (ex_mem_read_enable & ex_conflict);                       // data hazard when alu depends on data from memory at the next stage
-    wire control_hazard = condition_satisfied & branch_instruction;                 // branch is going to be taken and the previous pc + 4 is not valid
     wire uart_hazard    = `PC_MAX_VALUE < pc;                                       // the next instruction is not in instruction memory
     wire pause_hazard   = cpu_pause;
 
@@ -63,24 +62,29 @@ module data_mem (
         if (~rst_n) begin
             hazard_unit_state <= IDLE;
             issue_type        <= NONE;
-            for (i = 0; i < `STAGE_CNT; i = i + 1)
-                hazard_control[i] <= 0;
+            for (i = 0; i < `STAGE_CNT; i = i + 1) hazard_control[i] <= `NORMAL;
         end else begin
             case (hazard_unit_state) 
                 `IDLE: 
                     hazard_unit_state <= EXECUTE;
                 `EXECUTE: begin
-                    casex ({data_hazard, pause_hazard, uart_hazard, control_hazard})
-                        4'b1xxx: begin
+                    casex ({data_hazard, pause_hazard, uart_hazard})
+                        4'b1xx: begin // data hazard will hold all stages hence covers the other hazards
                             cpu_state <= `DATA;
-                            hazard_control[`HAZD_IF_BIT] <= 
+                            hazard_control[`HAZD_IF_IDX] <= `HOLD;  // if stage will not be a bubble
+                            harard_control[`HAZD_ID_IDX] <= `HOLD;  // id stage will not be a bubble
+                            harard_control[`HAZD_EX_IDX] <= `NO_OP; // ex stage will be a bubble (the instruction in ex will enter wb by then)
                         end
-                        4'b11xx:
-                        4'b101x:
-                        4'b01xx:
-                        4'b001x:
-                        4'b0001:
-                        default: 
+                        4'b01x: begin // no data hazard but the user paused the CPU
+                            
+                        end
+                        4'b001: begin // the user did not pause the CPU
+                            
+                        end
+                        default: begin
+                            cpu_state <= `NONE;
+                            for (i = 0; i < `STAGE_CNT; i = i + 1) hazard_control[i] <= `NORMAL;
+                        end
                     endcase
                     if (hazard)
                 end
