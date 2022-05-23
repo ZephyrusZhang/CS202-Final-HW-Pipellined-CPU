@@ -26,11 +26,11 @@ module instruction_mem #(parameter
     input      [`ISA_WIDTH - 1:0] uart_data,            // from uart_unit (upg_dat_i)
     input      [ROM_DEPTH:0] uart_addr,                 // from uart_unit (upg_adr_i)
     
-    input      pc_offset,                               // from id_ex_reg (from control_unit)
-    input      [`ISA_WIDTH - 1:0] pc_offset_value,      // from id_ex_reg (from operand_2)
+    input      pc_offset,                               // from signal_mux
+    input      [`ISA_WIDTH - 1:0] pc_offset_value,      // from signal_mux (mux_operand_2)
     
-    input      pc_overload,                             // from id_ex_reg (from control_unit)
-    input      [`ISA_WIDTH - 1:0] pc_overload_value,    // from id_ex_reg (from operand_1)
+    input      pc_overload,                             // from signal_mux
+    input      [`ISA_WIDTH - 1:0] pc_overload_value,    // from signal_mux (pc_overload_value)
     
     input      pc_reset,                                // from hazard_unit (reset pc when UART is completed)
     input      [1:0] hazard_control,                    // from hazard_unit [HAZD_HOLD_BIT] discard pc_next result
