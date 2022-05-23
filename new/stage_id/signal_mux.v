@@ -57,7 +57,7 @@ module id_ex_reg (
                                     2'b00
                                 } : id_reg_1; // for J type instruction address extension 
 
-    assign mux_operand_1 = jal_instruction ? id_pc : id_reg_1;
+    assign mux_operand_1 = jal_instruction    ? id_pc : id_reg_1;
     assign mux_operand_2 = i_type_instruction ? id_sign_extend_result : (
                            jal_instruction    ? 4                     : id_reg_2);
 

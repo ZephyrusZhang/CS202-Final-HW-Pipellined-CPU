@@ -11,15 +11,9 @@ module data_mem (
     input      uart_complete,                                   // from uart_unit (upg_done_i)
     output reg uart_disable,                                    // for uart_unit (upg_rst_i)
 
-    input      i_type_instruction,                              // from control_unit (whether it is a I type instruction)
-    input      r_type_instruction,                              // from control_unit (whether it is a R type instruction)
-    input      j_instruction,                                   // from control_unit (whether it is a jump instruction)
-    input      jr_instruction,                                  // from control_unit (whether it is a jr instruction)
-    input      jal_instruction,                                 // from control_unit (whether it is a jal insutrction)
+    input      reg_1_valid,                                     // from signal_mux (whether register 1 is valid)
+    input      reg_2_valid,                                     // from signal_mux (whether register 2 is valid)
     input      branch_instruction,                              // from control_unit (whether it is a branch instruction)
-    input      store_instruction,                               // from control_unit (whether it is a strore instruction)
-
-    input      condition_satisfied,                             // from condition_check (whether the branch condition is met)
 
     input      ex_mem_read_enable,                              // from id_ex_reg (instruction needs to read from memory)
     input      ex_reg_write_enable,                             // from id_ex_reg (instruction needs write to register)
@@ -46,9 +40,6 @@ module data_mem (
     output reg [2:0] issue_type                                 // for vga_unit (both hazard and interrupt)
     );
 
-    wire reg_1_valid = ~(j_instruction | jal_instruction);
-    wire reg_2_valid = r_type_instruction | store_instruction | branch_instruction;
-
     wire mem_conflict = mem_reg_write_enable & ~mem_no_op                       // wirte enabled and operational
                         ((reg_1_valid & id_reg_1_idx == mem_reg_dest_idx) |     // valid and conflict
                          (reg_2_valid & id_reg_2_idx == mem_reg_dest_idx));     // valid and conflict
@@ -58,7 +49,7 @@ module data_mem (
     
     wire data_hazard    = (branch_instruction & (ex_conflict | mem_conflict)) |     // data hazard when branch depends on data from previous stages 
                           (ex_mem_read_enable & ex_conflict);                       // data hazard when alu depends on data from memory at the next stage
-    assign uart_hazard  = `PC_MAX_VALUE < pc;                                       // the next instruction is not in instruction memory
+    assign uart_hazard  = `PC_MAX_VALUE < pc_next;                                       // the next instruction is not in instruction memory
 
     wire keypad_interrupt = keypad_read_enable & ~keypad_read_complete;
 
