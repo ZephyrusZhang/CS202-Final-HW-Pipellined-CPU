@@ -124,11 +124,12 @@ module data_mem (
                 end   
                 `INTERRUPT: begin
                     if (keypad_resolved) begin
-                        issue_type   <= `KEYPAD;
-                        cpu_state    <= `INTERRUPT;
+                        issue_type <= `NONE;
+                        cpu_state  <= `EXECUTE;
                         for (i = 0; i < `STAGE_CNT; i = i + 1) 
-                            hazard_control[i] <= `NO_OP;
-                    end
+                            hazard_control[i] <= `NORMAL;
+                    end else 
+                        issue_type <= issue_type; // prevent auto latches
                 end
                 default: // this is for `IDLE state, preventing auto latches
                     cpu_state <= `EXECUTE;
