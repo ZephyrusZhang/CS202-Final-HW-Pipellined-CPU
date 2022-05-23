@@ -51,10 +51,10 @@
 // values of issue_type 
 `define NONE                3'b000
 `define DATA                3'b001
-`define CONTROL             3'b010          // not handled by the hazard_unit (determined after negedge)
+`define CONTROL             3'b010          // not handled by hazard_unit (determined after negedge)
 `define UART                3'b011
 `define PAUSE               3'b100
-`define VGA                 3'b101
+`define VGA                 3'b101          // not handled by hazard_unit
 `define KEYPAD              3'b110
 //------------------------------------------------------------------------------//
 
