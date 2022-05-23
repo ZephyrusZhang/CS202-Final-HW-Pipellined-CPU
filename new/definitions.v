@@ -1,6 +1,7 @@
 //----------------------------ISA Specifications--------------------------------//
 `define ISA_WIDTH           32              // width of a word in the ISA
 `define ADDRES_WIDTH        26              // address lenth in instruction for j and jal extension
+`define STAGE_CNT           5
 //------------------------------------------------------------------------------//
 
 //---------------------------------Memory---------------------------------------//
@@ -26,6 +27,13 @@
 //---------------------------------Hazard---------------------------------------//
 `define HAZD_HOLD_BIT       0               // bit for determining hazard hold signal
 `define HAZD_NO_OP_BIT      1               // bit for determining hazard no operation signal
+
+// bits for the specific stage registers (both hold and no_op)
+`define HAZD_IF_BIT         0
+`define HAZD_ID_BIT         1
+`define HAZD_EX_BIT         2
+`define HAZD_MEM_BIT        3
+`define HAZD_WB_BIT         4
 
 // states for cpu_state 
 `define IDLE                2'b00
