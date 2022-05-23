@@ -32,6 +32,7 @@ module instruction_mem #(parameter
     input      pc_overload,                             // from id_ex_reg (from control_unit)
     input      [`ISA_WIDTH - 1:0] pc_overload_value,    // from id_ex_reg (from operand_1)
     
+    input      pc_reset,                                // from hazard_unit (reset pc when UART is completed)
     input      [1:0] hazard_control,                    // from hazard_unit [HAZD_HOLD_BIT] discard pc_next result
                                                         //                  [HAZD_if_no_op_BIT] pause if stage
     output reg if_no_op,                                // for if_id_reg (stop id operations)
@@ -45,7 +46,7 @@ module instruction_mem #(parameter
     reg [`ISA_WIDTH - 1:0] pc_next;
 
     ROM rom(
-        .ena    (~if_no_op), // disabled unpon hold
+        .ena    (~if_no_op), // disabled unpon no_op
 
         .clka   (uart_hazard ? uart_clk                   : clk),
         .addra  (uart_hazard ? uart_addr[ROM_DEPTH + 1:2] : pc[ROM_DEPTH + 1:2]), // pc address is in unit of bytes
@@ -56,10 +57,11 @@ module instruction_mem #(parameter
     );
     
     always @(*) begin
-        case ({pc_offset, pc_overload})
-            2'b10:   pc_next <= pc + 4 + (pc_offset_value << 2);
-            2'b01:   pc_next <= pc_overload_value;
-            default: pc_next <= pc + 4;
+        case ({pc_offset, pc_overload, pc_reset})
+            3'b100 : pc_next = pc + 4 + (pc_offset_value << 2);
+            3'b010 : pc_next = pc_overload_value;
+            3'b001 : pc_next = 0;
+            default: pc_next = pc + 4;
         endcase
     end
     
@@ -67,9 +69,11 @@ module instruction_mem #(parameter
         if (~rst_n) begin
             pc       <= 0;
             if_no_op <= 0;
-        end else if (hazard_control[`HAZD_HOLD_BIT]) pc <= pc;
-        else                                         pc <= pc_next;
-
+        end if (hazard_control[`HAZD_HOLD_BIT])
+            pc <= pc;
+        else 
+            pc <= pc_next;
+        
         if_no_op <= hazard_control[`HAZD_NO_OP_BIT];
     end
     
