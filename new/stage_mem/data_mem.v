@@ -26,7 +26,7 @@ module data_mem #(parameter
     )(
     input clk, rst_n,
 
-    input      uart_hazard,                             // from hazard_unit (UART hazard)
+    input      uart_disable,                            // from hazard_unit (whether reading from uart)
     input      uart_clk,                                // from uart_unit (upg_clk_i)
     input      uart_write_enable,                       // from uart_unit (upg_wen_i)
     input      [`ISA_WIDTH - 1:0] uart_data,            // from uart_unit (upg_dat_i)
@@ -38,12 +38,12 @@ module data_mem #(parameter
     input      [`ISA_WIDTH - 1:0] mem_store_data,       // from ex_mem_reg (by general_reg)
     
     input      mem_read_enable,                         // from ex_mem_reg (by control_unit)
-    input      [`ISA_WIDTH - 1:0] keypad_read_data,     // data from keypad to output from mem_read_data
     output     [`ISA_WIDTH - 1:0] mem_read_data,        // for mem_wb_reg (the data read form memory)
 
     input      no_op,                                   // from ex_mem_reg (stop read and write)
     
     output     keypad_read_enable,                      // signal the keypad to start reading
+    input      [`ISA_WIDTH - 1:0] keypad_read_data,     // from keypad_unit (data from user input)
 
     output     vga_write_enable,                        // vga write enable
     output     [`ISA_WIDTH - 1:0] vga_store_data        // data to vga
@@ -59,14 +59,12 @@ module data_mem #(parameter
     RAM ram(
         .ena    (~no_op), // disabled unpon no_op
 
-        .clka   (uart_hazard ? uart_clk                   : clk),
-        .addra  (uart_hazard ? uart_addr[ROM_DEPTH + 1:2] : mem_address[ROM_DEPTH + 1:2]), // address unit in bytes
+        .clka   (uart_disable ? clk                          : uart_clk),
+        .addra  (uart_disable ? mem_address[ROM_DEPTH + 1:2] : uart_addr[ROM_DEPTH + 1:2]), // address unit in bytes
         .douta  (ram_read_data),
 
-        .dina   (uart_hazard      ? uart_data                     : (
-                 vga_write_enable ? 0                             : mem_store_data)),
-        .wea    (uart_hazard      ? uart_instruction_write_enable : (
-                 vga_write_enable ? 0                             : mem_write_enable))
+        .dina   (uart_disable ? (vga_write_enable ? 0 : mem_store_data)   : uart_data),
+        .wea    (uart_disable ? (vga_write_enable ? 0 : mem_write_enable) : uart_instruction_write_enable)
     );
 
     assign vga_store_data = mem_store_data;

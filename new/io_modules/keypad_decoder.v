@@ -1,7 +1,7 @@
 `timescale 1ns / 1ps
-`define KEYPAD_DEFAULT_DEBOUNCE_PERIOD 100_0000 //20ms
+`define KEYPAD_DEFAULT_DEBOUNCE_PERIOD 100_0000 //20ms for 10MHz
 
-module keypad #(parameter 
+module keypad_decoder #(parameter 
     DEBOUNCE_PERIOD = `KEYPAD_DEFAULT_DEBOUNCE_PERIOD
     )(
     input wire clk, rst_n,
@@ -12,27 +12,18 @@ module keypad #(parameter
     output reg [7:0] key_coord
     );
     
-//    wire clk_key;
-//    clk_generator #(DEBOUNCE_PERIOD) button_clk_generator(clk, rst_n, clk_key);
-    
-//    wire [3:0] row_lanes;
-//    lane_filter filter_0(clk_key, rst_n, row_in[0], row_lanes[0]);
-//    lane_filter filter_1(clk_key, rst_n, row_in[1], row_lanes[1]);
-//    lane_filter filter_2(clk_key, rst_n, row_in[2], row_lanes[2]);
-//    lane_filter filter_3(clk_key, rst_n, row_in[3], row_lanes[3]);
-    
     reg [5:0] keypad_state, keypad_next_state;
     
     wire key_pressed;
     reg [3:0] col_val, row_val;
     
-    localparam SCAN_IDLE = 8'b0000_0001,
+    localparam SCAN_IDLE     = 8'b0000_0001,
                SCAN_JITTER_1 = 8'b0000_0010,
-               SCAN_COL1 = 8'b0000_0100,
-               SCAN_COL2 = 8'b0000_1000,
-               SCAN_COL3 = 8'b0001_0000,
-               SCAN_COL4 = 8'b0010_0000,
-               SCAN_READ = 8'b0100_0000,
+               SCAN_COL1     = 8'b0000_0100,
+               SCAN_COL2     = 8'b0000_1000,
+               SCAN_COL3     = 8'b0001_0000,
+               SCAN_COL4     = 8'b0010_0000,
+               SCAN_READ     = 8'b0100_0000,
                SCAN_JITTER_2 = 8'b1000_0000;
     localparam DELAY_TRAN = 2;
     

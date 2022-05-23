@@ -20,7 +20,7 @@ module instruction_mem #(parameter
     )(
     input clk, rst_n,
 
-    input      uart_hazard,                             // from hazard_unit (UART hazard)
+    input      uart_disable,                            // from hazard_unit (whether reading from uart)
     input      uart_clk,                                // from uart_unit (upg_clk_i)
     input      uart_write_enable,                       // from uart_unit (upg_wen_i)
     input      [`ISA_WIDTH - 1:0] uart_data,            // from uart_unit (upg_dat_i)
@@ -48,12 +48,12 @@ module instruction_mem #(parameter
     ROM rom(
         .ena    (~if_no_op), // disabled unpon no_op
 
-        .clka   (uart_hazard ? uart_clk                   : clk),
-        .addra  (uart_hazard ? uart_addr[ROM_DEPTH + 1:2] : pc[ROM_DEPTH + 1:2]), // pc address is in unit of bytes
+        .clka   (uart_disable ? clk                 : uart_clk),
+        .addra  (uart_disable ? pc[ROM_DEPTH + 1:2] : uart_addr[ROM_DEPTH + 1:2]), // pc address is in unit of bytes
         .douta  (instruction),
 
-        .dina   (uart_hazard ? uart_data                     : 0),
-        .wea    (uart_hazard ? uart_instruction_write_enable : 0)
+        .dina   (uart_disable ? 0 : uart_data),
+        .wea    (uart_disable ? 0 : uart_instruction_write_enable)
     );
     
     always @(*) begin
