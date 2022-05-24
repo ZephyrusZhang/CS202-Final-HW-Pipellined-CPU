@@ -1,19 +1,12 @@
 `timescale 1ns / 1ps
-`define TUBE_DEFAULT_DELAY_PERIOD 10_0000
 
-module seven_seg_display #(parameter
-    DELAY_PERIOD = `TUBE_DEFAULT_DELAY_PERIOD
-    )(
-    input wire clk, rst_n,    
-    input wire [13:0] left_value,
-    input wire [13:0] right_value,
+module seven_seg_unit (
+    input      clk_tube, rst_n,             // note this is a clock for tube 1ms refresh
+    input      [26:0] display_value,        // from keypad_unit (value to be displayed)
     
-    output reg [6:0] seg_tube,
-    output reg [7:0] seg_enable
+    output reg [6:0] seg_tube,              // control signal for tube segments
+    output reg [7:0] seg_enable             // control signal for tube positions
     );
-    
-    wire clk_tube;
-    clk_generator #(DELAY_PERIOD) tube_clk_generator(clk, rst_n, clk_tube);
     
     reg [2:0] display_counter;
     reg [3:0] diaplay_digit;
@@ -91,16 +84,16 @@ module seven_seg_display #(parameter
     
     always @(diaplay_digit)
          case (diaplay_digit)
-             4'h0:    seg_tube = 8'b01000000; // 0
-             4'h1:    seg_tube = 8'b01111001; // 1
-             4'h2:    seg_tube = 8'b00100100; // 2
-             4'h3:    seg_tube = 8'b00110000; // 3
-             4'h4:    seg_tube = 8'b00011001; // 4
-             4'h5:    seg_tube = 8'b00010010; // 5
-             4'h6:    seg_tube = 8'b00000010; // 6
-             4'h7:    seg_tube = 8'b01111000; // 7
-             4'h8:    seg_tube = 8'b00000000; // 8
-             4'h9:    seg_tube = 8'b00010000; // 9
-             default: seg_tube = 8'b00000000; // 0
+             4'h0:    seg_tube = 8'b01000000; // "0"
+             4'h1:    seg_tube = 8'b01111001; // "1"
+             4'h2:    seg_tube = 8'b00100100; // "2"
+             4'h3:    seg_tube = 8'b00110000; // "3"
+             4'h4:    seg_tube = 8'b00011001; // "4"
+             4'h5:    seg_tube = 8'b00010010; // "5"
+             4'h6:    seg_tube = 8'b00000010; // "6"
+             4'h7:    seg_tube = 8'b01111000; // "7"
+             4'h8:    seg_tube = 8'b00000000; // "8"
+             4'h9:    seg_tube = 8'b00010000; // "9"
+             default: seg_tube = 8'b00000000; // "0"
          endcase  
 endmodule
