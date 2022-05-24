@@ -36,7 +36,7 @@ module mem_wb_reg (
                                                             //     (2) general_reg
     );
 
-    always @(posedge clk) begin
+    always @(posedge clk, negedge rst_n) begin
         if (~rst_n) begin
             {
                 wb_no_op,

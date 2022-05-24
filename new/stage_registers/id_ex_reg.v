@@ -43,7 +43,7 @@ module id_ex_reg (
                                                                 //     (3) ex_mem_reg
     );
 
-    always @(posedge clk) begin
+    always @(posedge clk, negedge rst_n) begin
         if (~rst_n) begin
             {
                 ex_no_op,

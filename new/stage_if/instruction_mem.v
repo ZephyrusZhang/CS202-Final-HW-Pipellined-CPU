@@ -65,7 +65,7 @@ module instruction_mem #(parameter
         endcase
     end
     
-    always @(posedge clk) begin
+    always @(posedge clk, negedge rst_n) begin
         if (~rst_n) begin
             pc       <= 0;
             if_no_op <= 0;

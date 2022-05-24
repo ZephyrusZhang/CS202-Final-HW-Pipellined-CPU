@@ -42,7 +42,7 @@ module ex_mem_reg (
                                                             //     (3) mem_wb_reg
     );
 
-    always @(posedge clk) begin
+    always @(posedge clk, negedge rst_n) begin
         if (~rst_n) begin
             {
                 mem_no_op,

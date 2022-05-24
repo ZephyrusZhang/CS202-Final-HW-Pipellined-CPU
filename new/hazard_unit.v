@@ -60,7 +60,7 @@ module data_mem (
     wire pause_resolved   = issue_type == `PAUSE  & cpu_resume & uart_complete;
     wire keypad_resolved  = issue_type == `KEYPAD & keypad_read_complete;
 
-    always @(negedge clk) begin
+    always @(negedge clk, negedge rst_n) begin
         if (~rst_n) begin
             cpu_state    <= `IDLE;
             issue_type   <= `NONE;

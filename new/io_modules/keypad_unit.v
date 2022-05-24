@@ -31,5 +31,77 @@ module keypad_unit (
                 C           = 8'b1011_0111,
                 D           = 8'b0111_0111;
     
+    reg []
+    reg [2:0] display_counter;
+    reg [3:0] diaplay_digit;
     
+    always @(*) begin
+        if (~rst_n) begin
+            display_counter = 3'b0;
+            diaplay_digit = 4'b0;
+            has_zero = 1'b0;
+            seg_enable = 8'b1111_1111;
+        end else begin
+            display_counter = display_counter + 1;
+            case (display_counter)
+                3'd0: begin 
+                    diaplay_digit = left_value / 1000;
+                    if (diaplay_digit == 0) begin
+                        seg_enable = 8'b1111_1111;
+                        has_zero = 1'b1;
+                    end else seg_enable = 8'b0111_1111;
+                end
+                3'd1: begin
+                    diaplay_digit = (left_value % 1000) / 100;
+                    if (has_zero && diaplay_digit == 0) seg_enable = 8'b1111_1111;
+                    else begin
+                        seg_enable = 8'b1011_1111;
+                        has_zero = 1'b0;
+                    end
+                end
+                3'd2: begin
+                    diaplay_digit = ((left_value % 1000) % 100) / 10;
+                    if (has_zero && diaplay_digit == 0) seg_enable = 8'b1111_1111;
+                    else begin
+                        seg_enable = 8'b1101_1111;
+                        has_zero = 1'b0;
+                    end
+                end
+                3'd3: begin
+                    diaplay_digit = ((left_value % 1000) % 100) % 10;
+                    if (has_zero && diaplay_digit == 0) seg_enable = 8'b1111_1111;
+                    else seg_enable = 8'b1110_1111;
+                end
+                3'd4: begin
+                    diaplay_digit = right_value / 1000;
+                    if (diaplay_digit == 0) begin
+                        seg_enable = 8'b1111_1111;
+                        has_zero = 1'b1;
+                    end else seg_enable = 8'b1111_0111;
+                end
+                3'd5: begin
+                    diaplay_digit = (right_value % 1000) / 100;
+                    if (has_zero && diaplay_digit == 0) seg_enable = 8'b1111_1111;
+                    else begin
+                        seg_enable = 8'b1111_1011;
+                        has_zero = 1'b0;
+                    end
+                end
+                3'd6: begin
+                    diaplay_digit = ((right_value % 1000) % 100) / 10;
+                    if (has_zero && diaplay_digit == 0) seg_enable = 8'b1111_1111;
+                    else begin
+                        seg_enable = 8'b1111_1101;
+                        has_zero = 1'b0;
+                    end
+                end
+                3'd7: begin
+                    diaplay_digit = ((right_value % 1000) % 100) % 10;
+                    if (has_zero && diaplay_digit == 0) seg_enable = 8'b1111_1111;
+                    else seg_enable = 8'b1111_1110;
+                end
+                default: seg_enable = 8'b1111_1111;
+            endcase
+        end
+    end
 endmodule

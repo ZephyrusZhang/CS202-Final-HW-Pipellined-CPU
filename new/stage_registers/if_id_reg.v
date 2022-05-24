@@ -27,7 +27,7 @@ module if_id_reg (
 
     wire pc_abnormal = pc_offset | pc_overload; // prediction (default pc + 4) failed
 
-    always @(posedge clk) begin
+    always @(posedge clk, negedge rst_n) begin
         if (~rst_n) begin
             {
                 id_no_op,
