@@ -27,8 +27,6 @@
 `define H_RETRACE           96              // horizontal retrace period
 `define V_RETRACE           2               // vertical retrace period
 
-`define VGA_BIT_DEPTH       12
-
 `define BINARY_BOX_HEIGHT   40
 `define BINARY_BOX_WIDTH    492
 `define BINARY_BOX_X        74
