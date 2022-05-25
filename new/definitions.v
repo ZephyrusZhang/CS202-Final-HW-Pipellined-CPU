@@ -17,7 +17,7 @@
 `define IO_TYPE_BIT         4               // bit for determining IO type 
 `define SWITCH_CNT          8
 
-// for VGA display
+// VGA display parameters
 `define DISPLAY_WIDTH       640
 `define DISPLAY_HEIGHT      480
 `define LEFT_BORDER         48
@@ -27,24 +27,33 @@
 `define H_RETRACE           96              // horizontal retrace period
 `define V_RETRACE           2               // vertical retrace period
 
+// VGA colors
+`define BG_COLOR            12'b110111011101    // light gray
+`define DIGITS_BOX_BG_COLOR 12'b110011001100    // dark gray
+
+// VGA display asset parameters
 `define VGA_BIT_DEPTH       12
 
-`define BINARY_BOX_HEIGHT   40
-`define BINARY_BOX_WIDTH    492
-`define BINARY_BOX_X        74
-`define BINARY_BOX_Y        215
+`define DIGITS_BOX_WIDTH    492
+`define DIGITS_BOX_HEIGHT   40
+`define DIGITS_BOX_X        74
+`define DIGITS_BOX_Y        215
 
-`define BINARY_DIGIT_HEIGHT 16
-`define BINARY_DIGIT_WIDTH  468
-`define BINARY_DIGIT_X      86
-`define BINARY_DIGIT_Y      227
+`define DIGITS_WIDTH        468
+`define DIGITS_HEIGHT       16
+`define DIGITS_X            86
+`define DIGITS_Y            227
 
-`define SINGLE_DIGIT_WIDTH  12
+`define DIGIT_WIDTH         12
+`define DIGIT_W_WIDTH       4               // width 12 <= 2^4
+`define DIGIT_H_WIDTH       4               // height 16 <= 2^4
 
-`define STATUS_BOX_HEIGHT   22
-`define STATUS_BOX_WIDTH    58
-`define STATUS_BOX_X        291
-`define STATUS_BOX_Y        180
+`define STATUS_WIDTH        58
+`define STATUS_W_WIDTH      6               // width 58 <= 2^6
+`define STATUS_HEIGHT       22
+`define STATUS_H_WIDTH      5               // height 22 <= 2^5
+`define STATUS_X            291
+`define STATUS_Y            180
 //------------------------------------------------------------------------------//
 
 //---------------------------------Control--------------------------------------//

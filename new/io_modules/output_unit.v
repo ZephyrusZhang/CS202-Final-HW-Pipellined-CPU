@@ -11,7 +11,10 @@ module input_unit (
     input      vga_write_enable,                        // from data_mem (vga write enable)
     input      [`ISA_WIDTH - 1:0] vga_store_data,       // from data_mem (data to vga)
 
-    output reg [`VGA_BIT_DEPTH - 1:0] vga            // VGA display signal
+    input      [2:0] issue_type,                        // from hazard_unit (both hazard and interrupt)
+    input      switch_enable,                           // from input_unit (user is using switches)
+
+    output reg [`VGA_BIT_DEPTH - 1:0] vga               // VGA display signal
     );
 
     reg [`ISA_WIDTH - 1:0] value_to_display;
@@ -23,70 +26,36 @@ module input_unit (
             value_to_display <= value_to_display;
     end
     
-    reg [:0] addr_out, addr_out_next;
-    wire [`VGA_BIT_DEPTH - 1:0] zero_out, one_out;
+    wire [`VGA_BIT_DEPTH - 1:0] zero_rgb, 
+                                one_rgb, 
+                                keypad_rgb, 
+                                normal_rgb, 
+                                switch_rgb, 
+                                uart_rgb;
     
-    zero_rom ZERO_rom(.clk(clk), .addr(addr_out), .data_out(data_out));
+    wire digits_box_clear = (y < `DIGITS_BOX_Y) | (x < `DIGITS_BOX_X);
+    wire digits_clear     = (y < `DIGITS_Y)     | (x < `DIGITS_X);
+    wire status_clear     = (y < `STATUS_Y)     | (x < `STATUS_X);
+
+    wire [`DIGIT_H_WIDTH]  y_digit  = (y - `DIGITS_Y) % `DIGITS_HEIGHT;
+    wire [`DIGIT_W_WIDTH]  x_digit  = (x - `DIGITS_X) % `DIGIT_WIDTH;
+    wire [`STATUS_H_WIDTH] y_status = (y - `STATUS_Y) % `STATUS_HEIGHT;
+    wire [`STATUS_W_WIDTH] x_status = (x - `STATUS_X) % `STATUS_WIDTH;
+
+    // block memory for each asset to be displayed
+    zero_rom    ZERO_rom    (.clk(clk), .row(y_digit),  .col(x_digit),  .color_data(zero_rgb));
+    one_rom     ONE_rom     (.clk(clk), .row(y_digit),  .col(x_digit),  .color_data(one_rgb));
+    keypad_rom  Keypad_rom  (.clk(clk), .row(y_status), .col(x_status), .color_data(keypad_rgb));
+    normal_rom  Normal_rom  (.clk(clk), .row(y_status), .col(x_status), .color_data(normal_rgb));
+    switch_rom  switch_rom  (.clk(clk), .row(y_status), .col(x_status), .color_data(switch_rgb));
+    uart_rom    uart_rom    (.clk(clk), .row(y_status), .col(x_status), .color_data(uart_rgb));
     
-    localparam X_GAP = (DISPLAY_WIDTH - PICTURE_WIDTH) / 2,
-               Y_GAP = (DISPLAY_HEIGHT - PICTURE_HEIGHT) / 2;
     
+
     reg [3:0] state, next_state;
     reg [(INPUT_DATA_WIDTH / 2) - 1:0] data_temp;
     reg [POSITION_WIDTH - 1:0] black_index_reg;
     reg [(POSITION_SIZE * POSITION_WIDTH) - 1:0] position_reg;
-    
-    always @(posedge clk, negedge rst_n) begin
-        if (!rst_n) begin
-            state <= FIRST;
-            addr_in <= 0;
-            data_in <= 0;
-            ram_en <= 1'b0;
-            black_index_reg <= 0;
-            position_reg <= 0;
-        end else begin 
-            state <= next_state;
-            addr_in <= addr_in_next;
-            data_in <= data_in_next;
-            ram_en <= ram_en_next;
-            black_index_reg <= black_index;
-            position_reg <= position;
-        end
-    end
-
-    always @(uart_data, state) begin
-        // defaults
-        next_state = state;
-        addr_in_next = addr_in;
-        data_in_next = data_in;
-        ram_en_next = ram_en;
-        
-        if (write_en) // double check the data state
-            case (state)
-                FIRST: begin
-                    data_in_next[(INPUT_DATA_WIDTH - 1):0] = uart_data; // R and G
-                    ram_en_next = 1'b0;
-                    next_state = SECOND;
-                end
-                SECOND: begin
-                    data_in_next[(`VGA_BIT_DEPTH - 1):(INPUT_DATA_WIDTH - 1)] = uart_data[(INPUT_DATA_WIDTH / 2 - 1):0]; // B
-                    data_temp = uart_data[(INPUT_DATA_WIDTH - 1):(INPUT_DATA_WIDTH / 2 - 1)]; // R
-                    ram_en_next = 1'b1;
-                    next_state = THIRD;
-                    
-                    if (addr_in + 1 == PICTURE_WIDTH * PICTURE_HEIGHT) addr_in_next = 0;
-                    else addr_in_next = addr_in_next + 1;
-                end
-                THIRD: begin
-                    data_in_next = {uart_data, data_temp}; // G and B
-                    ram_en_next = 1'b1;
-                    next_state <= FIRST;
-                    
-                    if (addr_in + 1 == PICTURE_WIDTH * PICTURE_HEIGHT) addr_in_next = 0;
-                    else addr_in_next = addr_in_next + 1;
-                end
-            endcase
-    end
     
     wire [COORDINATE_WIDTH - 1:0] x_segment_pixel, x_local_index, x_local_index_next, x_global_index, x_global_index_next,
                                   y_segment_pixel, y_local_index, y_local_index_next, y_global_index, y_global_index_next;
@@ -105,29 +74,8 @@ module input_unit (
     
     reg [POSITION_WIDTH - 1:0] display_index, display_index_next;
     
-//    always @(posedge clk, negedge rst_n) begin
-//        if (!rst_n) begin
-//            addr_out <= 0;
-//            display_index <= 0;
-//        end else begin 
-//            addr_out <= addr_out_next;
-//            display_index <= display_index_next;
-//        end
-//    end
     
-    localparam BACKGROUND_COLOR = 12'b0111_0111_0111, // light gray
-               BORDER_COLOR     = 12'b0010_0010_0010; // dark gray
-               
-    wire [7:0] region_state;
-    assign region_state = {(y < (Y_GAP - BORDER_SIZE)), ((Y_GAP + picture_height + BORDER_SIZE) < y),
-                           (y < Y_GAP),                 ((Y_GAP + picture_height) < y),
-                           (x < (X_GAP - BORDER_SIZE)), ((X_GAP + picture_width + BORDER_SIZE) < x),
-                           (x < X_GAP),                 ((X_GAP + picture_width) < x)};
-    
-    wire [3:0] pixel_state;
-    assign pixel_state = {(x + 1 == X_GAP + picture_width), (y + 1 == Y_GAP + picture_height), 
-                          (x_local_index_next == 0),             (y_local_index_next == 0)};
-    
+
     always @(posedge clk_vga) begin
         if (!rst_n) begin
             addr_out <= 0;

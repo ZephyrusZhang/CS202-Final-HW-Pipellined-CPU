@@ -37,9 +37,10 @@ module data_mem (
 
     output reg pc_reset,                                        // for instruction_mem (reset the pc to 0)
     output reg [1:0] hazard_control [`STAGE_CNT - 1:0]          // hazard control signal for each stage register
-    output reg [1:0] cpu_state,                                 // for vga_unit (the state the CPU is in)
     output reg [2:0] issue_type                                 // for vga_unit (both hazard and interrupt)
     );
+    
+    reg [1:0] cpu_state;    // the state CPU is in
 
     wire mem_conflict = mem_reg_write_enable & ~mem_no_op                       // wirte enabled and operational
                         ((reg_1_valid & id_reg_1_idx == mem_reg_dest_idx) |     // valid and conflict

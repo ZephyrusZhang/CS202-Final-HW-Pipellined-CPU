@@ -13,7 +13,8 @@ module input_unit (
     output reg input_complete,                          // for hazard_unit (user pressed enter)
     output     [`ISA_WIDTH - 1:0] input_data,           // for data_mem (data from user input)
     
-    output reg switch_enable,                           // for seven_seg_unit (user is using switches)
+    output reg switch_enable,                           // for (1) seven_seg_unit (user is using switches)
+                                                        //     (2) output_unit (display that input is switches)
     output reg cpu_pause                                // for hazard_unit (user pressed pause)
     );
                
