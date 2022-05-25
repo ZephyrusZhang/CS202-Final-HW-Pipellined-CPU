@@ -42,8 +42,8 @@ module data_mem #(parameter
 
     input      no_op,                                   // from ex_mem_reg (stop read and write)
     
-    output     keypad_read_enable,                      // signal the keypad to start reading
-    input      [`ISA_WIDTH - 1:0] keypad_read_data,     // from keypad_unit (data from user input)
+    output     input_enable,                            // signal the keypad (and switch) to start reading
+    input      [`ISA_WIDTH - 1:0] input_data,           // from input_unit (data from user input)
 
     output     vga_write_enable,                        // vga write enable
     output     [`ISA_WIDTH - 1:0] vga_store_data        // data to vga
@@ -53,7 +53,7 @@ module data_mem #(parameter
     wire uart_instruction_write_enable = uart_write_enable & uart_addr[ROM_DEPTH];
     wire [`ISA_WIDTH - 1:0] ram_read_data;
 
-    assign keypad_read_enable = ~mem_address[`IO_TYPE_BIT] & io_active & mem_read_enable;
+    assign input_enable = ~mem_address[`IO_TYPE_BIT] & io_active & mem_read_enable;
     assign vga_write_enable   =  mem_address[`IO_TYPE_BIT] & io_active & mem_write_enable;
 
     RAM ram(
@@ -68,5 +68,5 @@ module data_mem #(parameter
     );
 
     assign vga_store_data = mem_store_data;
-    assign mem_read_data  = keypad_read_enable ? keypad_read_data : ram_read_data;
+    assign mem_read_data  = input_enable ? input_data : ram_read_data;
 endmodule

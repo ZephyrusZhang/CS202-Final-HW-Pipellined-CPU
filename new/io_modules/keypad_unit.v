@@ -1,107 +1,131 @@
-`include "../definitions.v"
 `timescale 1ns / 1ps
+`define KEYPAD_DEFAULT_DEBOUNCE_PERIOD 100_0000 //20ms for 100MHz
 
-module keypad_unit (
-    input clk, rst_n,
+module keypad_decoder #(parameter 
+    DEBOUNCE_PERIOD = `KEYPAD_DEFAULT_DEBOUNCE_PERIOD
+    )(
+    input wire clk, rst_n,
     
-    input      [7:0] key_coord,                         // from keypad_decoder with format {row_val, col_val}
-
-    input      keypad_read_enable,                      // from data_mem (the keypad input will be memory data)
-    output reg keypad_read_complete,
-    output reg [`ISA_WIDTH - 1:0] keypad_read_data,     // for data_mem (data from user input)
+    input wire [3:0] row_in,
+    output reg [3:0] col_out,
     
-    output reg cpu_pause,
-    output reg cpu_resume
+    output reg [7:0] key_coord
     );
-               
-    localparam  ZERO        = 8'b0111_1101,
-                ONE         = 8'b1110_1110,
-                TWO         = 8'b1110_1101,
-                THREE       = 8'b1110_1011,
-                FOUR        = 8'b1101_1110,
-                FIVE        = 8'b1101_1101,
-                SIX         = 8'b1101_1011,
-                SEVEN       = 8'b1011_1110,
-                EIGHT       = 8'b1011_1101,
-                NINE        = 8'b1011_1011,
-                BACKSPACE   = 8'b0111_1110, // "*": deletes the last digit
-                ENTER       = 8'b0111_1011, // "#": comfirmes the input with leading zeros
-                A           = 8'b1110_0111, // pause and resume cpu execution
-                B           = 8'b1101_0111,
-                C           = 8'b1011_0111,
-                D           = 8'b0111_0111;
     
-    reg []
-    reg [2:0] display_counter;
-    reg [3:0] diaplay_digit;
+    reg [5:0] keypad_state, keypad_next_state;
+    
+    wire key_pressed;
+    reg [3:0] col_val, row_val;
+    
+    localparam SCAN_IDLE     = 8'b0000_0001,
+               SCAN_JITTER_1 = 8'b0000_0010,
+               SCAN_COL1     = 8'b0000_0100,
+               SCAN_COL2     = 8'b0000_1000,
+               SCAN_COL3     = 8'b0001_0000,
+               SCAN_COL4     = 8'b0010_0000,
+               SCAN_READ     = 8'b0100_0000,
+               SCAN_JITTER_2 = 8'b1000_0000;
+    localparam DELAY_TRAN = 2;
+    
+    reg [20:0] delay_cnt;
+    wire delay_done;
+    
+    reg [7:0] pre_state;
+    reg [7:0] next_state;
+    reg [20:0] tran_cnt;
+    wire tran_flag;
+    
+    always @(negedge clk, negedge rst_n) begin
+        if (!rst_n) delay_cnt <= 'd0;
+        else if (delay_cnt == DEBOUNCE_PERIOD) delay_cnt <= 'd0;
+        else if (next_state == SCAN_JITTER_1 | next_state == SCAN_JITTER_2) begin
+            delay_cnt <= delay_cnt + 1'b1;
+        end else delay_cnt <= 'd0;
+    end
+    
+    assign delay_done = (delay_cnt == DEBOUNCE_PERIOD - 1'b1) ? 1'b1 : 1'b0;
+    
+    always @(negedge clk, negedge rst_n) begin
+        if (!rst_n) begin
+            tran_cnt <= 'd0;
+        end else if (tran_cnt == DELAY_TRAN) begin
+            tran_cnt <= 'd0;
+        end else tran_cnt <= tran_cnt + 1'b1;
+    end
+    
+    assign tran_flag = (tran_cnt == DELAY_TRAN) ? 1'b1 : 1'b0;
+    
+    always @(negedge clk, negedge rst_n) begin
+        if (!rst_n) begin
+            pre_state <= SCAN_IDLE;
+        end else if (tran_flag) begin
+            pre_state <= next_state;
+        end else pre_state <= pre_state;
+    end
     
     always @(*) begin
-        if (~rst_n) begin
-            display_counter = 3'b0;
-            diaplay_digit = 4'b0;
-            has_zero = 1'b0;
-            seg_enable = 8'b1111_1111;
-        end else begin
-            display_counter = display_counter + 1;
-            case (display_counter)
-                3'd0: begin 
-                    diaplay_digit = left_value / 1000;
-                    if (diaplay_digit == 0) begin
-                        seg_enable = 8'b1111_1111;
-                        has_zero = 1'b1;
-                    end else seg_enable = 8'b0111_1111;
+        next_state = SCAN_IDLE;
+        case (pre_state)
+            SCAN_IDLE:
+                if (row_in != 4'hf) next_state = SCAN_JITTER_1;
+                else next_state = SCAN_IDLE;
+            SCAN_JITTER_1:
+                if (row_in != 4'hf && delay_done) next_state = SCAN_COL1;
+                else next_state = SCAN_JITTER_1;
+            SCAN_COL1:
+                if (row_in != 4'hf) next_state = SCAN_READ;
+                else next_state = SCAN_COL2;
+            SCAN_COL2:
+                if (row_in != 4'hf) next_state = SCAN_READ;
+                else next_state = SCAN_COL3;
+            SCAN_COL3:
+                if (row_in != 4'hf) next_state = SCAN_READ;
+                else next_state = SCAN_COL4;
+            SCAN_COL4:
+                if (row_in != 4'hf) next_state = SCAN_READ;
+                else next_state = SCAN_IDLE;
+            SCAN_READ:
+                if (row_in != 4'hf) next_state = SCAN_JITTER_2;
+                else next_state = SCAN_IDLE;
+            SCAN_JITTER_2:
+                if (row_in != 4'hf && delay_done) next_state = SCAN_IDLE;
+                else next_state = SCAN_JITTER_2;
+            default: next_state = SCAN_IDLE;
+        endcase
+    end
+    
+    always @(negedge clk, negedge rst_n) begin
+        if (!rst_n) begin
+            col_out <= 4'h0;
+            row_val <= 4'h0;
+            col_val <= 4'h0;
+        end else if (tran_flag) begin
+            case (next_state)
+                SCAN_COL1: col_out <= 4'b0111;
+                SCAN_COL2: col_out <= 4'b1011;
+                SCAN_COL3: col_out <= 4'b1101;
+                SCAN_COL4: col_out <= 4'b1110;
+                SCAN_READ: begin
+                    col_out <= col_out;
+                    row_val <= row_in;
+                    col_val <= col_out;
                 end
-                3'd1: begin
-                    diaplay_digit = (left_value % 1000) / 100;
-                    if (has_zero && diaplay_digit == 0) seg_enable = 8'b1111_1111;
-                    else begin
-                        seg_enable = 8'b1011_1111;
-                        has_zero = 1'b0;
-                    end
-                end
-                3'd2: begin
-                    diaplay_digit = ((left_value % 1000) % 100) / 10;
-                    if (has_zero && diaplay_digit == 0) seg_enable = 8'b1111_1111;
-                    else begin
-                        seg_enable = 8'b1101_1111;
-                        has_zero = 1'b0;
-                    end
-                end
-                3'd3: begin
-                    diaplay_digit = ((left_value % 1000) % 100) % 10;
-                    if (has_zero && diaplay_digit == 0) seg_enable = 8'b1111_1111;
-                    else seg_enable = 8'b1110_1111;
-                end
-                3'd4: begin
-                    diaplay_digit = right_value / 1000;
-                    if (diaplay_digit == 0) begin
-                        seg_enable = 8'b1111_1111;
-                        has_zero = 1'b1;
-                    end else seg_enable = 8'b1111_0111;
-                end
-                3'd5: begin
-                    diaplay_digit = (right_value % 1000) / 100;
-                    if (has_zero && diaplay_digit == 0) seg_enable = 8'b1111_1111;
-                    else begin
-                        seg_enable = 8'b1111_1011;
-                        has_zero = 1'b0;
-                    end
-                end
-                3'd6: begin
-                    diaplay_digit = ((right_value % 1000) % 100) / 10;
-                    if (has_zero && diaplay_digit == 0) seg_enable = 8'b1111_1111;
-                    else begin
-                        seg_enable = 8'b1111_1101;
-                        has_zero = 1'b0;
-                    end
-                end
-                3'd7: begin
-                    diaplay_digit = ((right_value % 1000) % 100) % 10;
-                    if (has_zero && diaplay_digit == 0) seg_enable = 8'b1111_1111;
-                    else seg_enable = 8'b1111_1110;
-                end
-                default: seg_enable = 8'b1111_1111;
+                default: col_out <= 4'b0000;
             endcase
+        end else begin
+            col_out <= col_out;
+            row_val <= row_val;
+            col_val <= col_val;
         end
+    end
+    
+    assign key_pressed = (next_state == SCAN_IDLE && pre_state == SCAN_JITTER_2 && tran_flag) ? 1'b1 : 1'b0;
+    
+    always @(negedge clk, negedge rst_n) begin
+        if (!rst_n) begin
+            key_coord <= 'd0; 
+        end else if (key_pressed) begin
+            key_coord <= {row_val, col_val};
+        end else key_coord <= 0;
     end
 endmodule
