@@ -120,7 +120,7 @@ module input_unit (
                                         SEVEN  : input_data <= input_data * 10 + 7;
                                         EIGHT  : input_data <= input_data * 10 + 8;
                                         NINE   : input_data <= input_data * 10 + 9;
-                                        default: input_data <= input_data;
+                                        default: input_data <= input_data;  // 0 key_coord will be handled here
                                     endcase
                                     digit_counter <= digit_counter + 1;
                                 end else
