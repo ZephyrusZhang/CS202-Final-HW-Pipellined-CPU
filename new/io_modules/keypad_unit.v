@@ -123,9 +123,10 @@ module keypad_decoder #(parameter
     
     always @(negedge clk, negedge rst_n) begin
         if (!rst_n) begin
-            key_coord <= 'd0; 
+            key_coord <= 0; 
         end else if (key_pressed) begin
             key_coord <= {row_val, col_val};
-        end else key_coord <= 0;
+        end else 
+            key_coord <= 0;
     end
 endmodule

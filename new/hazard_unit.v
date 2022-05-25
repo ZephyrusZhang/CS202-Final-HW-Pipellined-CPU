@@ -51,7 +51,7 @@ module data_mem (
     wire data_hazard    = (branch_instruction & (ex_conflict | mem_conflict)) |     // data hazard when branch depends on data from previous stages 
                           (ex_mem_read_enable & ex_conflict);                       // data hazard when alu depends on data from memory at the next stage
     wire uart_hazard    = `PC_MAX_VALUE < pc_next;                                  // next instruction not in instruction memory
-    
+
     wire data_resolved    = issue_type == `DATA   & ~data_hazard;
     wire uart_resolved    = issue_type == `UART   & uart_complete;
     wire pause_resolved   = issue_type == `PAUSE  & ~cpu_pause & uart_complete;
@@ -113,7 +113,7 @@ module data_mem (
                         2'b01  : begin
                             issue_type   <= `NONE;
                             cpu_state    <= `EXECUTE;
-                            uart_disable <= 1;
+                            uart_disable <= 1'b1;
                             harard_control[`HAZD_IF_IDX] <= `NORMAL;
                         end
                         default: 
