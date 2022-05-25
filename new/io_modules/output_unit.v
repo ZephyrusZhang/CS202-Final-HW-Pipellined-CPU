@@ -2,12 +2,11 @@
 `timescale 1ns / 1ps
 
 module input_unit (
-    input clk, rst_n,
+    input clk_vga,
     
     input      display_en,
     input      [COORDINATE_WIDTH - 1:0] x,
     input      [COORDINATE_WIDTH - 1:0] y,
-    input      clk_vga,
 
     input      vga_write_enable,                        // from data_mem (vga write enable)
     input      [`ISA_WIDTH - 1:0] vga_store_data,       // from data_mem (data to vga)
@@ -27,7 +26,7 @@ module input_unit (
     reg [:0] addr_out, addr_out_next;
     wire [`VGA_BIT_DEPTH - 1:0] zero_out, one_out;
     
-    zero_ram ram_unit(.clk(clk), .addr(addr_out), .data_out(data_out));
+    zero_rom ZERO_rom(.clk(clk), .addr(addr_out), .data_out(data_out));
     
     localparam X_GAP = (DISPLAY_WIDTH - PICTURE_WIDTH) / 2,
                Y_GAP = (DISPLAY_HEIGHT - PICTURE_HEIGHT) / 2;
