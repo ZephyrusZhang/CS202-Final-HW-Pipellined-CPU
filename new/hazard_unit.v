@@ -31,10 +31,9 @@ module data_mem (
 
     input      [`ISA_WIDTH - 1:0] pc_next,                      // from instruction_mem 
 
-    input      keypad_read_enable,                              // from data_mem (a combinatorial result)
-    input      keypad_read_complete,                            // from keypad_unit (user pressed enter)
+    input      input_enable,                                    // from data_mem (the keypad input is needed)
+    input      input_complete,                                  // from keypad_unit (user pressed enter)
     input      cpu_pause,                                       // from keypad_unit (user pressed pause)
-    input      cpu_resume,                                      // from keypad_unit (user pressed resume [pause again])
 
     output reg pc_reset,                                        // for instruction_mem (reset the pc to 0)
     output reg [1:0] hazard_control [`STAGE_CNT - 1:0]          // hazard control signal for each stage register
@@ -52,26 +51,23 @@ module data_mem (
     wire data_hazard    = (branch_instruction & (ex_conflict | mem_conflict)) |     // data hazard when branch depends on data from previous stages 
                           (ex_mem_read_enable & ex_conflict);                       // data hazard when alu depends on data from memory at the next stage
     wire uart_hazard    = `PC_MAX_VALUE < pc_next;                                  // next instruction not in instruction memory
-
-    wire keypad_interrupt = keypad_read_enable & ~keypad_read_complete;
-
+    
     wire data_resolved    = issue_type == `DATA   & ~data_hazard;
     wire uart_resolved    = issue_type == `UART   & uart_complete;
-    wire pause_resolved   = issue_type == `PAUSE  & cpu_resume & uart_complete;
-    wire keypad_resolved  = issue_type == `KEYPAD & keypad_read_complete;
+    wire pause_resolved   = issue_type == `PAUSE  & ~cpu_pause & uart_complete;
 
     always @(negedge clk, negedge rst_n) begin
         if (~rst_n) begin
             cpu_state    <= `IDLE;
             issue_type   <= `NONE;
-            pc_reset     <= 0;
-            uart_disable <= 1;
+            pc_reset     <= 1'b0;
+            uart_disable <= 1'b1;
             for (i = 0; i < `STAGE_CNT; i = i + 1) 
                 hazard_control[i] <= `NORMAL;
         end else begin
             case (cpu_state) 
                 `EXECUTE: begin
-                    casex ({data_hazard, cpu_pause, uart_hazard, keypad_interrupt})
+                    casex ({data_hazard, cpu_pause, uart_hazard, input_enable})
                         // data hazard will hold all stages hence covers the other hazards
                         4'b1xxx: begin
                             issue_type <= `DATA;
@@ -84,14 +80,14 @@ module data_mem (
                         4'b01xx: begin
                             issue_type   <= `PAUSE;
                             cpu_state    <= `HAZARD;
-                            uart_disable <= 0;
+                            uart_disable <= 1'b0;
                             harard_control[`HAZD_IF_IDX] <= `NO_OP; // start pumping no_op signals into the pipeline
                         end
                         // the user did not pause the CPU but the pc overflowed, the CPU will automatically resume upon UART completion
                         4'b001x: begin
                             issue_type   <= `UART;
                             cpu_state    <= `HAZARD;
-                            uart_disable <= 0;
+                            uart_disable <= 1'b0;
                             harard_control[`HAZD_IF_IDX] <= `NO_OP;
                         end
                         // CPU waits for the user's keypad input
@@ -128,7 +124,7 @@ module data_mem (
                     endcase
                 end   
                 `INTERRUPT: begin
-                    if (keypad_resolved) begin
+                    if (input_complete) begin
                         issue_type <= `NONE;
                         cpu_state  <= `EXECUTE;
                         for (i = 0; i < `STAGE_CNT; i = i + 1) 

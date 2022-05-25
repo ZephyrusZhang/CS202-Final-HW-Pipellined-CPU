@@ -15,6 +15,7 @@
 `define IO_END_BIT          31              // highest bit of memory-mapped IO address
 `define IO_HIGH_ADDR        22'h3FFFFF      // address used identify memory-mapped IO
 `define IO_TYPE_BIT         4               // bit for determining IO type 
+`define SWITCH_CNT          8
 //------------------------------------------------------------------------------//
 
 //---------------------------------Control--------------------------------------//
