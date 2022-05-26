@@ -4,6 +4,7 @@ module seven_seg_unit (
     input clk_tube, rst_n,                  // note this is a clock for tube 1ms refresh
     input      [32:0] display_value,        // from keypad_unit (value to be displayed)
     input      switch_enable,               // from keypad_unit (show binary switch input)
+    input      input_enable,                // from hazard_unit (whether to display)
     
     output reg [6:0] seg_tube,              // control signal for tube segments
     output reg [7:0] seg_enable             // control signal for tube positions
@@ -19,12 +20,13 @@ module seven_seg_unit (
             diaplay_digit   = 4'b0;
             has_zero        = 1'b0;
             seg_enable      = 8'b1111_1111;
-        end else begin
-            if (switch_enable) begin
+        end else case ({input_enable, switch_enable})
+            2'b11  : begin
                 diaplay_digit = display_value[(display_counter)+:8];
                 seg_enable = 8'b1111_1111;
                 seg_enable[(7 - seg_enable)+:8] = 1'b0;
-            end else
+            end
+            2'b10  : begin
                 case (display_counter)
                     3'd0: begin 
                         diaplay_digit = (display_value % 1_0000_0000) / 1000_0000;
@@ -44,8 +46,8 @@ module seven_seg_unit (
                     end
                     3'd2: begin
                         diaplay_digit = (((display_value % 1_0000_0000) 
-                                                         % 1000_0000) 
-                                                         % 100_0000) / 10_0000;
+                                                        % 1000_0000) 
+                                                        % 100_0000) / 10_0000;
                         if (has_zero && diaplay_digit == 0) seg_enable = 8'b1111_1111;
                         else begin
                             seg_enable = 8'b1101_1111;
@@ -54,9 +56,9 @@ module seven_seg_unit (
                     end
                     3'd3: begin
                         diaplay_digit = ((((display_value % 1_0000_0000) 
-                                                          % 1000_0000) 
-                                                          % 100_0000) 
-                                                          % 10_0000) / 1_0000;
+                                                        % 1000_0000) 
+                                                        % 100_0000) 
+                                                        % 10_0000) / 1_0000;
                         if (has_zero && diaplay_digit == 0) seg_enable = 8'b1111_1111;
                         else begin
                             seg_enable = 8'b1110_1111;
@@ -65,10 +67,10 @@ module seven_seg_unit (
                     end
                     3'd4: begin
                         diaplay_digit = (((((display_value % 1_0000_0000) 
-                                                           % 1000_0000) 
-                                                           % 100_0000) 
-                                                           % 10_0000)
-                                                           % 1_0000) / 1000;
+                                                        % 1000_0000) 
+                                                        % 100_0000) 
+                                                        % 10_0000)
+                                                        % 1_0000) / 1000;
                         if (diaplay_digit == 0) seg_enable = 8'b1111_1111;
                         else begin
                             seg_enable = 8'b1111_0111;
@@ -90,12 +92,12 @@ module seven_seg_unit (
                     end
                     3'd6: begin
                         diaplay_digit = (((((((display_value % 1_0000_0000) 
-                                                             % 1000_0000) 
-                                                             % 100_0000) 
-                                                             % 10_0000)
-                                                             % 1_0000)
-                                                             % 1000)
-                                                             % 100) / 10;
+                                                            % 1000_0000) 
+                                                            % 100_0000) 
+                                                            % 10_0000)
+                                                            % 1_0000)
+                                                            % 1000)
+                                                            % 100) / 10;
                         if (has_zero && diaplay_digit == 0) seg_enable = 8'b1111_1111;
                         else begin
                             seg_enable = 8'b1111_1101;
@@ -104,20 +106,23 @@ module seven_seg_unit (
                     end
                     3'd7: begin
                         diaplay_digit = (((((((display_value % 1_0000_0000) 
-                                                             % 1000_0000) 
-                                                             % 100_0000) 
-                                                             % 10_0000)
-                                                             % 1_0000)
-                                                             % 1000)
-                                                             % 100)
-                                                             % 10;
+                                                            % 1000_0000) 
+                                                            % 100_0000) 
+                                                            % 10_0000)
+                                                            % 1_0000)
+                                                            % 1000)
+                                                            % 100)
+                                                            % 10;
                         if (has_zero && diaplay_digit == 0) seg_enable = 8'b1111_1111;
                         else seg_enable = 8'b1111_1110;
                     end
                     default: seg_enable = 8'b1111_1111;
                 endcase
-            display_counter = display_counter + 1;
-        end
+                display_counter = display_counter + 1;
+            end
+            // display is not enabled
+            default: seg_enable = 8'b1111_1111;
+        endcase
     end
     
     always @(diaplay_digit)
