@@ -5,8 +5,7 @@ module input_unit (
     input clk_vga, rst_n,
     
     input      display_en,
-    input      [COORDINATE_WIDTH - 1:0] x,
-    input      [COORDINATE_WIDTH - 1:0] y,
+    input      [`COORDINATE_WIDTH - 1:0] x, y,
 
     input      vga_write_enable,                        // from data_mem (vga write enable)
     input      [`ISA_WIDTH - 1:0] vga_store_data,       // from data_mem (data to vga)
@@ -32,19 +31,19 @@ module input_unit (
                                 keypad_rgb, 
                                 switch_rgb;
     
+    wire [`DIGIT_H_WIDTH - 1:0]  y_digits = (y - `DIGITS_Y);                    // y coordinate inside the digits area
+    wire [`DIGITS_W_WIDTH - 1:0] x_digits = (x - `DIGITS_X);                    // x coordinate inside the digits area
+    wire [`DIGIT_W_WIDTH - 1:0]  x_digit  = (x - `DIGITS_X) % `DIGIT_WIDTH;     // x coordinate inside each digit area
+
+    wire [`STATUS_H_WIDTH - 1:0] y_status = (y - `STATUS_Y);                    // y coordinate inside the status area
+    wire [`STATUS_W_WIDTH - 1:0] x_status = (x - `STATUS_X);                    // x coordinate inside the status area
+    
+    wire [`DIGITS_IDX_WIDTH - 1:0] digits_idx = (x_digits / `DIGIT_WIDTH);      // index for digit to be displayed (with blanks)
+    wire [`DIGITS_IDX_WIDTH - 1:0] digit_idx  = digits_idx - (x_digits / 5);    // index for digit to be displayed (without blanks)
+    
     wire digits_box_clear = (y < `DIGITS_BOX_Y) | (x < `DIGITS_BOX_X);                              // outside the digits box
     wire digits_clear     = (y < `DIGITS_Y)     | (x < `DIGITS_X) | ((digits_idx + 1) % 5 == 0);    // inside the digits box but not displaying digits
     wire status_clear     = (y < `STATUS_Y)     | (x < `STATUS_X);                                  // outside the status box
-
-    wire [`DIGIT_H_WIDTH]  y_digits = (y - `DIGITS_Y);                  // y coordinate inside the digits area
-    wire [`DIGITS_W_WIDTH] x_digits = (x - `DIGITS_X);                  // x coordinate inside the digits area
-    wire [`DIGIT_W_WIDTH]  x_digit  = (x - `DIGITS_X) % `DIGIT_WIDTH;   // x coordinate inside each digit area
-
-    wire [`STATUS_H_WIDTH] y_status = (y - `STATUS_Y);                  // y coordinate inside the status area
-    wire [`STATUS_W_WIDTH] x_status = (x - `STATUS_X);                  // x coordinate inside the status area
-
-    wire [`DIGITS_IDX_WIDTH - 1:0] digit_idx  = digits_idx - (x_digits / 5);    // index for digit to be displayed (without blanks)
-    wire [`DIGITS_IDX_WIDTH - 1:0] digits_idx = (x_digits / `DIGIT_WIDTH);      // index for digit to be displayed (with blanks)
 
     // block memory for "0" "1" to be displayed
     zero_rom    ZERO_rom    (.clk(clk), .row(y_digits), .col(x_digit) , .color_data(zero_rgb));

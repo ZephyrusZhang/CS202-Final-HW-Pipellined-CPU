@@ -31,14 +31,14 @@ module input_unit (
                 BACKSPACE   = 8'b0111_1110, // "*": deletes the last digit
                 ENTER       = 8'b0111_1011, // "#": comfirmes the input with leading zeros
                 PAUSE       = 8'b1110_0111, // "A": pause and resume cpu execution
-                SWITCH      = 8'b1101_0111, // "B": change input between switches and keypad
+                TOGGLE      = 8'b1101_0111, // "B": change input between switches and keypad
                 C           = 8'b1011_0111,
                 D           = 8'b0111_0111;
     
     localparam  BLOCK       = 2'b00,
                 SWITCH      = 2'b01,
                 KEYPAD      = 2'b10,
-                PAUSE       = 2'b11;
+                HALT        = 2'b11;
     
     reg [1:0] input_state;
     reg [2:0] digit_counter, keypad_digit;
@@ -62,7 +62,7 @@ module input_unit (
             case (input_state)
                 SWITCH : begin
                     case (key_coord)
-                        SWITCH : begin
+                        TOGGLE : begin
                             input_state    <= KEYPAD;
                             switch_enable  <= 1'b0;
                             switch_data    <= 0;
@@ -73,7 +73,7 @@ module input_unit (
                             digit_counter  <= 0;
                         end
                         PAUSE  : begin
-                            input_state    <= PAUSE;
+                            input_state    <= HALT;
                             input_complete <= 1'b1;
                             digit_counter  <= 0;
                             cpu_pause      <= 1'b1;
@@ -85,16 +85,16 @@ module input_unit (
                 KEYPAD : begin
                     if (input_enable == 1'b1) begin 
                         case (key_coord)
-                            SWITCH   : begin
+                            TOGGLE   : begin
                                 input_state    <= SWITCH;
                                 switch_enable  <= 1'b1;
                                 switch_data    <= 0;
                             end
                             BACKSPACE: begin
                                 if (digit_counter != 0)
-                                    input_data <= input_data / 10;
+                                    keypad_data <= keypad_data / 10;
                                 else
-                                    input_data <= input_data
+                                    keypad_data <= keypad_data;
                             end
                             ENTER    : begin
                                 input_state    <= BLOCK;
@@ -102,7 +102,7 @@ module input_unit (
                                 digit_counter  <= 0;
                             end
                             PAUSE  : begin
-                                input_state    <= PAUSE;
+                                input_state    <= HALT;
                                 input_complete <= 1'b1;
                                 digit_counter  <= 0;
                                 cpu_pause      <= 1'b1;
@@ -110,27 +110,27 @@ module input_unit (
                             default  : begin
                                 if (digit_counter != 8) begin
                                     case (key_coord)
-                                        ZERO   : input_data <= input_data * 10;
-                                        ONE    : input_data <= input_data * 10 + 1;
-                                        TWO    : input_data <= input_data * 10 + 2;
-                                        THREE  : input_data <= input_data * 10 + 3;
-                                        FOUR   : input_data <= input_data * 10 + 4;
-                                        FIVE   : input_data <= input_data * 10 + 5;
-                                        SIX    : input_data <= input_data * 10 + 6;
-                                        SEVEN  : input_data <= input_data * 10 + 7;
-                                        EIGHT  : input_data <= input_data * 10 + 8;
-                                        NINE   : input_data <= input_data * 10 + 9;
-                                        default: input_data <= input_data;  // 0 key_coord will be handled here
+                                        ZERO   : keypad_data <= keypad_data * 10;
+                                        ONE    : keypad_data <= keypad_data * 10 + 1;
+                                        TWO    : keypad_data <= keypad_data * 10 + 2;
+                                        THREE  : keypad_data <= keypad_data * 10 + 3;
+                                        FOUR   : keypad_data <= keypad_data * 10 + 4;
+                                        FIVE   : keypad_data <= keypad_data * 10 + 5;
+                                        SIX    : keypad_data <= keypad_data * 10 + 6;
+                                        SEVEN  : keypad_data <= keypad_data * 10 + 7;
+                                        EIGHT  : keypad_data <= keypad_data * 10 + 8;
+                                        NINE   : keypad_data <= keypad_data * 10 + 9;
+                                        default: keypad_data <= keypad_data;  // 0 key_coord will be handled here
                                     endcase
                                     digit_counter <= digit_counter + 1;
                                 end else
-                                    input_data    <= input_data
+                                    keypad_data    <= keypad_data;
                             end
                         endcase
                     end else
                         input_state        <= BLOCK;
                 end
-                PAUSE  : begin
+                HALT   : begin
                     if (uart_complete & key_coord == PAUSE) begin
                         input_state        <= BLOCK;
                         cpu_pause          <= 1'b0;
@@ -141,13 +141,13 @@ module input_unit (
                 default: begin
                     casex ({key_coord == PAUSE, input_enable})
                         2'b1x  : begin
-                            input_state    <= PAUSE;
+                            input_state    <= HALT;
                             cpu_pause      <= 1'b1;
                         end 
                         2'b01  : begin
                             input_state    <= KEYPAD;
                             input_complete <= 1'b0;
-                            input_data     <= 0;
+                            keypad_data    <= 0;
                         end
                         default: 
                             input_state    <= BLOCK;

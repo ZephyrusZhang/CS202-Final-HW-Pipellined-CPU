@@ -20,6 +20,7 @@
 // VGA display parameters
 `define DISPLAY_WIDTH       640
 `define DISPLAY_HEIGHT      480
+`define COORDINATE_WIDTH    10
 `define LEFT_BORDER         48
 `define RIGHT_BORDER        16
 `define TOP_BORDER          33

@@ -20,11 +20,11 @@ module seven_seg_unit (
             has_zero        = 1'b0;
             seg_enable      = 8'b1111_1111;
         end else begin
-            if (switch_enable)
+            if (switch_enable) begin
                 diaplay_digit = display_value[(display_counter)+:8];
                 seg_enable = 8'b1111_1111;
                 seg_enable[(7 - seg_enable)+:8] = 1'b0;
-            else 
+            end else
                 case (display_counter)
                     3'd0: begin 
                         diaplay_digit = (display_value % 1_0000_0000) / 1000_0000;
