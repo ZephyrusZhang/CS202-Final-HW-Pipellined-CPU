@@ -30,8 +30,8 @@ module input_unit (
                 NINE        = 8'b1011_1011,
                 BACKSPACE   = 8'b0111_1110, // "*": deletes the last digit
                 ENTER       = 8'b0111_1011, // "#": comfirmes the input with leading zeros
-                PAUSE       = 8'b1110_0111, // "A" : pause and resume cpu execution
-                SWITCH      = 8'b1101_0111, // "B" : change input between switches and keypad
+                PAUSE       = 8'b1110_0111, // "A": pause and resume cpu execution
+                SWITCH      = 8'b1101_0111, // "B": change input between switches and keypad
                 C           = 8'b1011_0111,
                 D           = 8'b0111_0111;
     
@@ -47,7 +47,7 @@ module input_unit (
 
     assign input_data = switch_enable ? {{`ISA_WIDTH - `SWITCH_CNT{1'b0}}, switch_data} : keypad_data;
 
-    always @(posedge clk, negedge rst_n) begin
+    always @(posedge clk, negedge rst_n) begin // posedge is chosen to reterive results from keypad (negedge)
         if (~rst_n) begin
             {
                 input_complete,

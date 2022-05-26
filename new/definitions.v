@@ -40,9 +40,11 @@
 `define DIGITS_BOX_Y        215
 
 `define DIGITS_WIDTH        468
+`define DIGITS_W_WIDTH      9               // width 468 <= 2^9
 `define DIGITS_HEIGHT       16
 `define DIGITS_X            86
 `define DIGITS_Y            227
+`define DIGITS_IDX_WIDTH    6               // number of digits 39 + 7 <= 2^6
 
 `define DIGIT_WIDTH         12
 `define DIGIT_W_WIDTH       4               // width 12 <= 2^4
