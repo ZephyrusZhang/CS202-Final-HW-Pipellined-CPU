@@ -20,10 +20,8 @@ module input_unit (
     reg [`ISA_WIDTH - 1:0] value_to_display;
 
     always @(*) begin
-        if (vga_write_enable) 
-            value_to_display <= vga_store_data;
-        else
-            value_to_display <= value_to_display;
+        if (vga_write_enable) value_to_display <= vga_store_data;
+        else                  value_to_display <= value_to_display;
     end
     
     wire [`VGA_BIT_DEPTH - 1:0] zero_rgb, 
@@ -48,10 +46,11 @@ module input_unit (
     wire [`DIGITS_IDX_WIDTH - 1:0] digit_idx  = digits_idx - (x_digits / 5);    // index for digit to be displayed (without blanks)
     wire [`DIGITS_IDX_WIDTH - 1:0] digits_idx = (x_digits / `DIGIT_WIDTH);      // index for digit to be displayed (with blanks)
 
-    // block memory for each asset to be displayed
+    // block memory for "0" "1" to be displayed
     zero_rom    ZERO_rom    (.clk(clk), .row(y_digits), .col(x_digit) , .color_data(zero_rgb));
     one_rom     ONE_rom     (.clk(clk), .row(y_digits), .col(x_digit) , .color_data(one_rgb));
-
+    
+    // block memory for type of issue to be displayed
     normal_rom  Normal_rom  (.clk(clk), .row(y_status), .col(x_status), .color_data(normal_rgb));
     uart_rom    UART_rom    (.clk(clk), .row(y_status), .col(x_status), .color_data(uart_rgb));
     pause_rom   Pause_rom   (.clk(clk), .row(y_status), .col(x_status), .color_data(pause_rgb));
