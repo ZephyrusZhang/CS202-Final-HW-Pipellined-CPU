@@ -52,7 +52,7 @@ module id_ex_reg (
     assign pc_offset         = condition_satisfied & branch_instruction;
     assign pc_overload       = j_type_normal | jr_instruction;
     assign pc_overload_value = j_type_normal ? {
-                                    pc_4[`ISA_WIDTH - 1:`ADDRES_WIDTH + 2],
+                                    id_pc[`ISA_WIDTH - 1:`ADDRES_WIDTH + 2],
                                     id_instruction[`ADDRES_WIDTH - 1:0], 
                                     2'b00
                                 } : id_reg_1; // for J type instruction address extension 

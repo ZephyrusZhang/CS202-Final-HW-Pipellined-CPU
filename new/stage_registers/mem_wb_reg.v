@@ -22,7 +22,7 @@ module mem_wb_reg (
     output reg wb_reg_write_enable,                         // for general_reg
 
     input      mem_mem_read_enable,                         // from ex_mem_reg (whether data is read from memory)
-    output     wb_mem_read_enable,                          // for reg_write_select (to select data from memory)
+    output reg wb_mem_read_enable,                          // for reg_write_select (to select data from memory)
 
     input      [`ISA_WIDTH - 1:0] mem_alu_result,           // from alu
     output reg [`ISA_WIDTH - 1:0] wb_alu_result,            // for (1) reg_write_select (result from alu)

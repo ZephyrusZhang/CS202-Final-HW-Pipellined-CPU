@@ -19,7 +19,7 @@ module if_id_reg (
     output reg [`ISA_WIDTH - 1:0] id_pc,            // for id_ex_reg (to store into 31st register)
 
     input      [`ISA_WIDTH - 1:0] if_instruction,   // from instruction_mem (the current instruction)
-    output reg [`ISA_WIDTH - 1:0] id_instruction    // for control_unit (the current instruction)
+    output reg [`ISA_WIDTH - 1:0] id_instruction,   // for control_unit (the current instruction)
 
     input      pc_offset,                           // from id_ex_reg (if branch)    
     input      pc_overload                          // from id_ex_reg (if jump)

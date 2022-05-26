@@ -34,7 +34,7 @@ module ex_mem_reg (
     input      [`ISA_WIDTH - 1:0] ex_store_data,            // from id_ex_reg (data read from rt register, for sw)
     input      [`ISA_WIDTH - 1:0] mem_alu_result_prev,      // from em_mem_reg (result of previous ex stage)
     input      [`ISA_WIDTH - 1:0] wb_reg_write_data,        // from reg_write_select (the data to write to general_reg)
-    output reg [`ISA_WIDTH - 1:0] mem_store_data;           // for data_mem (the data to be stored)
+    output reg [`ISA_WIDTH - 1:0] mem_store_data,           // for data_mem (the data to be stored)
 
     input      [`REG_FILE_ADDR_WIDTH - 1:0] ex_dest_reg,    // from id_ex_reg (index of destination resgiter)
     output reg [`REG_FILE_ADDR_WIDTH - 1:0] mem_dest_reg    // for (1) forwarding_unit
@@ -63,7 +63,7 @@ module ex_mem_reg (
             mem_reg_write_enable <= ex_reg_write_enable;
             mem_mem_control      <= ex_mem_control;
 
-            mem_alu_result       <= ex_alu_result
+            mem_alu_result       <= ex_alu_result;
             mem_dest_reg         <= ex_dest_reg;
 
             case (store_data_select)

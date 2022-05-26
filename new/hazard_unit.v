@@ -36,16 +36,21 @@ module data_mem (
     input      cpu_pause,                                       // from keypad_unit (user pressed pause)
 
     output reg pc_reset,                                        // for instruction_mem (reset the pc to 0)
-    output reg [1:0] hazard_control [`STAGE_CNT - 1:0]          // hazard control signal for each stage register
+    output reg [1:0] if_hazard_control,                         // hazard control signal for each stage register
+                     id_hazard_control,
+                     ex_hazard_control,
+                     mem_hazard_control,
+                     wb_hazard_control,       
     output reg [2:0] issue_type                                 // for vga_unit (both hazard and interrupt)
     );
     
+    reg [1:0] hazard_control [`STAGE_CNT - 1:0];    // hazard control signal for each stage register
     reg [1:0] cpu_state;    // the state CPU is in
 
-    wire mem_conflict = mem_reg_write_enable & ~mem_no_op                       // wirte enabled and operational
+    wire mem_conflict = mem_reg_write_enable & ~mem_no_op &                     // wirte enabled and operational
                         ((reg_1_valid & id_reg_1_idx == mem_reg_dest_idx) |     // valid and conflict
                          (reg_2_valid & id_reg_2_idx == mem_reg_dest_idx));     // valid and conflict
-    wire ex_conflict  = ex_reg_write_enable  & ~ex_no_op                        // wirte enabled and operational
+    wire ex_conflict  = ex_reg_write_enable  & ~ex_no_op  &                     // wirte enabled and operational
                         ((reg_1_valid & id_reg_1_idx == ex_reg_dest_idx)  |     // valid and conflict
                          (reg_2_valid & id_reg_2_idx == ex_reg_dest_idx));      // valid and conflict
     
@@ -63,8 +68,13 @@ module data_mem (
             issue_type   <= `NONE;
             pc_reset     <= 1'b0;
             uart_disable <= 1'b1;
-            for (i = 0; i < `STAGE_CNT; i = i + 1) 
-                hazard_control[i] <= `NORMAL;
+            {
+                if_hazard_control, 
+                id_hazard_control,
+                ex_hazard_control,
+                mem_hazard_control,
+                wb_hazard_control
+            }            <= 0;
         end else begin
             case (cpu_state) 
                 `EXECUTE: begin
@@ -73,30 +83,35 @@ module data_mem (
                         4'b1xxx: begin
                             issue_type <= `DATA;
                             cpu_state  <= `HAZARD;
-                            hazard_control[`HAZD_IF_IDX] <= `HOLD;  // if stage will not be a bubble
-                            harard_control[`HAZD_ID_IDX] <= `HOLD;  // id stage will not be a bubble
-                            harard_control[`HAZD_EX_IDX] <= `NO_OP; // ex stage will be a bubble (the instruction in ex will enter wb by then)
+                            if_hazard_control <= `HOLD;  // if stage will not be a bubble
+                            id_hazard_control <= `HOLD;  // id stage will not be a bubble
+                            ex_hazard_control <= `NO_OP; // ex stage will be a bubble (the instruction in ex will enter wb by then)
                         end
                         // the user paused the CPU, the user can do UART rewrite during this period
                         4'b01xx: begin
                             issue_type   <= `PAUSE;
                             cpu_state    <= `HAZARD;
                             uart_disable <= 1'b0;
-                            harard_control[`HAZD_IF_IDX] <= `NO_OP; // start pumping no_op signals into the pipeline
+                            if_hazard_control <= `NO_OP; // start pumping no_op signals into the pipeline
                         end
                         // the user did not pause the CPU but the pc overflowed, the CPU will automatically resume upon UART completion
                         4'b001x: begin
                             issue_type   <= `UART;
                             cpu_state    <= `HAZARD;
                             uart_disable <= 1'b0;
-                            harard_control[`HAZD_IF_IDX] <= `NO_OP;
+                            if_hazard_control <= `NO_OP;
                         end
                         // CPU waits for the user's keypad input
                         4'b0001: begin
                             issue_type   <= `KEYPAD;
                             cpu_state    <= `INTERRUPT;
-                            for (i = 0; i < `STAGE_CNT; i = i + 1) 
-                                hazard_control[i] <= `NO_OP;
+                            {
+                                if_hazard_control, 
+                                id_hazard_control,
+                                ex_hazard_control,
+                                mem_hazard_control,
+                                wb_hazard_control
+                            }            <= {`STAGE_CNT{`NO_OP}};
                         end
                         default:
                             issue_type   <= issue_type; // prevent auto latches
@@ -107,15 +122,15 @@ module data_mem (
                         2'b10  : begin
                             issue_type   <= `NONE;
                             cpu_state    <= `EXECUTE;
-                            hazard_control[`HAZD_IF_IDX] <= `NORMAL;
-                            harard_control[`HAZD_ID_IDX] <= `NORMAL;
-                            harard_control[`HAZD_EX_IDX] <= `NORMAL;
+                            if_hazard_control <= `NORMAL;
+                            id_hazard_control <= `NORMAL;
+                            ex_hazard_control <= `NORMAL;
                         end
                         2'b01  : begin
                             issue_type   <= `NONE;
                             cpu_state    <= `EXECUTE;
                             uart_disable <= 1'b1;
-                            harard_control[`HAZD_IF_IDX] <= `NORMAL;
+                            if_hazard_control <= `NORMAL;
                         end
                         default: 
                             if (issue_type == `UART & cpu_pause) 
@@ -128,8 +143,13 @@ module data_mem (
                     if (input_complete) begin
                         issue_type <= `NONE;
                         cpu_state  <= `EXECUTE;
-                        for (i = 0; i < `STAGE_CNT; i = i + 1) 
-                            hazard_control[i] <= `NORMAL;
+                        {
+                            if_hazard_control, 
+                            id_hazard_control,
+                            ex_hazard_control,
+                            mem_hazard_control,
+                            wb_hazard_control
+                        }          <= {`STAGE_CNT{`NORMAL}};
                     end else 
                         issue_type <= issue_type; // prevent auto latches
                 end

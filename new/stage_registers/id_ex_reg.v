@@ -38,7 +38,7 @@ module id_ex_reg (
     input      [`REG_FILE_ADDR_WIDTH - 1:0] mux_reg_dest_idx,   // from signal_mux (index of destination resgiter)
     output reg [`REG_FILE_ADDR_WIDTH - 1:0] ex_reg_1_idx,       // for forwarding_unit
     output reg [`REG_FILE_ADDR_WIDTH - 1:0] ex_reg_2_idx,       // for forwarding_unit
-    output reg [`REG_FILE_ADDR_WIDTH - 1:0] ex_reg_dest_idx,    // for (1) forwarding_unit
+    output reg [`REG_FILE_ADDR_WIDTH - 1:0] ex_reg_dest_idx     // for (1) forwarding_unit
                                                                 //     (2) hazrad_unit
                                                                 //     (3) ex_mem_reg
     );
@@ -59,10 +59,8 @@ module id_ex_reg (
                 ex_reg_dest_idx
             }                   <= 0;
         end else if (hazard_control[`HAZD_HOLD_BIT])
-            ex_pc               <= ex_pc; // prevent auto latches
+            ex_reg_write_enable <= ex_reg_write_enable;     // prevent auto latches
         else begin
-            ex_pc               <= id_pc;
-
             ex_reg_write_enable <= id_reg_write_enable;
             ex_mem_control      <= id_mem_control;
             ex_alu_control      <= id_alu_control;
