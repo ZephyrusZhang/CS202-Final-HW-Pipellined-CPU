@@ -5,7 +5,7 @@
 this is the multiplexers between the id stage and id_ex_reg
  */
 
-module id_ex_reg (
+module signal_mux (
     input      i_type_instruction,                              // from control_unit (whether it is a I type instruction)
     input      r_type_instruction,                              // from control_unit (whether it is a R type instruction)
     input      j_instruction,                                   // from control_unit (whether it is a jump instruction)
