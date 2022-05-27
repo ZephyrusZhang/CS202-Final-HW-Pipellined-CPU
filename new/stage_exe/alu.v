@@ -71,7 +71,7 @@ always @(alu_opcode or val1 or val2) begin
         `EXE_ORI:   alu_output = val1 | val2;                                     // ori
         `EXE_XORI:  alu_output = val1 ^ val2;                                     // xori
         `EXE_LUI:   alu_output = {val2[15:0], val1[15:0]};                        // lui
-        default:    alu_output = 0;                                                     // default
+        default:    alu_output = 0;                                               // default
     endcase
 end
 
