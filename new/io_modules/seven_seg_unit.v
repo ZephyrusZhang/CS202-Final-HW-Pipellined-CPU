@@ -1,13 +1,13 @@
 `timescale 1ns / 1ps
 
 module seven_seg_unit (
-    input clk_tube, rst_n,                  // note this is a clock for tube 1ms refresh
-    input      [32:0] display_value,        // from keypad_unit (value to be displayed)
-    input      switch_enable,               // from keypad_unit (show binary switch input)
-    input      input_enable,                // from hazard_unit (whether to display)
+    input clk_tube, rst_n,                          // note this is a clock for tube 1ms refresh
+    input      [`ISA_WIDTH - 1:0] display_value,    // from keypad_unit (value to be displayed)
+    input      switch_enable,                       // from keypad_unit (show binary switch input)
+    input      input_enable,                        // from hazard_unit (whether to display)
     
-    output reg [6:0] seg_tube,              // control signal for tube segments
-    output reg [7:0] seg_enable             // control signal for tube positions
+    output reg [6:0] seg_tube,                      // control signal for tube segments
+    output reg [7:0] seg_enable                     // control signal for tube positions
     );
     
     reg [2:0] display_counter;
