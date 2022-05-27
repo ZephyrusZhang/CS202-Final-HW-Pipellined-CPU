@@ -9,6 +9,9 @@
 `define DEFAULT_RAM_DEPTH   14              // ram size = 2^DEFAULT_RAM_DEPTH
 `define DEFAULT_ROM_DEPTH   14              // rom size = 2^DEFAULT_ROM_DEPTH
 `define PC_MAX_VALUE        ((1 << (`DEFAULT_ROM_DEPTH + 2)) - 1)
+
+`define MEM_WRITE_BIT       0               // bit for determining memory write enable
+`define MEM_READ_BIT        1               // bit for determining memory read enable
 //------------------------------------------------------------------------------//
 
 //-----------------------------------IO-----------------------------------------//
@@ -64,8 +67,12 @@
 `define OP_CODE_WIDTH       6               // width of oepration code
 `define FUNC_CODE_WIDTH     6               // width of function code
 
-`define MEM_WRITE_BIT       0               // bit for determining memory write enable
-`define MEM_READ_BIT        1               // bit for determining memory read enable
+`define OP_SLL              6'b00_0000
+`define OP_SRL              6'b00_0010
+`define OP_SLLV             6'b00_0100
+`define OP_SRLV             6'b00_0110
+`define OP_SRA              6'b00_0011
+`define OP_SRAV             6'b00_0111
 //------------------------------------------------------------------------------//
 
 //---------------------------------Hazard---------------------------------------//
@@ -133,6 +140,7 @@
 `define EXE_ORI             6'b00_1101
 `define EXE_XORI            6'b00_1110
 `define EXE_LUI             6'b00_1111
+`define EXE_NO_OP           6'b11_1111
 //------------------------------------------------------------------------------//
 
 //--------------------------------Forwarding------------------------------------//
