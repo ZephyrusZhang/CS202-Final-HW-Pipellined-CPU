@@ -5,7 +5,7 @@
 this is the multiplexers between the id stage and id_ex_reg
  */
 
-module id_ex_reg (
+module signal_mux (
     input      i_type_instruction,                              // from control_unit (whether it is a I type instruction)
     input      r_type_instruction,                              // from control_unit (whether it is a R type instruction)
     input      j_instruction,                                   // from control_unit (whether it is a jump instruction)
@@ -68,7 +68,7 @@ module id_ex_reg (
         case ({i_type_instruction, i_type_abnormal, jal_instruction, jr_instruction})
             4'b1000: mux_reg_dest_idx <= id_reg_2_idx;       // I type instruction
             4'b0100: mux_reg_dest_idx <= 0;                  // store or branch instruction
-            4'b0010: mux_reg_dest_idx <= 31;                 // jump and link store to 31st register
+            4'b0010: mux_reg_dest_idx <= `JAL_REG_IDX;       // jump and link store to 31st register
             4'b0001: mux_reg_dest_idx <= id_reg_1_idx;       // jump register reterives from 1st register
             default: mux_reg_dest_idx <= id_reg_dest_idx;    // R type instruction
         endcase
