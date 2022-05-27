@@ -1,4 +1,5 @@
 `timescale 1ns / 1ps
+`include "../definitions.v"
 `define TUBE_DEFAULT_DELAY_PERIOD 10_0000
 
 module seven_seg_unit #(parameter
