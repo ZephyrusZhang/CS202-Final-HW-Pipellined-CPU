@@ -2,7 +2,7 @@
 
 module seven_seg_unit (
     input clk_tube, rst_n,                  // note this is a clock for tube 1ms refresh
-    input      [32:0] display_value,        // from keypad_unit (value to be displayed)
+    input      [31:0] display_value,        // from keypad_unit (value to be displayed)
     input      switch_enable,               // from keypad_unit (show binary switch input)
     input      input_enable,                // from hazard_unit (whether to display)
     
