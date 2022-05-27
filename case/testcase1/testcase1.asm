@@ -1,10 +1,9 @@
-
-.data
+.data   0x0000
 	buf:   .word  0xFFFFFC60, 0xFFFFFC70 #input and output address in main
 
 	# FFFFFC60 input
 	# FFFFFC70 output
-.text	
+.text	    0x0000
 	
 start:
 
