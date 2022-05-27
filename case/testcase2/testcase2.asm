@@ -1,11 +1,10 @@
-
-.data  
-	buf: .word  0xFFFFFC60, 0xFFFFFC70
+.data  0x0000
+	buf: .word  0xFFFFFC60 , 0xFFFFFC70
  	array:.space 200	# store element
     	info:.space 20	# store n
  
  	
-.text
+.text	  0x0000
 
 #notice: the input can not be more than 255 in these cases
 
@@ -322,16 +321,16 @@ case_111:
 	
 	addi $t0,$zero,0
 	sll $t0,$t0,28		#need to spercify on board
-	subi $t0,$t0,250000000		#need to spercify on board
+	addi $t0,$t0,-250000000		#need to spercify on board
 	
-counting_start:	
+counting_start:
 	beq $t0,$zero,counting_over
-	subi $t0,$t0,1
+	addi $t0,$t0,1
 	j counting_start
 	#############################
 	
 	
-counting_over:	
+counting_over:
 		
 	addi $t0,$zero,4	                            
   	sw $s6,buf($t0)	    # write -> s6
