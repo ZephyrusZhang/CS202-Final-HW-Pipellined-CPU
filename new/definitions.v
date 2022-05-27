@@ -3,6 +3,7 @@
 `define ADDRES_WIDTH        26              // address lenth in instruction for j and jal extension
 `define STAGE_CNT           5
 `define JAL_REG_IDX         31
+`define IMMEDIATE_WIDTH     16
 //------------------------------------------------------------------------------//
 
 //---------------------------------Memory---------------------------------------//
