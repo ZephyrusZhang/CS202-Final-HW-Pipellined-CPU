@@ -4,7 +4,7 @@
 module seven_seg_unit #(parameter
     DELAY_PERIOD = `TUBE_DEFAULT_DELAY_PERIOD
     )(
-    input clk, rst_n,                          // note this is a clock for tube 1ms refresh
+    input clk, rst_n,                               // note this is a clock for tube 1ms refresh
     input      [`ISA_WIDTH - 1:0] display_value,    // from keypad_unit (value to be displayed)
     input      switch_enable,                       // from keypad_unit (show binary switch input)
     input      input_enable,                        // from hazard_unit (whether to display)
