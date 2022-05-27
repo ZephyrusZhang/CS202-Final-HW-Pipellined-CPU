@@ -1,28 +1,36 @@
-#.data  0x0000              		        # 数据定义的首地址
-#  buf:   .word  0x00000055, 0x000000AA	# 定义数据
-	
-#.text	0x0000	
-#所有的syscall处都待修改 需要进行lw和sw的替换
-
-#debug用打印data
-#每一个测试样例在自己的procurdure中决定是否需要初始化寄存器
-#实际情况是 每一个case后面都有一个jump
 
 .data
-	newline:.asciiz "\n"
-	case1_000_part11:.asciiz " is binary palindrome, "
-	case1_000_part12:.asciiz " is NOT binary palindrome, "
-	
-.text	#需要定义文本区的首地址
+	buf:   .word  0xFFFFFC60, 0xFFFFFC70 #input and output address in main
 
+	# FFFFFC60 input
+	# FFFFFC70 output
+.text	
+	
 start:
-	#是一个循环
-	#对所有的寄存器在此处进行register初始化
-	#当制定的寄存器的值更新时跳转到case处
+
+	lw $v0,buf($zero)	#read the no. of case
+	
+	ori $t0,$zero,0
+	ori $t1,$zero,1
+	ori $t2,$zero,2
+	ori $t3,$zero,3
+	ori $t4,$zero,4
+	ori $t5,$zero,5
+	ori $t6,$zero,6
+	ori $t7,$zero,7
+
+	beq $v0,$t0,case1_000
+	beq $v0,$t1,case1_001
+	beq $v0,$t2,case1_010
+	beq $v0,$t3,case1_011
+	beq $v0,$t4,case1_100
+	beq $v0,$t5,case1_101
+	beq $v0,$t6,case1_110
+	beq $v0,$t7,case1_111
+	j start
 	
 case1_000:
-	addi $v0,$zero,5		#read integer  待修改      
-	syscall
+	lw $v0,buf($zero)	#read the no. of case
 	
 	add $s0,$zero,$v0
 	add $t0,$zero,$v0 
@@ -47,115 +55,79 @@ case1_000:
 
   case1_000_label1:
 	bne $s1,$s2,case1_000_exit2
-	addi $a0,$zero,1          #是回文
+	addi $a0,$zero,1          # is palindrome
 	j case1_000_label2
 	
   case1_000_exit2:
-	addi $a0,$zero,0          #不是回文
+	addi $a0,$zero,0          # is not palindrome
 	
   case1_000_label2:
-  		               #打印是否是回文 待修改
-  	addi $v0,$zero,1	    #原值存储在s1	
-  	syscall		    #是否是回文存储再a0
-  			
-  	la $a0, newline   	    #newline  待修改
-	li $v0,4
-	syscall
+  		  
+  	addi $t0,$zero,4	                            
+  	sw $a0,buf($t0)	    # write -> a0  0 or 1  not or is
 
-  
+  	j start
 case1_001:
-  	addi $v0,$zero,5		#read integer  待修改      
-	syscall
+  			     
+	lw $v0,buf($zero)		#read integer -> v0 
 	
-  	addi $s1,$v0,0            	#input a 存储在s1
+  	addi $s1,$v0,0            	#input a -> s1
+			  
+  	addi $t0,$zero,4	                            
+  	sw $s1,buf($t0)	    	# write result s1
+
+	
+ 	lw $v0,buf($zero)		#read integer b -> v0 	  
+  	 
+	
+  	addi $s2,$v0,0            	#input b -> s2
   	
-  	addi $a0,$s1,0	    	#打印计算结果   待修改
-	li $v0,35
-  	syscall		
-  	la $a0, newline   	    #newline  待修改
-	li $v0,4
-	syscall
+  	addi $t0,$zero,4	                            
+  	sw $s2,buf($t0)	    	# write result s2
 	
-  	addi $v0,$zero,5		#read integer  待修改    
-  	  
-	syscall
-	
-  	addi $s2,$v0,0            	#input b 存储在s2
-  	
-  	addi $a0,$s2,0	    	#打印计算结果   待修改
-	li $v0,35
-  	syscall	
-  	la $a0, newline   	    #newline  待修改
-	li $v0,4
-	syscall	
-	
+	j start
 case1_010:
-	and $s3,$s1,$s2		#s3存储计算结果
+	and $s3,$s1,$s2		# result -> s3
 	
-	addi $a0,$s3,0	    	#打印计算结果  待修改
-	li $v0,35
-  	syscall		   
+	addi $t0,$zero,4	                            
+  	sw $s3,buf($t0)	    	# write result s3	   
   	
-  	la $a0, newline  		#newline   待修改
-	li $v0,4
-	syscall
-
+	j start
 case1_011: 	
-	or $s3,$s1,$s2		#s3存储计算结果
+	or $s3,$s1,$s2		# result -> s3
 	
-	addi $a0,$s3,0	    	#打印计算结果  待修改
-	li $v0,35
-  	syscall		   
+	addi $t0,$zero,4	                            
+  	sw $s3,buf($t0)	    	# write result s3	  	   
   	
-  	la $a0, newline   		#newline   待修改
-	li $v0,4
-	syscall
-  	
+  	j start
 case1_100:   	
-  	xor $s3,$s1,$s2		#s3存储计算结果
+  	xor $s3,$s1,$s2		# result -> s3
 	
-	addi $a0,$s3,0	    	#打印计算结果   待修改
-	li $v0,35
-  	syscall		   
-  	
-  	la $a0, newline   		#newline    待修改
-	li $v0,4
-	syscall
+	addi $t0,$zero,4	                            
+  	sw $s3,buf($t0)	    	# write result s3	 
 
-	
+	j start
   	
 case1_101:   	
-  	sllv $s3,$s1,$s2			#s3存储计算结果
+  	sllv $s3,$s1,$s2		# result -> s3
 	
-	addi $a0,$s3,0	    	#打印计算结果   待修改
-	li $v0,35
-  	syscall		   	
-  	  	  	
-  	la $a0, newline   		#newline    待修改
-	li $v0,4
-	syscall
+	addi $t0,$zero,4	                            
+  	sw $s3,buf($t0)	    	# write result s3
   	
+  	j start
   	
 case1_110:   	
-  	srlv $s3,$s1,$s2			#s3存储计算结果
+  	srlv $s3,$s1,$s2		# result -> s3
 	
-	addi $a0,$s3,0	    	#打印计算结果   待修改
-	li $v0,35
-  	syscall		   	
-  	  	  	
-  	la $a0, newline   		#newline    待修改
-	li $v0,4
-	syscall  	
+	addi $t0,$zero,4	                            
+  	sw $s3,buf($t0)	    	# write result s3
   	
+  	j start
 case1_111:   	
-  	srav $s3,$s1,$s2		#s3存储计算结果
+  	srav $s3,$s1,$s2		# result -> s3
 	
-	addi $a0,$s3,0	    	#打印计算结果   待修改
-	li $v0,35
-  	syscall		   	
-  	  	  	
-  	la $a0, newline   		#newline    待修改
-	li $v0,4
-	syscall  	  	
+	addi $t0,$zero,4	                            
+  	sw $s3,buf($t0)	    	# write result s3
+		  	
 	j start
 	
