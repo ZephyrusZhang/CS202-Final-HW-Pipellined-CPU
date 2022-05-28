@@ -23,7 +23,7 @@ module keypad_unit #(parameter
                SCAN_READ     = 8'b0100_0000,
                SCAN_JITTER_2 = 8'b1000_0000;
     
-    localparam DELAY_TRAN = 4; // how many times DEBOUNCE_PERIOD is met and the keypress is checked
+    localparam DELAY_TRAN = 2; // how many times DEBOUNCE_PERIOD is met and the keypress is checked
     
     reg [20:0] delay_cnt;
     reg [7:0] state, next_state;
