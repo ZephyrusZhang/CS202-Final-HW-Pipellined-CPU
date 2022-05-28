@@ -17,21 +17,18 @@ wire [7:0] key_coord;
 wire input_complete;
 wire [`ISA_WIDTH - 1 : 0] output_data;
 wire switch_enable;
-wire key_pressed;
 
 keypad_unit keypad (
     .clk(clk),
     .rst_n(rst_n),
     .row_in(row_in),
     .col_out(col_out),
-    .key_coord(key_coord),
-    .key_pressed(key_pressed)
+    .key_coord(key_coord)
 );
 
 input_unit input_test (
     .clk(clk),
     .rst_n(rst_n),
-    .key_pressed(key_pressed),
     .key_coord(key_coord),
     .switch_map(switch_map),
     .uart_complete(1'b1),
