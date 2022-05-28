@@ -64,6 +64,7 @@ module keypad_unit #(parameter
             SCAN_IDLE:
                 if (row_in != 4'hf) next_state = SCAN_JITTER_1;
                 else                next_state = SCAN_IDLE;
+            
             // this state will pause
             SCAN_JITTER_1:
                 if (row_in != 4'hf && delay_cnt == DEBOUNCE_PERIOD - 1) 
