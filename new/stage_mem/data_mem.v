@@ -32,14 +32,12 @@ module data_mem #(parameter
     input      [`ISA_WIDTH - 1:0] uart_data,            // from uart_unit (upg_dat_i)
     input      [ROM_DEPTH:0] uart_addr,                 // from uart_unit (upg_adr_i)
 
-    input      [`ISA_WIDTH - 1:0] mem_addr,             // from ex_mem_reg (by alu_result)
-
+    input      no_op,                                   // from ex_mem_reg (stop read and write)
     input      [1:0] mem_control,                       // from ex_mem_reg (by control_unit)
+    input      [`ISA_WIDTH - 1:0] mem_addr,             // from ex_mem_reg (by alu_result)
     input      [`ISA_WIDTH - 1:0] mem_store_data,       // from ex_mem_reg (by general_reg)    
     output     [`ISA_WIDTH - 1:0] mem_read_data,        // for mem_wb_reg (the data read form memory)
 
-    input      no_op,                                   // from ex_mem_reg (stop read and write)
-    
     output     input_enable,                            // for (1) input_unit (signal the keypad and switch to start reading)
                                                         //     (2) hazard_unit (trigger keypad hazard)
     input      [`ISA_WIDTH - 1:0] input_data,           // from input_unit (data from user input)
