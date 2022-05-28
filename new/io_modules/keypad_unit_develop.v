@@ -84,9 +84,9 @@ module keypad_unit_develop #(parameter
                 DELAY: begin
                     delay_cnt       <= delay_cnt + 1;
                     if (row_in != 4'hf & delay_cnt == DEBOUNCE_PERIOD) 
-                        next_state  <= SCAN_COL1_2;
+                        state       <= SCAN_COL1_2;
                     else
-                        next_state  <= IDLE;
+                        state       <= IDLE;
                 end
                 SCAN_COL1_2:
                     if (row_in != 4'hf) begin
