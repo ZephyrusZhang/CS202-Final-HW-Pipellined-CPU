@@ -1,5 +1,5 @@
 `timescale 1ns / 1ps
-`define KEYPAD_DEFAULT_DEBOUNCE_PERIOD 100_0000 //20ms for 100MHz
+`define KEYPAD_DEFAULT_DEBOUNCE_PERIOD 200_0000 //20ms for 100MHz
 
 module keypad_unit #(parameter 
     DEBOUNCE_PERIOD = `KEYPAD_DEFAULT_DEBOUNCE_PERIOD
@@ -12,123 +12,128 @@ module keypad_unit #(parameter
     output reg [7:0] key_coord
     );
     
-    reg [3:0] col_val, row_val;
+    reg [7:0] key_coord_1, key_coord_2;
     
-    localparam SCAN_IDLE     = 8'b0000_0001,
-               SCAN_JITTER_1 = 8'b0000_0010,
-               SCAN_COL1     = 8'b0000_0100,
-               SCAN_COL2     = 8'b0000_1000,
-               SCAN_COL3     = 8'b0001_0000,
-               SCAN_COL4     = 8'b0010_0000,
-               SCAN_READ     = 8'b0100_0000,
-               SCAN_JITTER_2 = 8'b1000_0000;
+    localparam  IDLE        = 4'b0000,
+                SCAN_COL1_1 = 4'b0001,
+                SCAN_COL2_1 = 4'b0010,
+                SCAN_COL3_1 = 4'b0011,
+                SCAN_COL4_1 = 4'b0100,
+                DELAY       = 4'b0110,
+                SCAN_COL1_2 = 4'b0111,
+                SCAN_COL2_2 = 4'b1000,
+                SCAN_COL3_2 = 4'b1001,
+                SCAN_COL4_2 = 4'b1010,
+                CHECK       = 4'b1011;
     
-    localparam DELAY_TRAN = 2; // how many times DEBOUNCE_PERIOD is met and the keypress is checked
-    
+    reg [2:0] state;
     reg [20:0] delay_cnt;
-    reg [7:0] state, next_state;
-    reg [20:0] tran_cnt;
     
     always @(negedge clk, negedge rst_n) begin
-        if (!rst_n) 
-            delay_cnt <= 0;
-        else 
-            case ({delay_cnt == DEBOUNCE_PERIOD, next_state == SCAN_JITTER_1 || next_state == SCAN_JITTER_2})
-                2'b10  : delay_cnt <= 0;
-                2'b01  : delay_cnt <= delay_cnt + 1;
-                default: delay_cnt <= 0;
-            endcase
-    end
-    
-    always @(negedge clk, negedge rst_n) begin
-        if (!rst_n) begin 
-            tran_cnt <= 0;
-        end else if (tran_cnt == DELAY_TRAN) begin
-            tran_cnt <= 0;
-        end else 
-            tran_cnt <= tran_cnt + 1;
-    end
-    
-    always @(negedge clk, negedge rst_n) begin
-        if (!rst_n) begin
-            state <= SCAN_IDLE;
-        end else if (tran_cnt == DELAY_TRAN) begin
-            state <= next_state;
-        end else 
-            state <= state;
-    end
-    
-    always @(*) begin
-        next_state = SCAN_IDLE;
-        case (state)
-            SCAN_IDLE:
-                if (row_in != 4'hf) next_state = SCAN_JITTER_1;
-                else                next_state = SCAN_IDLE;
-            
-            // this state will pause
-            SCAN_JITTER_1:
-                if (row_in != 4'hf && delay_cnt == DEBOUNCE_PERIOD - 1) 
-                                    next_state = SCAN_COL1;
-                else                next_state = SCAN_JITTER_1;
-            SCAN_COL1:
-                if (row_in != 4'hf) next_state = SCAN_READ;
-                else                next_state = SCAN_COL2;
-            SCAN_COL2:
-                if (row_in != 4'hf) next_state = SCAN_READ;
-                else                next_state = SCAN_COL3;
-            SCAN_COL3:
-                if (row_in != 4'hf) next_state = SCAN_READ;
-                else                next_state = SCAN_COL4;
-            SCAN_COL4:
-                if (row_in != 4'hf) next_state = SCAN_READ;
-                else                next_state = SCAN_IDLE;
-            SCAN_READ:
-                if (row_in != 4'hf) next_state = SCAN_JITTER_2;
-                else                next_state = SCAN_IDLE;
-            // this state will pause
-            SCAN_JITTER_2:
-                if (row_in != 4'hf && delay_cnt == DEBOUNCE_PERIOD - 1) 
-                                    next_state = SCAN_IDLE;
-                else                next_state = SCAN_JITTER_2;
-            default:                next_state = SCAN_IDLE;
-        endcase
-    end
-    
-    always @(negedge clk, negedge rst_n) begin
-        if (!rst_n) begin
-            col_out <= 4'h0;
-            row_val <= 4'h0;
-            col_val <= 4'h0;
-        end else if (tran_cnt == DELAY_TRAN) begin
-            case (next_state)
-                SCAN_COL1: col_out <= 4'b0111;
-                SCAN_COL2: col_out <= 4'b1011;
-                SCAN_COL3: col_out <= 4'b1101;
-                SCAN_COL4: col_out <= 4'b1110;
-                SCAN_READ: begin
-                    col_out <= col_out;
-                    row_val <= row_in;
-                    col_val <= col_out;
+        if (~rst_n) begin
+            {
+                col_out,
+                row_val_1,
+                row_val_2,
+                col_val_1,
+                col_val_2,
+                delay_cnt,
+                key_coord_1,
+                key_coord_2,
+                key_coord
+            } <= 0;
+        end begin
+            case (state)
+                IDLE: begin
+                    key_coord       <= 0;
+                    if (row_in != 4'hf) begin
+                        state       <= SCAN_COL1_1;
+                        col_out     <= 4'b0111;
+                    end else
+                        state       <= state;
                 end
-                default  : col_out <= 4'b0000;
+                SCAN_COL1_1:
+                    if (row_in != 4'hf) begin
+                        state       <= SCAN_JITTER;
+                        key_coord_1 <= {row_in, col_out};
+                    end else begin
+                        state       <= SCAN_COL2_1;
+                        col_out     <= 4'b1011;
+                    end
+                SCAN_COL2_1:
+                    if (row_in != 4'hf) begin
+                        state       <= SCAN_JITTER;
+                        key_coord_1 <= {row_in, col_out};
+                    end else begin
+                        state       <= SCAN_COL3_1;
+                        col_out     <= 4'b1101;
+                    end
+                SCAN_COL3_1:
+                    if (row_in != 4'hf) begin
+                        state       <= SCAN_JITTER;
+                        key_coord_1 <= {row_in, col_out};
+                    end else begin
+                        state       <= SCAN_COL4_1;
+                        col_out     <= 4'b1110;
+                    end
+                SCAN_COL4_1:
+                    if (row_in != 4'hf) begin
+                        state       <= SCAN_JITTER;
+                        key_coord_1 <= {row_in, col_out};
+                    end else begin
+                        state       <= IDLE;
+                        col_out     <= 4'b0000;
+                    end
+                // this state will pause
+                SCAN_JITTER: begin
+                    delay_cnt       <= delay_cnt + 1;
+                    if (row_in != 4'hf & delay_cnt == DEBOUNCE_PERIOD) 
+                        next_state  <= SCAN_COL1_2;
+                    else
+                        next_state  <= IDLE;
+                end
+                SCAN_COL1_2:
+                    if (row_in != 4'hf) begin
+                        state       <= SCAN_JITTER;
+                        key_coord_2 <= {row_in, col_out};
+                    end else begin
+                        state       <= SCAN_COL2_2;
+                        col_out     <= 4'b1011;
+                    end
+                SCAN_COL2_2:
+                    if (row_in != 4'hf) begin
+                        state       <= SCAN_JITTER;
+                        key_coord_2 <= {row_in, col_out};
+                    end else begin
+                        state       <= SCAN_COL3_2;
+                        col_out     <= 4'b1101;
+                    end
+                SCAN_COL3_2:
+                    if (row_in != 4'hf) begin
+                        state       <= SCAN_JITTER;
+                        key_coord_2 <= {row_in, col_out};
+                    end else begin
+                        state       <= SCAN_COL4_2;
+                        col_out     <= 4'b1110;
+                    end
+                SCAN_COL4_2:
+                    if (row_in != 4'hf) begin
+                        state       <= SCAN_JITTER;
+                        key_coord_2 <= {row_in, col_out};
+                    end else begin
+                        state       <= IDLE;
+                        col_out     <= 4'b0000;
+                    end
+                CHECK: begin
+                    if (key_coord_1 == key_coord_2) begin
+                        key_coord   <= key_coord_2;
+                        key_coord_1 <= 0;
+                        key_coord_2 <= 0;
+                    end
+                        state       <= IDLE;
+                end
+                default: state      <= IDLE;
             endcase
-        end else begin
-            col_out <= col_out;
-            row_val <= row_val;
-            col_val <= col_val;
         end
-    end
-    
-    wire key_pressed = (next_state == SCAN_IDLE) && (state == SCAN_JITTER_2) && (tran_cnt == DELAY_TRAN);
-    // assign key_coord   = {row_val, col_val};
-    
-    always @(negedge clk, negedge rst_n) begin
-        if (!rst_n) begin
-            key_coord <= 0;
-        end else if (key_pressed) begin
-            key_coord <= {row_val, col_val};
-        end else 
-            // key_coord <= key_coord; // critical: annotate when not testing!
-            key_coord <= 0; // this is the correct handling operation
     end
 endmodule
