@@ -29,7 +29,7 @@ module ex_mem_reg (
 
     input      [`FORW_SEL_WIDTH - 1:0] store_data_select,   // from forwarding_unit (select which data to store)
     input      [`ISA_WIDTH - 1:0] ex_store_data,            // from id_ex_reg (data read from rt register, for sw)
-    input      [`ISA_WIDTH - 1:0] mem_alu_result_prev,      // from em_mem_reg (result of previous ex stage)
+    input      [`ISA_WIDTH - 1:0] mem_alu_result_prev,      // from ex_mem_reg (result of previous ex stage)
     input      [`ISA_WIDTH - 1:0] wb_reg_write_data,        // from reg_write_select (the data to write to general_reg)
     output reg [`ISA_WIDTH - 1:0] mem_store_data,           // for data_mem (the data to be stored)
 
