@@ -9,7 +9,8 @@ module keypad_unit #(parameter
     input wire [3:0] row_in,
     output reg [3:0] col_out,
     
-    output reg [7:0] key_coord
+    output     key_pressed,
+    output     [7:0] key_coord
     );
     
     reg [3:0] col_val, row_val;
@@ -29,7 +30,7 @@ module keypad_unit #(parameter
     reg [7:0] state, next_state;
     reg [20:0] tran_cnt;
     
-    always @(posedge clk, negedge rst_n) begin
+    always @(negedge clk, negedge rst_n) begin
         if (!rst_n) 
             delay_cnt <= 0;
         else 
@@ -40,7 +41,7 @@ module keypad_unit #(parameter
             endcase
     end
     
-    always @(posedge clk, negedge rst_n) begin
+    always @(negedge clk, negedge rst_n) begin
         if (!rst_n) begin 
             tran_cnt <= 0;
         end else if (tran_cnt == DELAY_TRAN) begin
@@ -49,7 +50,7 @@ module keypad_unit #(parameter
             tran_cnt <= tran_cnt + 1;
     end
     
-    always @(posedge clk, negedge rst_n) begin
+    always @(negedge clk, negedge rst_n) begin
         if (!rst_n) begin
             state <= SCAN_IDLE;
         end else if (tran_cnt == DELAY_TRAN) begin
@@ -93,7 +94,7 @@ module keypad_unit #(parameter
         endcase
     end
     
-    always @(posedge clk, negedge rst_n) begin
+    always @(negedge clk, negedge rst_n) begin
         if (!rst_n) begin
             col_out <= 4'h0;
             row_val <= 4'h0;
@@ -118,15 +119,16 @@ module keypad_unit #(parameter
         end
     end
     
-    wire key_pressed = (next_state == SCAN_IDLE) && (state == SCAN_JITTER_2) && (tran_cnt == DELAY_TRAN);
+    assign key_pressed = (next_state == SCAN_IDLE) && (state == SCAN_JITTER_2) && (tran_cnt == DELAY_TRAN);
+    assign key_coord = {row_val, col_val};
     
-    always @(posedge clk, negedge rst_n) begin
-        if (!rst_n) begin
-            key_coord <= 0;
-        end else if (key_pressed) begin
-            key_coord <= {row_val, col_val};
-        end else 
-            // key_coord <= key_coord; // critical: annotate when not testing!
-            key_coord <= 8'hff; // this is the correct handling operation
-    end
+    // always @(negedge clk, negedge rst_n) begin
+    //     if (!rst_n) begin
+    //         key_coord <= 0;
+    //     end else if (key_pressed) begin
+    //         key_coord <= {row_val, col_val};
+    //     end else 
+    //         // key_coord <= key_coord; // critical: annotate when not testing!
+    //         key_coord <= 0; // this is the correct handling operation
+    // end
 endmodule

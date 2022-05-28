@@ -4,6 +4,7 @@
 module input_unit (
     input clk, rst_n,
     
+    input      key_pressed,                             
     input      [7:0] key_coord,                         // from keypad_decoder with format {row_val, col_val}
     input      [`SWITCH_CNT - 1:0] switch_map,          // from toggle switches directly
 
@@ -49,7 +50,7 @@ module input_unit (
 
     assign input_data = switch_enable ? {{(`ISA_WIDTH - `SWITCH_CNT){1'b0}}, switch_map} : keypad_data;
 
-    always @(posedge clk, negedge rst_n) begin // posedge is chosen to reterive results from keypad (negedge)
+    always @(posedge input_enable, posedge key_pressed, negedge rst_n) begin // posedge is chosen to reterive results from keypad (negedge)
         if (~rst_n) begin
             {
                 input_complete,
