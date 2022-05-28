@@ -36,7 +36,7 @@ module keypad_unit #(parameter
             case ({delay_cnt == DEBOUNCE_PERIOD, next_state == SCAN_JITTER_1 | next_state == SCAN_JITTER_2})
                 2'b10  : delay_cnt <= 0;
                 2'b01  : delay_cnt <= delay_cnt + 1;
-                default: delay_cnt <= delay_cnt;
+                default: delay_cnt <= 0;
             endcase
     end
     
@@ -107,14 +107,14 @@ module keypad_unit #(parameter
                 SCAN_COL3: col_out <= 4'b1101;
                 SCAN_COL4: col_out <= 4'b1110;
                 SCAN_READ: begin
-                    // col_out <= col_out;
+                    col_out <= col_out;
                     row_val <= row_in;
                     col_val <= col_out;
                 end
                 default: col_out <= 4'b0000;
             endcase
         end else begin
-            // col_out <= col_out;
+            col_out <= col_out;
             row_val <= row_val;
             col_val <= col_val;
         end

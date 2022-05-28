@@ -1,6 +1,17 @@
-module vga_top ();
-    wire clk;
-    input_unit unit_under_test(input clk_vga, rst_n,
+module vga_top (
+    input clk, rst_n
+    );
+    wire clk_vga;
+
+    module clk_generator #(parameter 
+    PERIOD = `DEFAULT_PERIOD
+    )(
+    input wire clk, rst_n,
+    .clk_out(clk_vga));
+
+    input_unit unit_under_test(
+        .clk_vga(clk_vga), 
+        .rst_n(),
     
     input      display_en,
     input      [`COORDINATE_WIDTH - 1:0] x, y,
