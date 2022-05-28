@@ -1,5 +1,5 @@
 `timescale 1ns / 1ps
-`define KEYPAD_DEFAULT_DEBOUNCE_PERIOD 50_0000 //20ms for 100MHz
+`define KEYPAD_DEFAULT_DEBOUNCE_PERIOD 100_0000 //20ms for 100MHz
 
 module keypad_unit #(parameter 
     DEBOUNCE_PERIOD = `KEYPAD_DEFAULT_DEBOUNCE_PERIOD
