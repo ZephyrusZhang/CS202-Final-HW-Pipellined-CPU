@@ -31,7 +31,7 @@ module seven_seg_unit #(parameter
             2'b11  : begin
                 diaplay_digit = display_value[(display_counter)+:1];
                 seg_enable = 8'b1111_1111;
-                seg_enable[(7 - display_counter)+:1] = 1'b0;
+                seg_enable[(display_counter)+:1] = 1'b0;
                 display_counter = display_counter + 1;
             end
             2'b10  : begin
