@@ -1,5 +1,5 @@
 `timescale 1ns / 1ps
-`define KEYPAD_DEFAULT_DEBOUNCE_PERIOD 100_0000 //20ms for 100MHz
+`define KEYPAD_DEFAULT_DEBOUNCE_PERIOD 50_0000 //20ms for 100MHz
 
 module keypad_unit #(parameter 
     DEBOUNCE_PERIOD = `KEYPAD_DEFAULT_DEBOUNCE_PERIOD
@@ -23,7 +23,7 @@ module keypad_unit #(parameter
                SCAN_READ     = 8'b0100_0000,
                SCAN_JITTER_2 = 8'b1000_0000;
     
-    localparam DELAY_TRAN = 2; // how many times DEBOUNCE_PERIOD is met and the keypress is checked
+    localparam DELAY_TRAN = 4; // how many times DEBOUNCE_PERIOD is met and the keypress is checked
     
     reg [20:0] delay_cnt;
     reg [7:0] state, next_state;
@@ -99,7 +99,7 @@ module keypad_unit #(parameter
             row_val <= 4'h0;
             col_val <= 4'h0;
         end else if (tran_cnt == DELAY_TRAN) begin
-            case (state)
+            case (next_state)
                 SCAN_COL1: col_out <= 4'b0111;
                 SCAN_COL2: col_out <= 4'b1011;
                 SCAN_COL3: col_out <= 4'b1101;
@@ -109,7 +109,7 @@ module keypad_unit #(parameter
                     row_val <= row_in;
                     col_val <= col_out;
                 end
-                default: col_out <= 4'b0000;
+                default  : col_out <= 4'b0000;
             endcase
         end else begin
             // col_out <= col_out;

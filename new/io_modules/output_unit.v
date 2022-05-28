@@ -41,9 +41,12 @@ module output_unit (
     wire [`DIGITS_IDX_WIDTH - 1:0] digits_idx = (x_digits / `DIGIT_WIDTH);      // index for digit to be displayed (with blanks)
     wire [`DIGITS_IDX_WIDTH - 1:0] digit_idx  = digits_idx - (digits_idx / 5);  // index for digit to be displayed (without blanks)
     
-    wire digits_box_clear = (y <= `DIGITS_BOX_Y) | (x <= `DIGITS_BOX_X) | (`DIGITS_BOX_Y + `DIGITS_BOX_HEIGHT <= y) | (`DIGITS_BOX_X + `DIGITS_BOX_WIDTH <= x);                               // outside the digits box
-    wire digits_clear     = (y <= `DIGITS_Y)     | (x <= `DIGITS_X)     | (`DIGITS_Y     + `DIGITS_HEIGHT     <= y) | (`DIGITS_X     + `DIGITS_WIDTH     <= x) | ((digits_idx + 1) % 5 == 0); // inside the digits box but not displaying digits
-    wire status_clear     = (y <= `STATUS_Y)     | (x <= `STATUS_X)     | (`STATUS_Y     + `STATUS_HEIGHT     <= y) | (`STATUS_X     + `STATUS_WIDTH     <= x);                               // outside the status box
+    // outside the digits box
+    wire digits_box_clear = (y <= `DIGITS_BOX_Y) | (x <= `DIGITS_BOX_X) | (`DIGITS_BOX_Y + `DIGITS_BOX_HEIGHT <= y) | (`DIGITS_BOX_X + `DIGITS_BOX_WIDTH <= x);
+    wire digits_clear     = (y <= `DIGITS_Y)     | (x <= `DIGITS_X)     | (`DIGITS_Y     + `DIGITS_HEIGHT     <= y) | (`DIGITS_X     + `DIGITS_WIDTH     <= x)
+                            | ((digits_idx + 1) % 5 == 0);  // inside the digits box but not displaying digits
+    // outside the status box
+    wire status_clear     = (y <= `STATUS_Y)     | (x <= `STATUS_X)     | (`STATUS_Y     + `STATUS_HEIGHT     <= y) | (`STATUS_X     + `STATUS_WIDTH     <= x);
 
     // block memory for "0" "1" to be displayed
     ZERO_rom    zero_rom    (.clk(clk), .row(y_digits), .col(x_digit) , .color_data(zero_rgb));
