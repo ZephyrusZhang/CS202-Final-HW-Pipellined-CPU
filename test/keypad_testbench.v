@@ -4,7 +4,7 @@ module keypad_testbench ();
     reg clk = 0, rst_n = 1;
     wire [7:0] key_coord;
 
-    keypad_unit uut(clk, rst_n, row_in, col_out, key_coord);
+    keypad_unit_develop uut(clk, rst_n, row_in, col_out, key_coord);
 
     initial begin
         #10 rst_n = 0;
