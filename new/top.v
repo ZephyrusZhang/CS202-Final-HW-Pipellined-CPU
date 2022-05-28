@@ -1,6 +1,14 @@
 `include "definitions.v"
 `timescale 1ns / 1ps
 
+
+
+/////// binding mistake!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!1
+
+
+
+
+
 module top
        #(parameter ROM_DEPTH = `DEFAULT_ROM_DEPTH)(
            input wire clk, rst_n,
@@ -87,52 +95,54 @@ wire [`ISA_WIDTH - 1:0] ex_store_data;                 // for ex_mem_reg (the da
 wire [`REG_FILE_ADDR_WIDTH - 1:0] ex_reg_1_idx;        // for forwarding_unit
 wire [`REG_FILE_ADDR_WIDTH - 1:0] ex_reg_2_idx;        // for forwarding_unit
 wire [`REG_FILE_ADDR_WIDTH - 1:0] ex_reg_dest_idx;     // for (1) forwarding_unit
-                                                       //     (2) hazrad_unit
-                                                       //     (3) ex_mem_reg
+//     (2) hazrad_unit
+//     (3) ex_mem_reg
 
 
 
 //--------------------------------stage-exe------------------------------------//
 
-  wire[`ISA_WIDTH - 1 : 0]          mem_result;
-  wire[`ISA_WIDTH - 1:0]            ex_alu_output;
+wire[`ISA_WIDTH - 1 : 0]          mem_result;
+wire[`ISA_WIDTH - 1:0]            ex_alu_output;
 
 
 //---------------------------------forwording----------------------------------//
 
 
 wire [`REG_FILE_ADDR_WIDTH - 1 : 0] dest_mem, dest_wb;
-wire                                mem_wb_en; 
+wire                                mem_wb_en;
 wire [`FORW_SEL_WIDTH - 1 : 0]      val1_sel, val2_sel;
 wire [`FORW_SEL_WIDTH - 1 : 0]      st_sel;
 
 //---------------------------------ex_mem_reg----------------------------------//
 
-    
+
 wire mem_no_op;                                   // for alu (stop opeartions)
 
 wire mem_reg_write_enable;                        // for mem_wb_reg
 
 wire [1:0] mem_mem_control;                       // for (1) data_mem: both read and write
-                                                  //     (2) mem_wb_reg: only read
+//     (2) mem_wb_reg: only read
 wire [`ISA_WIDTH - 1:0] mem_alu_result;           // for (1) data_mem (the read or write address)
-                                                  //     (2) mem_wb_reg (the result of alu)
-                                                  //     (3) alu (forwarding)
-    
+//     (2) mem_wb_reg (the result of alu)
+//     (3) alu (forwarding)
+
 wire [`FORW_SEL_WIDTH - 1:0] store_data_select;   // from forwarding_unit (select which data to store)
 wire [`ISA_WIDTH - 1:0] mem_alu_result_prev;      // from em_mem_reg (result of previous ex stage)
 wire [`ISA_WIDTH - 1:0] mem_store_data;           // for data_mem (the data to be stored)
- 
+
 wire [`REG_FILE_ADDR_WIDTH - 1:0] mem_dest_reg;    // for (1) forwarding_unit
-                                                  //     (2) harard_unit
-                                                  //     (3) mem_wb_reg
+//     (2) harard_unit
+//     (3) mem_wb_reg
 
 
 
 //--------------------------------stage-mem------------------------------------//
-
-
-
+wire [`ISA_WIDTH - 1:0] mem_read_data;         // for mem_wb_reg (the data read form memory)
+wire input_enable;                             // for (1) input_unit (signal the keypad and switch to start reading)
+//     (2) hazard_unit (trigger keypad hazard)
+wire vga_write_enable;                         // for output_unit (write to vga display value register)
+wire [`ISA_WIDTH - 1:0] vga_store_data;        // for output_unit (data to vga)
 //-------------------------------------------------------------------------------//
 
 
@@ -144,7 +154,7 @@ wire [`REG_FILE_ADDR_WIDTH - 1:0] mem_dest_reg;    // for (1) forwarding_unit
 
 
 
-//-------------------------------------I/O------------------------------------------//
+//-------------------------------------uart_unit----------------------------------//
 
 
 wire   uart_disable;                            // from hazard_unit (whether reading from uart)
@@ -195,8 +205,8 @@ instruction_mem instruction_mem(
                     .hazard_control(hazard_control),
 
                     .if_no_op(if_no_op),
-                    .if_pc(pc),             //?
-                    .if_instruction(instruction)
+                    .pc(if_pc),                       //?
+                    .instruction(if_instruction)
                 );
 
 //--------------------------------if-id-reg------------------------------------//
@@ -223,8 +233,8 @@ register_file register_file(
                   .read_reg_addr_1(read_reg_addr_1),
                   .read_reg_addr_2(read_reg_addr_2),
                   .write_reg_addr(write_reg_addr),
-                  .reg_write_data(write_data),
-                  .reg_write_en(write_en),
+                  .write_data(reg_write_data),
+                  .write_en(reg_write_en),
                   .wb_no_op(wb_no_op),
                   .id_no_op(id_no_op),
                   .read_data_1(read_data_1),
@@ -232,7 +242,7 @@ register_file register_file(
               );
 
 condition_check condition_check(
-                    .branch_instruction(condition_type),
+                    .condition_type(branch_instruction),
                     .read_data_1(read_data_1),
                     .read_data_2(read_data_2),
                     .condition_satisfied(condition_satisfied)
@@ -240,8 +250,8 @@ condition_check condition_check(
 
 
 sign_extend sign_extend(
-                .immediate(in),
-                .extend_result(out)
+                .in(immediate),
+                .out(extend_result)
             );
 
 control control(
@@ -257,7 +267,7 @@ control control(
             .jal_instruction(jal_instruction),
             .branch_instruction(branch_instruction),
             .store_instruction(store_instruction),
-            .reg_write_en(wb_en)
+            .wb_en(reg_write_en)
         );
 
 
@@ -276,20 +286,20 @@ signal_mux signal_mux(
 
                .pc_overload(pc_overload),
 
-               .read_data_1(id_reg_1),
+               .id_reg_1(read_data_1),
                .id_pc(id_pc),
                .mux_operand_1(mux_operand_1),
 
-               .read_data_2(id_reg_2),
-               .extend_result(id_sign_extend_result),
+               .id_reg_2 (read_data_2),
+               .id_sign_extend_result(extend_result),
                .mux_operand_2(mux_operand_2),
 
                .id_instruction(id_instruction),
                .pc_overload_value(pc_overload_value),
 
-               .read_reg_addr_1(id_reg_1_idx),
-               .read_reg_addr_2(id_reg_2_idx),
-               .write_reg_addr(id_reg_dest_idx),
+               .id_reg_1_idx(read_reg_addr_1),
+               .id_reg_2_idx(read_reg_addr_2),
+               .id_reg_dest_idx(write_reg_addr),
                .mux_reg_1_idx(mux_reg_1_idx),
                .mux_reg_2_idx(mux_reg_2_idx),
                .mux_reg_dest_idx(mux_reg_dest_idx),
@@ -301,101 +311,127 @@ signal_mux signal_mux(
 //--------------------------------id_exe_reg------------------------------------//
 
 id_ex_reg id_ex_reg(
-        .clk(clk),
-        .rst_n(rst_n),
-    
-        .hazard_control(hazard_control),
+              .clk(clk),
+              .rst_n(rst_n),
 
-        .id_no_op(id_no_op),
-        .ex_no_op(ex_no_op),
+              .hazard_control(hazard_control),
 
-        .reg_write_en(id_reg_write_enable),
-        .ex_reg_write_enable(ex_reg_write_enable),
+              .id_no_op(id_no_op),
+              .ex_no_op(ex_no_op),
 
-        .mem_control(id_mem_control),
-        .ex_mem_control(ex_mem_control),
+              .id_reg_write_enable(reg_write_en),
+              .ex_reg_write_enable(ex_reg_write_enable),
 
-        .alu_opcode(id_alu_control),
-        .ex_alu_control(ex_alu_control),
+              .id_mem_control(mem_control),
+              .ex_mem_control(ex_mem_control),
 
-        .mux_operand_1(mux_operand_1),
-        .ex_operand_1(ex_operand_1),
+              .id_alu_control(alu_opcode),
+              .ex_alu_control(ex_alu_control),
 
-        .mux_operand_2(mux_operand_2),
-        .ex_operand_2(ex_operand_2),
+              .mux_operand_1(mux_operand_1),
+              .ex_operand_1(ex_operand_1),
 
-        .read_data_2(id_reg_2),
-        .ex_store_data(ex_store_data),
-    
+              .mux_operand_2(mux_operand_2),
+              .ex_operand_2(ex_operand_2),
 
-        .mux_reg_1_idx(mux_reg_1_idx),
-        .mux_reg_2_idx(mux_reg_2_idx),
-        .mux_reg_dest_idx(mux_reg_dest_idx),
-        .ex_reg_1_idx(ex_reg_1_idx),
-        .ex_reg_2_idx(ex_reg_2_idx),
-        .ex_reg_dest_idx(ex_reg_dest_idx)
-);
+              .id_reg_2(read_data_2),
+              .ex_store_data(ex_store_data),
+
+
+              .mux_reg_1_idx(mux_reg_1_idx),
+              .mux_reg_2_idx(mux_reg_2_idx),
+              .mux_reg_dest_idx(mux_reg_dest_idx),
+              .ex_reg_1_idx(ex_reg_1_idx),
+              .ex_reg_2_idx(ex_reg_2_idx),
+              .ex_reg_dest_idx(ex_reg_dest_idx)
+          );
 
 //--------------------------------stage-exe------------------------------------//
 
 alu alu(
-    .ex_alu_control(alu_opcode),
-    .mem_alu_result(alu_result),        //  ??
-    .mem_result(mem_result),
-    .val1_sel(val1_sel),
-    .val2_sel(val2_sel),
-    .mux_operand_1(a_input),
-    .mux_operand_2(b_input),
-    .ex_alu_output(alu_output)
-);
+        .alu_opcode(ex_alu_control),
+        .alu_result(mem_alu_result),        //  ??
+        .mem_result(mem_result),
+        .val1_sel(val1_sel),
+        .val2_sel(val2_sel),
+        .a_input(mux_operand_1),
+        .b_input(mux_operand_2),
+        .alu_output(ex_alu_output)
+    );
 
 //----------------------------forwarding_unit----------------------------------//
 forwarding_unit forwarding_unit(
-    .ex_reg_1_idx(src1),
-    .ex_reg_2_idx(src2),    
-    .ex_reg_dest_idx(st_src),
-    .dest_mem(dest_mem),
-    .dest_wb(dest_wb),
+                    .src1(ex_reg_1_idx),
+                    .src2(ex_reg_2_idx),
+                    .st_src(ex_reg_dest_idx),
+                    .dest_mem(dest_mem),
+                    .dest_wb(dest_wb),
 
-    .mem_wb_en(mem_wb_en),
-    .ex_reg_write_enable(wb_en),
+                    .mem_wb_en(mem_wb_en),
+                    .wb_en(ex_reg_write_enable),
 
-    .val1_sel(val1_sel),
-    .val2_sel(val2_sel),
-    .st_sel(st_sel)
-
-)
+                    .val1_sel(val1_sel),
+                    .val2_sel(val2_sel),
+                    .st_sel(st_sel)
+                );
 
 //---------------------------------ex_mem_reg----------------------------------//
 
 ex_mem_reg ex_mem_reg(
-    .clk(clk),
-    .rst_n(rst_n),
+               .clk(clk),
+               .rst_n(rst_n),
 
-    .hazard_control(hazard_control),
+               .hazard_control(hazard_control),
 
-    .ex_no_op(ex_no_op),
-    .mem_no_op(mem_no_op),
+               .ex_no_op(ex_no_op),
+               .mem_no_op(mem_no_op),
 
-    .ex_reg_write_enable(ex_reg_write_enable),
-    .mem_reg_write_enable(mem_reg_write_enable),
+               .ex_reg_write_enable(ex_reg_write_enable),
+               .mem_reg_write_enable(mem_reg_write_enable),
 
-    .ex_mem_control(ex_mem_control),
-    .mem_mem_control(mem_mem_control),
+               .ex_mem_control(ex_mem_control),
+               .mem_mem_control(mem_mem_control),
 
-    .ex_alu_output(ex_alu_result),
-    .mem_alu_result(mem_alu_result),
+               .ex_alu_result(ex_alu_output),
+               .mem_alu_result(mem_alu_result),
 
-    .st_sel(store_data_select),             // ?? 
-    .ex_store_data(ex_store_data),
-    .mem_alu_result(mem_alu_result_prev),
-    .reg_write_data(wb_reg_write_data),
-    .mem_store_data(mem_store_data),
+               .store_data_select(st_sel),             // ??
+               .ex_store_data(ex_store_data),
+               .mem_alu_result_prev(mem_alu_result),
+               .wb_reg_write_data(reg_write_data),
+               .mem_store_data(mem_store_data),
 
-    .ex_reg_dest_idx(ex_dest_reg),
-    .mem_dest_reg(mem_dest_reg)
-);
+               .ex_dest_reg(ex_reg_dest_idx),
+               .mem_dest_reg(mem_dest_reg)
+           );
+
+
+//--------------------------------stage-mem------------------------------------//
+data_mem data_mem(
+             .clk(clk),
+             .rst_n(rst_n),
+
+             .uart_disable(uart_disable),
+             .uart_clk(uart_clk),
+             .uart_write_enable(uart_write_enable),
+             .uart_data(uart_data),
+             .uart_addr(uart_addr),
+
+             .no_op(ex_no_op),
+             .mem_control(ex_mem_control),
+             .mem_addr(mem_alu_result),
+             .mem_store_data(mem_store_data),
+             .mem_read_data(mem_read_data),
+
+             .input_enable(input_enable)
 
 
 
+            ////////////////////   more signal to be added
+
+
+
+
+
+         );
 endmodule
