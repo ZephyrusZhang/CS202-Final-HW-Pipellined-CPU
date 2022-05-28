@@ -53,12 +53,12 @@ module keypad_unit #(parameter
         end else tran_cnt <= tran_cnt + 1'b1;
     end
     
-    assign tran_flag = (tran_cnt == DELAY_TRAN) ? 1'b1 : 1'b0;
+    // assign tran_flag = (tran_cnt == DELAY_TRAN) ? 1'b1 : 1'b0;
     
     always @(negedge clk, negedge rst_n) begin
         if (!rst_n) begin
             pre_state <= SCAN_IDLE;
-        end else if (tran_flag) begin
+        end else if (tran_cnt == DELAY_TRAN) begin
             pre_state <= next_state;
         end else pre_state <= pre_state;
     end
@@ -70,7 +70,7 @@ module keypad_unit #(parameter
                 if (row_in != 4'hf) next_state = SCAN_JITTER_1;
                 else next_state = SCAN_IDLE;
             SCAN_JITTER_1:
-                if (row_in != 4'hf && delay_done) next_state = SCAN_COL1;
+                if (row_in != 4'hf && (delay_cnt == DEBOUNCE_PERIOD - 1'b1)) next_state = SCAN_COL1;
                 else next_state = SCAN_JITTER_1;
             SCAN_COL1:
                 if (row_in != 4'hf) next_state = SCAN_READ;
@@ -88,7 +88,7 @@ module keypad_unit #(parameter
                 if (row_in != 4'hf) next_state = SCAN_JITTER_2;
                 else next_state = SCAN_IDLE;
             SCAN_JITTER_2:
-                if (row_in != 4'hf && delay_done) next_state = SCAN_IDLE;
+                if (row_in != 4'hf && (delay_cnt == DEBOUNCE_PERIOD - 1'b1)) next_state = SCAN_IDLE;
                 else next_state = SCAN_JITTER_2;
             default: next_state = SCAN_IDLE;
         endcase
@@ -119,12 +119,12 @@ module keypad_unit #(parameter
         end
     end
     
-    assign key_pressed = (next_state == SCAN_IDLE && pre_state == SCAN_JITTER_2 && tran_flag) ? 1'b1 : 1'b0;
+    assign key_pressed = ((next_state == SCAN_IDLE) && (pre_state == SCAN_JITTER_2) && (tran_cnt == DELAY_TRAN)) ? 1'b1 : 1'b0;
     
     always @(negedge clk, negedge rst_n) begin
         if (!rst_n) begin
             key_coord <= 0; 
-        end else if (key_pressed) begin
+        end else if (key_pressed == 1'b1) begin
             key_coord <= {row_val, col_val};
         end else 
             // key_coord <= key_coord; // critical: annotate when not testing!
