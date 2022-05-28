@@ -44,14 +44,10 @@ assign immediate = id_pc[`IMMEDIATE_WIDTH - 1:0];                             //
 
 wire  [`ISA_WIDTH - 1 : 0]              reg_write_data;                              //from register_file
 wire                                    reg_write_en;                                //from register_file
-wire                                    wb_no_op;                                //to register_file
-wire  [`ISA_WIDTH - 1 : 0]              read_data_1, read_data_2;                //to register_file
-
-
-
-wire [`ALU_CONTROL_WIDTH - 1:0]       alu_opcode;
-wire [1:0]                            mem_control;
-wire                                  wb_en;
+wire                                    wb_no_op;                                    //to register_file
+wire  [`ISA_WIDTH - 1 : 0]              read_data_1, read_data_2;                    //to register_file
+wire [`ALU_CONTROL_WIDTH - 1:0]         alu_opcode;
+wire [1:0]                              mem_control;
 
 
 wire  i_type_instruction;                                    // from control_unit (whether it is a I type instruction)
@@ -99,11 +95,17 @@ wire [`REG_FILE_ADDR_WIDTH - 1:0] ex_reg_dest_idx;     // for (1) forwarding_uni
 //--------------------------------stage-exe------------------------------------//
 
   wire[`ISA_WIDTH - 1 : 0]          alu_result, mem_result;
-  wire[`FORW_SEL_WIDTH - 1 : 0]     val1_sel, val2_sel;
   wire[`ISA_WIDTH - 1:0]            alu_output;
 
-//-------------------------------------------------------------------------------//
 
+
+//---------------------------------forwording----------------------------------//
+
+
+wire [`REG_FILE_ADDR_WIDTH - 1 : 0] dest_mem, dest_wb;
+wire                                mem_wb_en; 
+wire [`FORW_SEL_WIDTH - 1 : 0]      val1_sel, val2_sel;
+wire [`FORW_SEL_WIDTH - 1 : 0]      st_sel;
 
 //--------------------------------stage-mem------------------------------------//
 
@@ -239,7 +241,7 @@ control control(
             .jal_instruction(jal_instruction),
             .branch_instruction(branch_instruction),
             .store_instruction(store_instruction),
-            .wb_en(wb_en)
+            .reg_write_en(wb_en)
         );
 
 
@@ -331,7 +333,22 @@ alu alu(
     .alu_output(alu_output)
 );
 
+//----------------------------forwarding_unit----------------------------------//
+forwarding_unit forwarding_unit(
+    .ex_reg_1_idx(src1),
+    .ex_reg_2_idx(src2),    
+    .ex_reg_dest_idx(st_src),
+    .dest_mem(dest_mem),
+    .dest_wb(dest_wb),
 
+    .mem_wb_en(mem_wb_en),
+    .ex_reg_write_enable(wb_en),
+
+    .val1_sel(val1_sel),
+    .val2_sel(val2_sel),
+    .st_sel(st_sel)
+
+)
 
 
 
