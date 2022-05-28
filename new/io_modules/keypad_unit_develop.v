@@ -26,7 +26,7 @@ module keypad_unit_develop #(parameter
                 SCAN_COL4_2 = 4'b1010,
                 CHECK       = 4'b1011;
     
-    reg [2:0] state;
+    reg [3:0] state;
     reg [20:0] delay_cnt;
     
     always @(negedge clk, negedge rst_n) begin
