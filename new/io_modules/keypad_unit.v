@@ -95,7 +95,7 @@ module keypad_unit #(parameter
     
     always @(negedge clk, negedge rst_n) begin
         if (!rst_n) begin
-            col_out <= 4'hF;
+            col_out <= 4'h0;
             row_val <= 4'h0;
             col_val <= 4'h0;
         end else if (tran_cnt == DELAY_TRAN) begin
@@ -109,7 +109,7 @@ module keypad_unit #(parameter
                     row_val <= row_in;
                     col_val <= col_out;
                 end
-                default  : col_out <= 4'b1111;
+                default  : col_out <= 4'b0000;
             endcase
         end else begin
             // col_out <= col_out;
@@ -120,10 +120,8 @@ module keypad_unit #(parameter
     
     wire key_pressed = (next_state == SCAN_IDLE) && (state == SCAN_JITTER_2) && (tran_cnt == DELAY_TRAN);
     
-    always @(negedge clk, negedge rst_n) begin
-        if (!rst_n) begin
-            key_coord <= 0; 
-        end else if (key_pressed) begin
+    always @(*) begin
+        if (key_pressed) begin
             key_coord <= {row_val, col_val};
         end else 
             // key_coord <= key_coord; // critical: annotate when not testing!
