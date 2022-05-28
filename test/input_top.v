@@ -9,7 +9,8 @@ module input_top (
     output [6:0] seg_tube,
     output [7:0] seg_enable,
     output input_complete_led,
-    output cpu_pause_led
+    output cpu_pause_led,
+    output [1:0] input_state
 );
 
 wire [7:0] key_coord;
@@ -35,7 +36,8 @@ input_unit input_test (
     .input_complete(input_complete_led),
     .input_data(output_data),
     .switch_enable(switch_enable),
-    .cpu_pause(cpu_pause_led)
+    .cpu_pause(cpu_pause_led),
+    .input_state(input_state)
 );
 
 seven_seg_unit seg(
