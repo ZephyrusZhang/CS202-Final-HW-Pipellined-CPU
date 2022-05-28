@@ -2,7 +2,7 @@
 `timescale 1ns / 1ps
 
 /*
-this module is implements the functionality of:
+this module is to implement the functionality of:
     (1) PC
     (2) ALU for PC
     (3) instruction memory
