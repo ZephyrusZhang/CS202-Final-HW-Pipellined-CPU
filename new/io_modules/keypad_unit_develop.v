@@ -83,12 +83,13 @@ module keypad_unit_develop #(parameter
                     end
                 // pause and wait
                 DELAY: begin
-                    delay_cnt       <= delay_cnt + 1;
                     if (row_in != 4'hf & delay_cnt == DEBOUNCE_PERIOD) begin
                         state       <= SCAN_COL1_2;
                         delay_cnt   <= 0;
-                    end else
+                    end else begin
                         state       <= IDLE;
+                        delay_cnt   <= delay_cnt + 1;
+                    end
                 end
                 // scan the second time
                 SCAN_COL1_2:
