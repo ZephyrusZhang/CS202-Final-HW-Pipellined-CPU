@@ -91,15 +91,16 @@ wire [`ISA_WIDTH - 1:0] ex_store_data;                 // for ex_mem_reg (the da
 wire [`REG_FILE_ADDR_WIDTH - 1:0] ex_reg_1_idx;        // for forwarding_unit
 wire [`REG_FILE_ADDR_WIDTH - 1:0] ex_reg_2_idx;        // for forwarding_unit
 wire [`REG_FILE_ADDR_WIDTH - 1:0] ex_reg_dest_idx;     // for (1) forwarding_unit
-//     (2) hazrad_unit
-//     (3) ex_mem_reg
+                                                       //     (2) hazrad_unit
+                                                       //     (3) ex_mem_reg
 
-//-------------------------------------------------------------------------------//
 
 
 //--------------------------------stage-exe------------------------------------//
 
-
+  wire[`ISA_WIDTH - 1 : 0]          alu_result, mem_result;
+  wire[`FORW_SEL_WIDTH - 1 : 0]     val1_sel, val2_sel;
+  wire[`ISA_WIDTH - 1:0]            alu_output;
 
 //-------------------------------------------------------------------------------//
 
@@ -316,5 +317,22 @@ id_ex_reg id_ex_reg(
         .ex_reg_2_idx(ex_reg_2_idx),
         .ex_reg_dest_idx(ex_reg_dest_idx)
 );
+
+//--------------------------------stage-exe------------------------------------//
+
+alu alu(
+    .ex_alu_control(alu_opcode),
+    .alu_result(alu_result),
+    .mem_result(mem_result),
+    .val1_sel(val1_sel),
+    .val2_sel(val2_sel),
+    .mux_operand_1(a_input),
+    .mux_operand_2(b_input),
+    .alu_output(alu_output)
+);
+
+
+
+
 
 endmodule
