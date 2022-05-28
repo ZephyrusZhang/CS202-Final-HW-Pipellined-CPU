@@ -21,8 +21,8 @@ module if_id_reg (
     input      [`ISA_WIDTH - 1:0] if_instruction,   // from instruction_mem (the current instruction)
     output reg [`ISA_WIDTH - 1:0] id_instruction,   // for control_unit (the current instruction)
 
-    input      pc_offset,                           // from id_ex_reg (if branch)    
-    input      pc_overload                          // from id_ex_reg (if jump)
+    input      pc_offset,                           // from signal_mux
+    input      pc_overload                          // from signal_mux
     );
 
     wire pc_abnormal = pc_offset | pc_overload; // prediction (default pc + 4) failed
