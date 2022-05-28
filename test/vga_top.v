@@ -1,4 +1,4 @@
-`include "../definitions.v"
+`include "../new/definitions.v"
 
 module vga_top (
     input clk, rst_n,
@@ -20,7 +20,7 @@ module vga_top (
         .clk_vga(clk_vga),
         .rst_n(rst_n),
         .display_en(display_en),
-        .x(x), y(y),
+        .x(x), .y(y),
         .vga_write_enable(vga_write_enable),
         .vga_store_data(32'h8000_0008),
         .issue_type(`KEYPAD),
