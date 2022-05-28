@@ -1,7 +1,7 @@
 `include "../definitions.v"
 `timescale 1ns / 1ps
 
-module input_unit (
+module output_unit (
     input clk_vga, rst_n,
     
     input      display_en,
