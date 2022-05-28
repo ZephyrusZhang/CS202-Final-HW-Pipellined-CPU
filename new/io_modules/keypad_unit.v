@@ -100,7 +100,7 @@ module keypad_unit #(parameter
             col_out <= 4'h0;
             row_val <= 4'h0;
             col_val <= 4'h0;
-        end else if (tran_flag) begin
+        end else if (tran_cnt == DELAY_TRAN) begin
             case (next_state)
                 SCAN_COL1: col_out <= 4'b0111;
                 SCAN_COL2: col_out <= 4'b1011;
