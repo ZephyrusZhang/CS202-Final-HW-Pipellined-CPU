@@ -2,7 +2,7 @@
 `timescale 1ns / 1ps
 
 module output_unit (
-    input clk_vga, rst_n,
+    input clk, rst_n,
     
     input      display_en,
     input      [`COORDINATE_WIDTH - 1:0] x, y,
@@ -39,24 +39,24 @@ module output_unit (
     wire [`STATUS_W_WIDTH - 1:0] x_status = (x - `STATUS_X);                    // x coordinate inside the status area
     
     wire [`DIGITS_IDX_WIDTH - 1:0] digits_idx = (x_digits / `DIGIT_WIDTH);      // index for digit to be displayed (with blanks)
-    wire [`DIGITS_IDX_WIDTH - 1:0] digit_idx  = digits_idx - (x_digits / 5);    // index for digit to be displayed (without blanks)
+    wire [`DIGITS_IDX_WIDTH - 1:0] digit_idx  = digits_idx - (digits_idx / 5);  // index for digit to be displayed (without blanks)
     
     wire digits_box_clear = (y < `DIGITS_BOX_Y) | (x <= `DIGITS_BOX_X) | (`DIGITS_BOX_Y + `DIGITS_BOX_HEIGHT <= y) | (`DIGITS_BOX_X + `DIGITS_BOX_WIDTH < x);                               // outside the digits box
     wire digits_clear     = (y < `DIGITS_Y)     | (x <= `DIGITS_X)     | (`DIGITS_Y     + `DIGITS_HEIGHT     <= y) | (`DIGITS_X     + `DIGITS_WIDTH     < x) | ((digits_idx + 1) % 5 == 0); // inside the digits box but not displaying digits
     wire status_clear     = (y < `STATUS_Y)     | (x <= `STATUS_X)     | (`STATUS_Y     + `STATUS_HEIGHT     <= y) | (`STATUS_X     + `STATUS_WIDTH     < x);                               // outside the status box
 
     // block memory for "0" "1" to be displayed
-    ZERO_rom    zero_rom    (.clk(clk_vga), .row(y_digits), .col(x_digit) , .color_data(zero_rgb));
-    ONE_rom     one_rom     (.clk(clk_vga), .row(y_digits), .col(x_digit) , .color_data(one_rgb));
+    ZERO_rom    zero_rom    (.clk(clk), .row(y_digits), .col(x_digit) , .color_data(zero_rgb));
+    ONE_rom     one_rom     (.clk(clk), .row(y_digits), .col(x_digit) , .color_data(one_rgb));
     
     // block memory for type of issue to be displayed
-    Normal_rom  normal_rom  (.clk(clk_vga), .row(y_status), .col(x_status), .color_data(normal_rgb));
-    UART_rom    uart_rom    (.clk(clk_vga), .row(y_status), .col(x_status), .color_data(uart_rgb));
-    Pause_rom   pause_rom   (.clk(clk_vga), .row(y_status), .col(x_status), .color_data(pause_rgb));
-    Keypad_rom  keypad_rom  (.clk(clk_vga), .row(y_status), .col(x_status), .color_data(keypad_rgb));
-    Switch_rom  switch_rom  (.clk(clk_vga), .row(y_status), .col(x_status), .color_data(switch_rgb));
+    Normal_rom  normal_rom  (.clk(clk), .row(y_status), .col(x_status), .color_data(normal_rgb));
+    UART_rom    uart_rom    (.clk(clk), .row(y_status), .col(x_status), .color_data(uart_rgb));
+    Pause_rom   pause_rom   (.clk(clk), .row(y_status), .col(x_status), .color_data(pause_rgb));
+    Keypad_rom  keypad_rom  (.clk(clk), .row(y_status), .col(x_status), .color_data(keypad_rgb));
+    Switch_rom  switch_rom  (.clk(clk), .row(y_status), .col(x_status), .color_data(switch_rgb));
     
-    always @(posedge clk_vga, negedge rst_n) begin
+    always @(posedge clk, negedge rst_n) begin
         if (~rst_n) begin
             vga_rgb <= 0;
         end else if (display_en) begin
@@ -77,8 +77,10 @@ module output_unit (
                 3'b101 : vga_rgb <= `DIGITS_BOX_BG_COLOR;
                 // digits reached
                 3'b100 : 
-                    if (value_to_display[digit_idx+:1] == 1'b1) vga_rgb <= one_rgb;
-                    else                                        vga_rgb <= zero_rgb;
+                    if (value_to_display[(`ISA_WIDTH - digit_idx - 1)+:1] == 1'b1) 
+                        vga_rgb <= one_rgb;
+                    else
+                        vga_rgb <= zero_rgb;
                 // outside the text area
                 default: vga_rgb <= `BG_COLOR;
             endcase
