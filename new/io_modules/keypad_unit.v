@@ -22,11 +22,11 @@ module keypad_unit #(parameter
                SCAN_COL4     = 8'b0010_0000,
                SCAN_READ     = 8'b0100_0000,
                SCAN_JITTER_2 = 8'b1000_0000;
-    localparam DELAY_TRAN = 2;
+    
+    localparam DELAY_TRAN = 2; // how many times DEBOUNCE_PERIOD is met and the keypress is checked
     
     reg [20:0] delay_cnt;
-    
-    reg [7:0] pre_state, next_state;
+    reg [7:0] state, next_state;
     reg [20:0] tran_cnt;
     
     always @(negedge clk, negedge rst_n) begin
@@ -40,8 +40,6 @@ module keypad_unit #(parameter
             endcase
     end
     
-    // wire delay_done = (delay_cnt == DEBOUNCE_PERIOD - 1'b1) ? 1'b1 : 1'b0;
-    
     always @(negedge clk, negedge rst_n) begin
         if (!rst_n) begin 
             tran_cnt <= 0;
@@ -51,23 +49,22 @@ module keypad_unit #(parameter
             tran_cnt <= tran_cnt + 1;
     end
     
-    // wire tran_flag = (tran_cnt == DELAY_TRAN) ? 1'b1 : 1'b0;
-    
     always @(negedge clk, negedge rst_n) begin
         if (!rst_n) begin
-            pre_state <= SCAN_IDLE;
+            state <= SCAN_IDLE;
         end else if (tran_cnt == DELAY_TRAN) begin
-            pre_state <= next_state;
+            state <= next_state;
         end else 
-            pre_state <= pre_state;
+            state <= state;
     end
     
     always @(*) begin
         next_state = SCAN_IDLE;
-        case (pre_state)
+        case (state)
             SCAN_IDLE:
                 if (row_in != 4'hf) next_state = SCAN_JITTER_1;
                 else                next_state = SCAN_IDLE;
+            // this state will pause
             SCAN_JITTER_1:
                 if (row_in != 4'hf && delay_cnt == DEBOUNCE_PERIOD - 1) 
                                     next_state = SCAN_COL1;
@@ -87,6 +84,7 @@ module keypad_unit #(parameter
             SCAN_READ:
                 if (row_in != 4'hf) next_state = SCAN_JITTER_2;
                 else                next_state = SCAN_IDLE;
+            // this state will pause
             SCAN_JITTER_2:
                 if (row_in != 4'hf && delay_cnt == DEBOUNCE_PERIOD - 1) 
                                     next_state = SCAN_IDLE;
@@ -101,7 +99,7 @@ module keypad_unit #(parameter
             row_val <= 4'h0;
             col_val <= 4'h0;
         end else if (tran_cnt == DELAY_TRAN) begin
-            case (next_state)
+            case (state)
                 SCAN_COL1: col_out <= 4'b0111;
                 SCAN_COL2: col_out <= 4'b1011;
                 SCAN_COL3: col_out <= 4'b1101;
@@ -120,7 +118,7 @@ module keypad_unit #(parameter
         end
     end
     
-    wire key_pressed = (next_state == SCAN_IDLE) && (pre_state == SCAN_JITTER_2) && (tran_cnt == DELAY_TRAN);
+    wire key_pressed = (next_state == SCAN_IDLE) && (state == SCAN_JITTER_2) && (tran_cnt == DELAY_TRAN);
     
     always @(negedge clk, negedge rst_n) begin
         if (!rst_n) begin
