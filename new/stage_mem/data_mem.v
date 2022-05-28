@@ -40,11 +40,12 @@ module data_mem #(parameter
 
     input      no_op,                                   // from ex_mem_reg (stop read and write)
     
-    output     input_enable,                            // signal the keypad (and switch) to start reading
+    output     input_enable,                            // for (1) input_unit (signal the keypad and switch to start reading)
+                                                        //     (2) hazard_unit (trigger keypad hazard)
     input      [`ISA_WIDTH - 1:0] input_data,           // from input_unit (data from user input)
 
-    output     vga_write_enable,                        // vga write enable
-    output     [`ISA_WIDTH - 1:0] vga_store_data        // data to vga
+    output     vga_write_enable,                        // for output_unit (write to vga display value register)
+    output     [`ISA_WIDTH - 1:0] vga_store_data        // for output_unit (data to vga)
     );
 
     wire io_active = (mem_addr[`IO_START_BIT:`IO_END_BIT] == `IO_HIGH_ADDR);
