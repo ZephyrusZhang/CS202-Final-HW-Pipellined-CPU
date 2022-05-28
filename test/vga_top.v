@@ -1,4 +1,4 @@
-`include "../definitions.v"
+`include "../new/definitions.v"
 
 module vga_top (
     input clk, rst_n,
@@ -7,6 +7,7 @@ module vga_top (
     output [`VGA_BIT_DEPTH - 1:0] vga_rgb
     );
     wire clk_vga;
+    wire [`COORDINATE_WIDTH - 1:0] x, y;
 
     clk_generator #(4) cloker(
         .clk(clk), 
@@ -19,7 +20,7 @@ module vga_top (
         .clk_vga(clk_vga),
         .rst_n(rst_n),
         .display_en(display_en),
-        .x(x), y(y),
+        .x(x), .y(y),
         .vga_write_enable(vga_write_enable),
         .vga_store_data(32'h8000_0008),
         .issue_type(`KEYPAD),
@@ -27,7 +28,6 @@ module vga_top (
         .vga_rgb(vga_rgb)
     );
 
-    wire [`COORDINATE_WIDTH - 1:0] x, y;
     vga_signal vga_uut(
         .clk_vga(clk_vga), 
         .rst_n(rst_n),
