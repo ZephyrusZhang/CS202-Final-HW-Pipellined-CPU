@@ -33,10 +33,6 @@ module keypad_unit_develop #(parameter
         if (~rst_n) begin
             {
                 col_out,
-                row_val_1,
-                row_val_2,
-                col_val_1,
-                col_val_2,
                 delay_cnt,
                 key_coord_1,
                 key_coord_2,
