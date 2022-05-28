@@ -1,4 +1,5 @@
-`include "../new/definitions.v"
+`timescale 1ns / 1ps
+`include "../../new/definitions.v"
 
 module vga_top (
     input clk, rst_n,
@@ -17,7 +18,7 @@ module vga_top (
     );
 
     output_unit output_test(
-        .clk_vga(clk_vga),
+        .clk(clk),
         .rst_n(rst_n),
         .display_en(display_en),
         .x(x), .y(y),
