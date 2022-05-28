@@ -50,7 +50,7 @@ module keypad_unit_develop #(parameter
                 end
                 SCAN_COL1_1:
                     if (row_in != 4'hf) begin
-                        state       <= SCAN_JITTER;
+                        state       <= DELAY;
                         key_coord_1 <= {row_in, col_out};
                     end else begin
                         state       <= SCAN_COL2_1;
@@ -58,7 +58,7 @@ module keypad_unit_develop #(parameter
                     end
                 SCAN_COL2_1:
                     if (row_in != 4'hf) begin
-                        state       <= SCAN_JITTER;
+                        state       <= DELAY;
                         key_coord_1 <= {row_in, col_out};
                     end else begin
                         state       <= SCAN_COL3_1;
@@ -66,7 +66,7 @@ module keypad_unit_develop #(parameter
                     end
                 SCAN_COL3_1:
                     if (row_in != 4'hf) begin
-                        state       <= SCAN_JITTER;
+                        state       <= DELAY;
                         key_coord_1 <= {row_in, col_out};
                     end else begin
                         state       <= SCAN_COL4_1;
@@ -74,14 +74,14 @@ module keypad_unit_develop #(parameter
                     end
                 SCAN_COL4_1:
                     if (row_in != 4'hf) begin
-                        state       <= SCAN_JITTER;
+                        state       <= DELAY;
                         key_coord_1 <= {row_in, col_out};
                     end else begin
                         state       <= IDLE;
                         col_out     <= 4'b0000;
                     end
                 // this state will pause
-                SCAN_JITTER: begin
+                DELAY: begin
                     delay_cnt       <= delay_cnt + 1;
                     if (row_in != 4'hf & delay_cnt == DEBOUNCE_PERIOD) 
                         next_state  <= SCAN_COL1_2;
@@ -90,7 +90,7 @@ module keypad_unit_develop #(parameter
                 end
                 SCAN_COL1_2:
                     if (row_in != 4'hf) begin
-                        state       <= SCAN_JITTER;
+                        state       <= DELAY;
                         key_coord_2 <= {row_in, col_out};
                     end else begin
                         state       <= SCAN_COL2_2;
@@ -98,7 +98,7 @@ module keypad_unit_develop #(parameter
                     end
                 SCAN_COL2_2:
                     if (row_in != 4'hf) begin
-                        state       <= SCAN_JITTER;
+                        state       <= DELAY;
                         key_coord_2 <= {row_in, col_out};
                     end else begin
                         state       <= SCAN_COL3_2;
@@ -106,7 +106,7 @@ module keypad_unit_develop #(parameter
                     end
                 SCAN_COL3_2:
                     if (row_in != 4'hf) begin
-                        state       <= SCAN_JITTER;
+                        state       <= DELAY;
                         key_coord_2 <= {row_in, col_out};
                     end else begin
                         state       <= SCAN_COL4_2;
@@ -114,7 +114,7 @@ module keypad_unit_develop #(parameter
                     end
                 SCAN_COL4_2:
                     if (row_in != 4'hf) begin
-                        state       <= SCAN_JITTER;
+                        state       <= DELAY;
                         key_coord_2 <= {row_in, col_out};
                     end else begin
                         state       <= IDLE;
