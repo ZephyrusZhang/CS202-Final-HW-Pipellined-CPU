@@ -27,8 +27,6 @@ wire [`ISA_WIDTH - 1:0] id_pc;                        // for id_ex_reg (to store
 wire id_no_op;                                        // for general_reg (stop opeartions)
 wire [`ISA_WIDTH - 1:0] id_instruction;               // for control_unit (the current instruction)
 //--------------------------------stage-id------------------------------------//
-
-
 wire[`REG_FILE_ADDR_WIDTH - 1 : 0]     read_reg_addr_1, read_reg_addr_2, write_reg_addr;  //decoding from pc
 wire[`OP_CODE_WIDTH - 1 : 0]           opcode;
 wire[`FUNC_CODE_WIDTH - 1 : 0]         func;
@@ -44,8 +42,8 @@ assign func = id_pc[`FUNC_CODE_WIDTH-1:0];                                   //f
 assign immediate = id_pc[`IMMEDIATE_WIDTH - 1:0];                             // address I type: low 16-bit
 
 
-wire  [`ISA_WIDTH - 1 : 0]              write_data;                              //from register_file
-wire                                    write_en;                                //from register_file
+wire  [`ISA_WIDTH - 1 : 0]              reg_write_data;                              //from register_file
+wire                                    reg_write_en;                                //from register_file
 wire                                    wb_no_op;                                //to register_file
 wire  [`ISA_WIDTH - 1 : 0]              read_data_1, read_data_2;                //to register_file
 
@@ -73,11 +71,6 @@ wire  [`ISA_WIDTH - 1:0] pc_overload_value;                 // from signal_mux (
 
 wire [`ISA_WIDTH - 1:0] mux_operand_1;                // for id_ex_reg (to pass on to alu)
 wire [`ISA_WIDTH - 1:0] mux_operand_2;                // for (1) id_ex_reg (to pass on to alu)
-//     (2) instruction_mem (pc_offset_value)
-
-
-// wire [`REG_FILE_ADDR_WIDTH - 1:0] id_reg_dest_idx;    // from if_id_reg (index of destination resgiter)   ->
-
 
 wire [`REG_FILE_ADDR_WIDTH - 1:0] mux_reg_1_idx;      // for id_ex_reg (to pass on to forwarding_unit)
 wire [`REG_FILE_ADDR_WIDTH - 1:0] mux_reg_2_idx;      // for id_ex_reg (to pass on to forwarding_unit)
@@ -88,7 +81,18 @@ wire reg_2_valid;                                     // for hazard_unit
 
 
 //--------------------------------id_exe_reg------------------------------------//
-
+wire ex_no_op;                                         // for alu (stop opeartions)
+wire ex_reg_write_enable;                              // for ex_mem_reg
+wire [1:0] ex_mem_control;                             // for ex_mem_reg
+wire [`ALU_CONTROL_WIDTH - 1:0] ex_alu_control;        // for alu
+wire [`ISA_WIDTH - 1:0] ex_operand_1;                  // for alu (first oprand for alu)
+wire [`ISA_WIDTH - 1:0] ex_operand_2;                  // for alu (second oprand for alu)
+wire [`ISA_WIDTH - 1:0] ex_store_data;                 // for ex_mem_reg (the data to be store into memory)
+wire [`REG_FILE_ADDR_WIDTH - 1:0] ex_reg_1_idx;        // for forwarding_unit
+wire [`REG_FILE_ADDR_WIDTH - 1:0] ex_reg_2_idx;        // for forwarding_unit
+wire [`REG_FILE_ADDR_WIDTH - 1:0] ex_reg_dest_idx;     // for (1) forwarding_unit
+//     (2) hazrad_unit
+//     (3) ex_mem_reg
 
 //-------------------------------------------------------------------------------//
 
@@ -176,8 +180,6 @@ instruction_mem instruction_mem(
                     .instruction(instruction)
                 );
 
-//-------------------------------------------------------------------------------//
-
 //--------------------------------if-id-reg------------------------------------//
 if_id_reg if_id_reg(
               .clk(clk),
@@ -202,8 +204,8 @@ register_file register_file(
                   .read_reg_addr_1(read_reg_addr_1),
                   .read_reg_addr_2(read_reg_addr_2),
                   .write_reg_addr(write_reg_addr),
-                  .write_data(write_data),
-                  .write_en(write_en),
+                  .reg_write_data(write_data),
+                  .reg_write_en(write_en),
                   .wb_no_op(wb_no_op),
                   .id_no_op(id_no_op),
                   .read_data_1(read_data_1),
@@ -242,41 +244,77 @@ control control(
 
 
 signal_mux signal_mux(
-    .i_type_instruction(i_type_instruction),
-    .r_type_instruction(r_type_instruction),
-    .j_instruction(j_instruction),
-    .jr_instruction(jr_instruction),
-    .jal_instruction(jal_instruction),
-    .branch_instruction(branch_instruction),
-    .store_instruction(store_instruction),
+               .i_type_instruction(i_type_instruction),
+               .r_type_instruction(r_type_instruction),
+               .j_instruction(j_instruction),
+               .jr_instruction(jr_instruction),
+               .jal_instruction(jal_instruction),
+               .branch_instruction(branch_instruction),
+               .store_instruction(store_instruction),
 
-    .condition_satisfied(condition_satisfied),   
-    .pc_offset(pc_offset),
+               .condition_satisfied(condition_satisfied),
+               .pc_offset(pc_offset),
 
-    .pc_overload(pc_overload),
+               .pc_overload(pc_overload),
 
-    .read_data_1(id_reg_1),
-    .id_pc(id_pc),
-    .mux_operand_1(mux_operand_1),
+               .read_data_1(id_reg_1),
+               .id_pc(id_pc),
+               .mux_operand_1(mux_operand_1),
 
-    .read_data_2(id_reg_2),
-    .extend_result(id_sign_extend_result),
-    .mux_operand_2(mux_operand_2),
+               .read_data_2(id_reg_2),
+               .extend_result(id_sign_extend_result),
+               .mux_operand_2(mux_operand_2),
 
-    .id_instruction(id_instruction),
-    .pc_overload_value(pc_overload_value),
+               .id_instruction(id_instruction),
+               .pc_overload_value(pc_overload_value),
 
-    .read_reg_addr_1(id_reg_1_idx),
-    .read_reg_addr_2(id_reg_2_idx),
-    .write_reg_addr(id_reg_dest_idx),
-    .mux_reg_1_idx(mux_reg_1_idx),
-    .mux_reg_2_idx(mux_reg_2_idx),
-    .mux_reg_dest_idx(mux_reg_dest_idx),
+               .read_reg_addr_1(id_reg_1_idx),
+               .read_reg_addr_2(id_reg_2_idx),
+               .write_reg_addr(id_reg_dest_idx),
+               .mux_reg_1_idx(mux_reg_1_idx),
+               .mux_reg_2_idx(mux_reg_2_idx),
+               .mux_reg_dest_idx(mux_reg_dest_idx),
 
-    .reg_1_valid(reg_1_valid),
-    .reg_2_valid(reg_2_valid)
+               .reg_1_valid(reg_1_valid),
+               .reg_2_valid(reg_2_valid)
+           );
+
+//--------------------------------id_exe_reg------------------------------------//
+
+id_ex_reg id_ex_reg(
+        .clk(clk),
+        .rst_n(rst_n),
+    
+        .hazard_control(hazard_control),
+
+        .id_no_op(id_no_op),
+        .ex_no_op(ex_no_op),
+
+        .reg_write_en(id_reg_write_enable),
+        .ex_reg_write_enable(ex_reg_write_enable),
+
+        .mem_control(id_mem_control),
+        .ex_mem_control(ex_mem_control),
+
+        .alu_opcode(id_alu_control),
+        .ex_alu_control(ex_alu_control),
+
+        .mux_operand_1(mux_operand_1),
+        .ex_operand_1(ex_operand_1),
+
+        .mux_operand_2(mux_operand_2),
+        .ex_operand_2(ex_operand_2),
+
+        .read_data_2(id_reg_2),
+        .ex_store_data(ex_store_data),
+    
+
+        .mux_reg_1_idx(mux_reg_1_idx),
+        .mux_reg_2_idx(mux_reg_2_idx),
+        .mux_reg_dest_idx(mux_reg_dest_idx),
+        .ex_reg_1_idx(ex_reg_1_idx),
+        .ex_reg_2_idx(ex_reg_2_idx),
+        .ex_reg_dest_idx(ex_reg_dest_idx)
 );
-
-//-------------------------------------------------------------------------------//
 
 endmodule
