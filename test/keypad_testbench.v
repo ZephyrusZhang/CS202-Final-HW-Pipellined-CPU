@@ -1,5 +1,5 @@
 module keypad_testbench ();
-    reg [3:0] row_in = 4'hf;;
+    reg [3:0] row_in = 4'hf;
     wire [3:0] col_out;
     reg clk = 0, rst_n = 1;
     wire key_pressed;
