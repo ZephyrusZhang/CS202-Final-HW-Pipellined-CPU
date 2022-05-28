@@ -38,6 +38,7 @@ module keypad_unit_develop #(parameter
                 key_coord_2,
                 key_coord
             } <= 0;
+            state <= IDLE;
         end else begin
             case (state)
                 IDLE: begin
