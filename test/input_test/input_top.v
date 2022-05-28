@@ -1,5 +1,5 @@
 `timescale 1ns / 1ps
-`include "../new/definitions.v"
+`include "../../new/definitions.v"
 
 module input_top (
     input clk, rst_n,

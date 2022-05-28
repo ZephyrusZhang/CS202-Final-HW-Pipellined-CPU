@@ -6,16 +6,15 @@ module vga_top (
     output hsync, vsync,
     output [`VGA_BIT_DEPTH - 1:0] vga_rgb
     );
-    wire [`COORDINATE_WIDTH - 1:0] x, y;
+    
     wire clk_vga;
-    wire display_en;
-
     clk_generator #(4) cloker(
         .clk(clk), 
         .rst_n(rst_n),
         .clk_out(clk_vga)
     );
 
+    wire display_en;
     output_unit output_test(
         .clk_vga(clk_vga),
         .rst_n(rst_n),
@@ -28,6 +27,7 @@ module vga_top (
         .vga_rgb(vga_rgb)
     );
 
+    wire [`COORDINATE_WIDTH - 1:0] x, y;
     vga_signal vga_uut(
         .clk_vga(clk_vga), 
         .rst_n(rst_n),
