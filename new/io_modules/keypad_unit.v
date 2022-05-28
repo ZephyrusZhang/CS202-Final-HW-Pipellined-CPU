@@ -9,8 +9,7 @@ module keypad_unit #(parameter
     input wire [3:0] row_in,
     output reg [3:0] col_out,
     
-    output     key_pressed,
-    output     [7:0] key_coord
+    output reg [7:0] key_coord
     );
     
     reg [3:0] col_val, row_val;
@@ -119,16 +118,16 @@ module keypad_unit #(parameter
         end
     end
     
-    assign key_pressed = (next_state == SCAN_IDLE) && (state == SCAN_JITTER_2) && (tran_cnt == DELAY_TRAN);
-    assign key_coord   = {row_val, col_val};
+    wire key_pressed = (next_state == SCAN_IDLE) && (state == SCAN_JITTER_2) && (tran_cnt == DELAY_TRAN);
+    // assign key_coord   = {row_val, col_val};
     
-    // always @(negedge clk, negedge rst_n) begin
-    //     if (!rst_n) begin
-    //         key_coord <= 0;
-    //     end else if (key_pressed) begin
-    //         key_coord <= {row_val, col_val};
-    //     end else 
-    //         // key_coord <= key_coord; // critical: annotate when not testing!
-    //         key_coord <= 0; // this is the correct handling operation
-    // end
+    always @(negedge clk, negedge rst_n) begin
+        if (!rst_n) begin
+            key_coord <= 0;
+        end else if (key_pressed) begin
+            key_coord <= {row_val, col_val};
+        end else 
+            // key_coord <= key_coord; // critical: annotate when not testing!
+            key_coord <= 0; // this is the correct handling operation
+    end
 endmodule
