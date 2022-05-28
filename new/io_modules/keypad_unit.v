@@ -105,14 +105,14 @@ module keypad_unit #(parameter
                 SCAN_COL3: col_out <= 4'b1101;
                 SCAN_COL4: col_out <= 4'b1110;
                 SCAN_READ: begin
-                    // col_out <= col_out;
+                    col_out <= col_out;
                     row_val <= row_in;
                     col_val <= col_out;
                 end
                 default  : col_out <= 4'b0000;
             endcase
         end else begin
-            // col_out <= col_out;
+            col_out <= col_out;
             row_val <= row_val;
             col_val <= col_val;
         end
@@ -120,11 +120,13 @@ module keypad_unit #(parameter
     
     wire key_pressed = (next_state == SCAN_IDLE) && (state == SCAN_JITTER_2) && (tran_cnt == DELAY_TRAN);
     
-    always @(*) begin
-        if (key_pressed) begin
+    always @(negedge clk, negedge rst_n) begin
+        if (!rst_n) begin
+            key_coord <= 0;
+        end else if (key_pressed) begin
             key_coord <= {row_val, col_val};
         end else 
             // key_coord <= key_coord; // critical: annotate when not testing!
-            key_coord <= 0; // this is the correct handling operation
+            key_coord <= 8'hff; // this is the correct handling operation
     end
 endmodule
