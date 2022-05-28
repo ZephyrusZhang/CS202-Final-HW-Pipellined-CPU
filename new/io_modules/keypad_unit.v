@@ -127,7 +127,7 @@ module keypad_unit #(parameter
         end else if (key_pressed) begin
             key_coord <= {row_val, col_val};
         end else 
-            key_coord <= key_coord; // critical: annotate when not testing!
-            // key_coord <= 0; // this is the correct handling operation
+            // key_coord <= key_coord; // critical: annotate when not testing!
+            key_coord <= 0; // this is the correct handling operation
     end
 endmodule
