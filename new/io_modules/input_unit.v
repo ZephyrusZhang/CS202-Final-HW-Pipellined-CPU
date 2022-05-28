@@ -44,17 +44,15 @@ module input_unit (
     
     // reg [1:0] input_state;
     reg [2:0] digit_counter, keypad_digit;
-    reg [`SWITCH_CNT - 1:0] switch_data;
     reg [`ISA_WIDTH - 1:0] keypad_data;
 
-    assign input_data = switch_enable ? {{(`ISA_WIDTH - `SWITCH_CNT){1'b0}}, switch_data} : keypad_data;
+    assign input_data = switch_enable ? {{(`ISA_WIDTH - `SWITCH_CNT){1'b0}}, switch_map} : keypad_data;
 
     always @(posedge clk, negedge rst_n) begin // posedge is chosen to reterive results from keypad (negedge)
         if (~rst_n) begin
             {
                 input_complete,
                 keypad_data,
-                switch_data,
                 switch_enable,
                 cpu_pause,
                 input_state,
@@ -67,7 +65,6 @@ module input_unit (
                         TOGGLE : begin
                             input_state    <= KEYPAD;
                             switch_enable  <= 1'b0;
-                            switch_data    <= 0;
                         end
                         ENTER  : begin
                             input_state    <= BLOCK;
@@ -81,7 +78,7 @@ module input_unit (
                             cpu_pause      <= 1'b1;
                         end
                         default:
-                            switch_data    <= switch_map;
+                            input_state    <= input_state;
                     endcase
                 end
                 KEYPAD : begin
@@ -90,7 +87,6 @@ module input_unit (
                             TOGGLE   : begin
                                 input_state    <= SWITCH;
                                 switch_enable  <= 1'b1;
-                                switch_data    <= 0;
                             end
                             BACKSPACE: begin
                                 if (digit_counter != 0)
