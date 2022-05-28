@@ -26,7 +26,7 @@ module keypad_unit_develop #(parameter
                 SCAN_COL4_2 = 4'b1010,
                 CHECK       = 4'b1011;
     
-    reg [2:0] state;
+    reg [3:0] state;
     reg [20:0] delay_cnt;
     
     always @(negedge clk, negedge rst_n) begin
@@ -38,6 +38,7 @@ module keypad_unit_develop #(parameter
                 key_coord_2,
                 key_coord
             } <= 0;
+            state <= IDLE;
         end else begin
             case (state)
                 IDLE: begin
@@ -83,11 +84,13 @@ module keypad_unit_develop #(parameter
                     end
                 // pause and wait
                 DELAY: begin
-                    delay_cnt       <= delay_cnt + 1;
-                    if (row_in != 4'hf & delay_cnt == DEBOUNCE_PERIOD) 
+                    if (row_in != 4'hf & delay_cnt == DEBOUNCE_PERIOD) begin
                         state       <= SCAN_COL1_2;
-                    else
+                        delay_cnt   <= 0;
+                    end else begin
                         state       <= IDLE;
+                        delay_cnt   <= delay_cnt + 1;
+                    end
                 end
                 // scan the second time
                 SCAN_COL1_2:
