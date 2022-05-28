@@ -77,8 +77,8 @@ module output_unit (
                 3'b101 : vga_rgb <= `DIGITS_BOX_BG_COLOR;
                 // digits reached
                 3'b100 : 
-                    if (value_to_display[digit_idx+:1]) vga_rgb <= one_rgb;
-                    else                                vga_rgb <= zero_rgb;
+                    if (value_to_display[digit_idx+:1] == 1'b1) vga_rgb <= one_rgb;
+                    else                                        vga_rgb <= zero_rgb;
                 // outside the text area
                 default: vga_rgb <= `BG_COLOR;
             endcase
