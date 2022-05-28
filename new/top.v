@@ -94,8 +94,8 @@ wire [`REG_FILE_ADDR_WIDTH - 1:0] ex_reg_dest_idx;     // for (1) forwarding_uni
 
 //--------------------------------stage-exe------------------------------------//
 
-  wire[`ISA_WIDTH - 1 : 0]          alu_result, mem_result;
-  wire[`ISA_WIDTH - 1:0]            alu_output;
+  wire[`ISA_WIDTH - 1 : 0]          mem_result;
+  wire[`ISA_WIDTH - 1:0]            ex_alu_output;
 
 
 //---------------------------------forwording----------------------------------//
@@ -110,9 +110,9 @@ wire [`FORW_SEL_WIDTH - 1 : 0]      st_sel;
 
     
 wire mem_no_op;                                   // for alu (stop opeartions)
-wire [`ISA_WIDTH - 1:0] ex_pc_4;                  // from id_ex_reg (pc + 4)
-wire [`ISA_WIDTH - 1:0] mem_pc_4;                 // for mem_wb_reg (to store into 31st register)
+
 wire mem_reg_write_enable;                        // for mem_wb_reg
+
 wire [1:0] mem_mem_control;                       // for (1) data_mem: both read and write
                                                   //     (2) mem_wb_reg: only read
 wire [`ISA_WIDTH - 1:0] mem_alu_result;           // for (1) data_mem (the read or write address)
@@ -140,14 +140,6 @@ wire [`REG_FILE_ADDR_WIDTH - 1:0] mem_dest_reg;    // for (1) forwarding_unit
 
 
 
-//-------------------------------------------------------------------------------//
-
-//--------------------------------stage-register------------------------------------//
-
-wire [`ISA_WIDTH - 1:0] pc;                   // for (1) hazard_unit (to detect UART hazard)
-//     (2) if_id_reg (jal store into 31st register)
-
-wire [`ISA_WIDTH - 1:0] instruction;          // for if_id_reg (the current instruction)
 //-------------------------------------------------------------------------------//
 
 
@@ -181,6 +173,8 @@ wire  [1:0] hazard_control;                    // from hazard_unit [HAZD_HOLD_BI
 
 
 
+
+
 //// module list
 
 //--------------------------------stage-if------------------------------------//
@@ -202,7 +196,7 @@ instruction_mem instruction_mem(
 
                     .if_no_op(if_no_op),
                     .if_pc(pc),             //?
-                    .instruction(instruction)
+                    .if_instruction(instruction)
                 );
 
 //--------------------------------if-id-reg------------------------------------//
@@ -346,13 +340,13 @@ id_ex_reg id_ex_reg(
 
 alu alu(
     .ex_alu_control(alu_opcode),
-    .alu_result(alu_result),
+    .mem_alu_result(alu_result),        //  ??
     .mem_result(mem_result),
     .val1_sel(val1_sel),
     .val2_sel(val2_sel),
     .mux_operand_1(a_input),
     .mux_operand_2(b_input),
-    .alu_output(alu_output)
+    .ex_alu_output(alu_output)
 );
 
 //----------------------------forwarding_unit----------------------------------//
@@ -371,6 +365,36 @@ forwarding_unit forwarding_unit(
     .st_sel(st_sel)
 
 )
+
+//---------------------------------ex_mem_reg----------------------------------//
+
+ex_mem_reg ex_mem_reg(
+    .clk(clk),
+    .rst_n(rst_n),
+
+    .hazard_control(hazard_control),
+
+    .ex_no_op(ex_no_op),
+    .mem_no_op(mem_no_op),
+
+    .ex_reg_write_enable(ex_reg_write_enable),
+    .mem_reg_write_enable(mem_reg_write_enable),
+
+    .ex_mem_control(ex_mem_control),
+    .mem_mem_control(mem_mem_control),
+
+    .ex_alu_output(ex_alu_result),
+    .mem_alu_result(mem_alu_result),
+
+    .st_sel(store_data_select),             // ?? 
+    .ex_store_data(ex_store_data),
+    .mem_alu_result(mem_alu_result_prev),
+    .reg_write_data(wb_reg_write_data),
+    .mem_store_data(mem_store_data),
+
+    .ex_reg_dest_idx(ex_dest_reg),
+    .mem_dest_reg(mem_dest_reg)
+);
 
 
 
