@@ -98,7 +98,6 @@ wire [`REG_FILE_ADDR_WIDTH - 1:0] ex_reg_dest_idx;     // for (1) forwarding_uni
   wire[`ISA_WIDTH - 1:0]            alu_output;
 
 
-
 //---------------------------------forwording----------------------------------//
 
 
@@ -106,6 +105,29 @@ wire [`REG_FILE_ADDR_WIDTH - 1 : 0] dest_mem, dest_wb;
 wire                                mem_wb_en; 
 wire [`FORW_SEL_WIDTH - 1 : 0]      val1_sel, val2_sel;
 wire [`FORW_SEL_WIDTH - 1 : 0]      st_sel;
+
+//---------------------------------ex_mem_reg----------------------------------//
+
+    
+wire mem_no_op;                                   // for alu (stop opeartions)
+wire [`ISA_WIDTH - 1:0] ex_pc_4;                  // from id_ex_reg (pc + 4)
+wire [`ISA_WIDTH - 1:0] mem_pc_4;                 // for mem_wb_reg (to store into 31st register)
+wire mem_reg_write_enable;                        // for mem_wb_reg
+wire [1:0] mem_mem_control;                       // for (1) data_mem: both read and write
+                                                  //     (2) mem_wb_reg: only read
+wire [`ISA_WIDTH - 1:0] mem_alu_result;           // for (1) data_mem (the read or write address)
+                                                  //     (2) mem_wb_reg (the result of alu)
+                                                  //     (3) alu (forwarding)
+    
+wire [`FORW_SEL_WIDTH - 1:0] store_data_select;   // from forwarding_unit (select which data to store)
+wire [`ISA_WIDTH - 1:0] mem_alu_result_prev;      // from em_mem_reg (result of previous ex stage)
+wire [`ISA_WIDTH - 1:0] mem_store_data;           // for data_mem (the data to be stored)
+ 
+wire [`REG_FILE_ADDR_WIDTH - 1:0] mem_dest_reg;    // for (1) forwarding_unit
+                                                  //     (2) harard_unit
+                                                  //     (3) mem_wb_reg
+
+
 
 //--------------------------------stage-mem------------------------------------//
 
