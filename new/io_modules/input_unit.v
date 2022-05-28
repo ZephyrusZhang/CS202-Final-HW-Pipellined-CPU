@@ -89,9 +89,10 @@ module input_unit (
                                 switch_enable  <= 1'b1;
                             end
                             BACKSPACE: begin
-                                if (digit_counter != 0)
+                                if (digit_counter != 0) begin
                                     keypad_data <= keypad_data / 10;
-                                else
+                                    digit_counter <= digit_counter - 1;
+                                end else
                                     keypad_data <= keypad_data;
                             end
                             ENTER    : begin
