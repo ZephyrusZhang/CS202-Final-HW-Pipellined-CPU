@@ -41,7 +41,7 @@ module keypad_unit_develop #(parameter
         end else begin
             case (state)
                 IDLE: begin
-                    key_coord       <= 0;
+                    // key_coord       <= 0;
                     if (row_in != 4'hf) begin
                         state       <= SCAN_COL1_1;
                         col_out     <= 4'b0111;

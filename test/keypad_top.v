@@ -7,7 +7,7 @@ module keypad_top (
     output [7:0] key_coord
 );
 
-keypad_unit keypad(
+keypad_unit_develop keypad(
     .clk(clk),
     .rst_n(rst_n),
     .row_in(row_in),
