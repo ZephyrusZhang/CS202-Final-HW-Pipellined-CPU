@@ -120,7 +120,7 @@ module keypad_unit #(parameter
     end
     
     assign key_pressed = (next_state == SCAN_IDLE) && (state == SCAN_JITTER_2) && (tran_cnt == DELAY_TRAN);
-    assign key_coord = {row_val, col_val};
+    assign key_coord   = {row_val, col_val};
     
     // always @(negedge clk, negedge rst_n) begin
     //     if (!rst_n) begin
