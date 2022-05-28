@@ -29,22 +29,25 @@ wire [`ISA_WIDTH - 1:0] id_instruction;               // for control_unit (the c
 //--------------------------------stage-id------------------------------------//
 
 
-wire  [`REG_FILE_ADDR_WIDTH - 1 : 0]    read_reg_addr_1, read_reg_addr_2, write_reg_addr;  //decoding from pc
-wire[`OP_CODE_WIDTH - 1 : 0]          opcode;
-wire[`FUNC_CODE_WIDTH - 1 : 0]        func;
+wire[`REG_FILE_ADDR_WIDTH - 1 : 0]     read_reg_addr_1, read_reg_addr_2, write_reg_addr;  //decoding from pc
+wire[`OP_CODE_WIDTH - 1 : 0]           opcode;
+wire[`FUNC_CODE_WIDTH - 1 : 0]         func;
+wire[`IMMEDIATE_WIDTH -1 :0 ]          immediate;
+wire[`ISA_WIDTH-1 : 0]                 extend_result;
 
-assign opcode = id_pc[31:26];
-assign read_reg_addr_1 = id_pc[25:21];      //rs
-assign read_reg_addr_2 = id_pc[20:16];      //rt
-assign write_reg_addr = id_pc[15:11];       //rd
-assign func = id_pc[5:0];                   //funct 
-assign immediate = id_pc[15:0];             // address
+
+assign opcode = id_pc[`ISA_WIDTH-1:`ISA_WIDTH -`OP_CODE_WIDTH];    //op(31:26)
+assign read_reg_addr_1 = id_pc[`ISA_WIDTH -`OP_CODE_WIDTH -1:`ISA_WIDTH -`OP_CODE_WIDTH-`REG_FILE_ADDR_WIDTH]; //rs (25:21)
+assign read_reg_addr_2 = id_pc[`ISA_WIDTH -`OP_CODE_WIDTH-`REG_FILE_ADDR_WIDTH - 1:`ISA_WIDTH -`OP_CODE_WIDTH- 2 * `REG_FILE_ADDR_WIDTH];                             //rt (20:16)
+assign write_reg_addr = id_pc[`ISA_WIDTH -`OP_CODE_WIDTH- 2 * `REG_FILE_ADDR_WIDTH - 1:`ISA_WIDTH -`OP_CODE_WIDTH-3 * `REG_FILE_ADDR_WIDTH];                       //rd
+assign func = id_pc[`FUNC_CODE_WIDTH-1:0];                                   //func
+assign immediate = id_pc[`IMMEDIATE_WIDTH - 1:0];                             // address I type: low 16-bit
 
 
 wire  [`ISA_WIDTH - 1 : 0]              write_data;                              //from register_file
 wire                                    write_en;                                //from register_file
-wire                                    wb_no_op;                                //from register_file
-wire  [`ISA_WIDTH - 1 : 0]              read_data_1, read_data_2;                //from register_file
+wire                                    wb_no_op;                                //to register_file
+wire  [`ISA_WIDTH - 1 : 0]              read_data_1, read_data_2;                //to register_file
 
 
 
@@ -68,25 +71,20 @@ wire  [`ISA_WIDTH - 1:0] pc_overload_value;                 // from signal_mux (
 
 
 
-
-    
-wire [`ISA_WIDTH - 1:0] id_reg_1;                     // from general_reg (first register's value)
 wire [`ISA_WIDTH - 1:0] mux_operand_1;                // for id_ex_reg (to pass on to alu)
-wire [`ISA_WIDTH - 1:0] id_reg_2;                     // from general_reg (second register's value)
 wire [`ISA_WIDTH - 1:0] mux_operand_2;                // for (1) id_ex_reg (to pass on to alu)
-                                                      //     (2) instruction_mem (pc_offset_value)
- 
- 
-wire [`REG_FILE_ADDR_WIDTH - 1:0] id_reg_1_idx;       // from if_id_reg (index of first source register)
-wire [`REG_FILE_ADDR_WIDTH - 1:0] id_reg_2_idx;       // from if_id_reg (index of second source register)
-wire [`REG_FILE_ADDR_WIDTH - 1:0] id_reg_dest_idx;    // from if_id_reg (index of destination resgiter)
+//     (2) instruction_mem (pc_offset_value)
+
+
+// wire [`REG_FILE_ADDR_WIDTH - 1:0] id_reg_dest_idx;    // from if_id_reg (index of destination resgiter)   ->
+
+
 wire [`REG_FILE_ADDR_WIDTH - 1:0] mux_reg_1_idx;      // for id_ex_reg (to pass on to forwarding_unit)
 wire [`REG_FILE_ADDR_WIDTH - 1:0] mux_reg_2_idx;      // for id_ex_reg (to pass on to forwarding_unit)
 wire [`REG_FILE_ADDR_WIDTH - 1:0] mux_reg_dest_idx;   // for id_ex_reg
- 
+
 wire reg_1_valid;                                     // for hazard_unit
 wire reg_2_valid;                                     // for hazard_unit
-//-------------------------------------------------------------------------------//
 
 
 //--------------------------------id_exe_reg------------------------------------//
@@ -220,6 +218,10 @@ condition_check condition_check(
                 );
 
 
+sign_extend sign_extend(
+                .immediate(in),
+                .extend_result(out)
+            );
 
 control control(
             .opcode(opcode),
@@ -236,6 +238,44 @@ control control(
             .store_instruction(store_instruction),
             .wb_en(wb_en)
         );
+
+
+
+signal_mux signal_mux(
+    .i_type_instruction(i_type_instruction),
+    .r_type_instruction(r_type_instruction),
+    .j_instruction(j_instruction),
+    .jr_instruction(jr_instruction),
+    .jal_instruction(jal_instruction),
+    .branch_instruction(branch_instruction),
+    .store_instruction(store_instruction),
+
+    .condition_satisfied(condition_satisfied),   
+    .pc_offset(pc_offset),
+
+    .pc_overload(pc_overload),
+
+    .read_data_1(id_reg_1),
+    .id_pc(id_pc),
+    .mux_operand_1(mux_operand_1),
+
+    .read_data_2(id_reg_2),
+    .extend_result(id_sign_extend_result),
+    .mux_operand_2(mux_operand_2),
+
+    .id_instruction(id_instruction),
+    .pc_overload_value(pc_overload_value),
+
+    .read_reg_addr_1(id_reg_1_idx),
+    .read_reg_addr_2(id_reg_2_idx),
+    .write_reg_addr(id_reg_dest_idx),
+    .mux_reg_1_idx(mux_reg_1_idx),
+    .mux_reg_2_idx(mux_reg_2_idx),
+    .mux_reg_dest_idx(mux_reg_dest_idx),
+
+    .reg_1_valid(reg_1_valid),
+    .reg_2_valid(reg_2_valid)
+);
 
 //-------------------------------------------------------------------------------//
 
