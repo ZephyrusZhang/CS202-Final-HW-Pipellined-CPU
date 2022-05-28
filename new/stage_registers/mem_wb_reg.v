@@ -15,9 +15,6 @@ module mem_wb_reg (
     input      mem_no_op,                                   // from ex_mem_reg (the operations of mem have been stopped)
     output reg wb_no_op,                                    // for general_reg (stop write opeartions)
 
-    input      [`ISA_WIDTH - 1:0] mem_pc_4,                 // from ex_mem_reg (pc + 4)
-    output reg [`ISA_WIDTH - 1:0] wb_pc_4,                  // for general_reg (to store into 31st register)
-
     input      mem_reg_write_enable,                        // from ex_mem_reg (whether it needs write to register)
     output reg wb_reg_write_enable,                         // for general_reg
 
@@ -40,7 +37,6 @@ module mem_wb_reg (
         if (~rst_n) begin
             {
                 wb_no_op,
-                wb_pc_4,
 
                 wb_reg_write_enable,
                 wb_mem_read_enable,
@@ -49,10 +45,8 @@ module mem_wb_reg (
                 wb_dest_reg
             }                   <= 0;
         end else if (hazard_control[`HAZD_HOLD_BIT])
-            wb_pc_4             <= wb_pc_4; // prevent auto latches
+            wb_reg_write_enable <= mem_reg_write_enable; // prevent auto latches
         else begin
-            wb_pc_4             <= mem_pc_4;
-
             wb_reg_write_enable <= mem_reg_write_enable;
             wb_mem_read_enable  <= mem_mem_read_enable;
             wb_alu_result       <= mem_alu_result;
