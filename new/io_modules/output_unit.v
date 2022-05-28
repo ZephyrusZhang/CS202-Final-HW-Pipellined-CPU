@@ -2,7 +2,7 @@
 `timescale 1ns / 1ps
 
 module output_unit (
-    input clk_vga_vga, rst_n,
+    input clk_vga, rst_n,
     
     input      display_en,
     input      [`COORDINATE_WIDTH - 1:0] x, y,
