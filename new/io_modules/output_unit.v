@@ -46,15 +46,15 @@ module output_unit (
     wire status_clear     = (y < `STATUS_Y)     | (x < `STATUS_X);                                  // outside the status box
 
     // block memory for "0" "1" to be displayed
-    ZERO_rom    zero_rom    (.clk_vga(clk_vga), .row(y_digits), .col(x_digit) , .color_data(zero_rgb));
-    ONE_rom     one_rom     (.clk_vga(clk_vga), .row(y_digits), .col(x_digit) , .color_data(one_rgb));
+    ZERO_rom    zero_rom    (.clk(clk_vga), .row(y_digits), .col(x_digit) , .color_data(zero_rgb));
+    ONE_rom     one_rom     (.clk(clk_vga), .row(y_digits), .col(x_digit) , .color_data(one_rgb));
     
     // block memory for type of issue to be displayed
-    Normal_rom  normal_rom  (.clk_vga(clk_vga), .row(y_status), .col(x_status), .color_data(normal_rgb));
-    UART_rom    uart_rom    (.clk_vga(clk_vga), .row(y_status), .col(x_status), .color_data(uart_rgb));
-    Pause_rom   pause_rom   (.clk_vga(clk_vga), .row(y_status), .col(x_status), .color_data(pause_rgb));
-    Keypad_rom  keypad_rom  (.clk_vga(clk_vga), .row(y_status), .col(x_status), .color_data(keypad_rgb));
-    Switch_rom  switch_rom  (.clk_vga(clk_vga), .row(y_status), .col(x_status), .color_data(switch_rgb));
+    Normal_rom  normal_rom  (.clk(clk_vga), .row(y_status), .col(x_status), .color_data(normal_rgb));
+    UART_rom    uart_rom    (.clk(clk_vga), .row(y_status), .col(x_status), .color_data(uart_rgb));
+    Pause_rom   pause_rom   (.clk(clk_vga), .row(y_status), .col(x_status), .color_data(pause_rgb));
+    Keypad_rom  keypad_rom  (.clk(clk_vga), .row(y_status), .col(x_status), .color_data(keypad_rgb));
+    Switch_rom  switch_rom  (.clk(clk_vga), .row(y_status), .col(x_status), .color_data(switch_rgb));
     
     always @(posedge clk_vga, negedge rst_n) begin
         if (~rst_n) begin
