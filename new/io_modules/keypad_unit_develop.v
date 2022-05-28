@@ -48,6 +48,7 @@ module keypad_unit_develop #(parameter
                     end else
                         state       <= state;
                 end
+                // start scanning for the first time
                 SCAN_COL1_1:
                     if (row_in != 4'hf) begin
                         state       <= DELAY;
@@ -80,7 +81,7 @@ module keypad_unit_develop #(parameter
                         state       <= IDLE;
                         col_out     <= 4'b0000;
                     end
-                // this state will pause
+                // pause and wait
                 DELAY: begin
                     delay_cnt       <= delay_cnt + 1;
                     if (row_in != 4'hf & delay_cnt == DEBOUNCE_PERIOD) 
@@ -88,9 +89,10 @@ module keypad_unit_develop #(parameter
                     else
                         state       <= IDLE;
                 end
+                // scan the second time
                 SCAN_COL1_2:
                     if (row_in != 4'hf) begin
-                        state       <= DELAY;
+                        state       <= CHECK;
                         key_coord_2 <= {row_in, col_out};
                     end else begin
                         state       <= SCAN_COL2_2;
@@ -98,7 +100,7 @@ module keypad_unit_develop #(parameter
                     end
                 SCAN_COL2_2:
                     if (row_in != 4'hf) begin
-                        state       <= DELAY;
+                        state       <= CHECK;
                         key_coord_2 <= {row_in, col_out};
                     end else begin
                         state       <= SCAN_COL3_2;
@@ -106,7 +108,7 @@ module keypad_unit_develop #(parameter
                     end
                 SCAN_COL3_2:
                     if (row_in != 4'hf) begin
-                        state       <= DELAY;
+                        state       <= CHECK;
                         key_coord_2 <= {row_in, col_out};
                     end else begin
                         state       <= SCAN_COL4_2;
@@ -114,12 +116,13 @@ module keypad_unit_develop #(parameter
                     end
                 SCAN_COL4_2:
                     if (row_in != 4'hf) begin
-                        state       <= DELAY;
+                        state       <= CHECK;
                         key_coord_2 <= {row_in, col_out};
                     end else begin
                         state       <= IDLE;
                         col_out     <= 4'b0000;
                     end
+                // check the result and compare two scans
                 CHECK: begin
                     if (key_coord_1 == key_coord_2) begin
                         key_coord   <= key_coord_2;
