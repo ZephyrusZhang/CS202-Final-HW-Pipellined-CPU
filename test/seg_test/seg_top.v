@@ -1,5 +1,5 @@
 `timescale 1ns / 1ps
-`include "../new/definitions.v"
+`include "../../new/definitions.v"
 
 module seg_top (
     input clk, rst_n, switch_en,
