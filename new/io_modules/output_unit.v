@@ -82,7 +82,7 @@ module output_unit (
                 // outside the text area
                 default: vga_rgb <= `BG_COLOR;
             endcase
-        end else vga_rgb <= `DIGITS_BOX_BG_COLOR;
+        end else vga_rgb <= 0;
     end
 
 endmodule
