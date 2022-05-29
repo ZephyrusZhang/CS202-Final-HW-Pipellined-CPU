@@ -1,37 +1,29 @@
-.data  0x0000
-	buf: .word  0xFFFFFC60 , 0xFFFFFC70
+.data
  	array:.space 200	# store element
-    	info:.space 20	# store n
- 
- 	
-.text	  0x0000
+ 	info:.space 20	# store n
+ 	newline:.asciiz "\n"
+ 	space: .asciiz " "
+ 	buf:.word 0x000329E0
+.text 
 
 #notice: the input can not be more than 255 in these cases
 
 start:
-	lw $v0,buf($zero)	#read the no. of case
-	
-	ori $t0,$zero,0
-	ori $t1,$zero,1
-	ori $t2,$zero,2
-	ori $t3,$zero,3
-	ori $t4,$zero,4
-	ori $t5,$zero,5
-	ori $t6,$zero,6
-	ori $t7,$zero,7		
-				
-	beq $v0,$t0,case_000
-	beq $v0,$t1,case_001
-	beq $v0,$t2,case_010
-	beq $v0,$t3,case_011
-	beq $v0,$t4,case_100
-	beq $v0,$t5,case_101
-	beq $v0,$t6,case_110
-	beq $v0,$t7,case_111
+	addi $v0,$zero,5	#read the no. of case
+	syscall 		
+	beq $v0,0,case_000
+	beq $v0,1,case_001
+	beq $v0,2,case_010
+	beq $v0,3,case_011
+	beq $v0,4,case_100
+	beq $v0,5,case_101
+	beq $v0,6,case_110
+	beq $v0,7,case_111
 	j start
 	
 case_000:
-	lw $v0,buf($zero)	#read the n
+	addi $v0,$zero,5	#read the input : n
+	syscall 
 	sw $v0,info($zero) 	#reserve n in the memory
 	
 	addi $t0, $zero,0  	# t0: offset
@@ -39,12 +31,12 @@ case_000:
 	
 init_000:	beq $t1,$zero,finish_init_000
 
-	lw $v0,buf($zero)	#read the n
+	addi $v0,$zero,5	# read n inputs
+	syscall 
 
 	sw $v0,array($t0) 	# fill array[0-4]
 	addi $t0, $t0, 4
-	addi $t1, $t1,-1
-
+	addi,$t1,$t1,-1
 	j init_000
 	
 finish_init_000:	
@@ -63,16 +55,20 @@ init_001:	beq $t1,$zero,finish_init_001
 	sub $t0,$t0,$t2
 		
 	addi $t0, $t0, 4	
-	addi $t1,$t1,-1
+	addi,$t1,$t1,-1
 	j init_001
 	
-#finish_init_001:
+finish_init_001:
 	
 	
 bubble_sort_001:
+	# unsigned bubble sort
+	#for (i=0; i<n-1; ++i)  
+           #for (j=0; j<n-1-i; ++j) 
+       	#if(a[j] > a[j + 1]) swap(a[j], a[j + 1]);
        	
        	lw $s0,info($zero) 	# s0 <- n
-       	addi $s1,$zero,0	# s1 <- i init i = 0
+       	addi,$s1,$zero,0	# s1 <- i init i = 0
        	sll $s3,$s0,2	# s3 <- 4n
        	addi $t8,$s0,-1	# t8 <- n-1
 forout_001:
@@ -132,7 +128,7 @@ isPositive:			# positive no operation
 	sub $t0,$t0,$t2
 		
 	addi $t0, $t0, 4	
-	addi $t1,$t1,-1
+	addi,$t1,$t1,-1
 	j init_010
 	
 finish_init_010:	
@@ -154,12 +150,16 @@ init_011:	beq $t1,$zero,finish_init_011
 		
 	addi $t0,$t0, 4
 	addi $t2,$t2, 4	
-	addi $t1,$t1,-1
+	addi,$t1,$t1,-1
 	j init_011
 	
 finish_init_011:
 	
-#bubble_sort_011:
+bubble_sort_011:
+	# 8-bit signed num bubble sort
+	#for (i=0; i<n-1; ++i)  
+           #for (j=0; j<n-1-i; ++j) 
+       	#if(a[j] > a[j + 1]) swap(a[j], a[j + 1]);
        	
        	lw $s0,info($zero) 	# s0 <- n
 
@@ -211,7 +211,7 @@ forout_end_011:
 		
 case_100:
 	lw $s0,info($zero) 	# s0 <- n
-       	sll $s1,$s0,2	# s1 <- 4n	    (min)
+       	sll,$s1,$s0,2	# s1 <- 4n	    (min)
        	sll $s2,$s0,3	# s2 <- 8n
        	addi $s2,$s2,-4	# s2 <- 8n - 4 (max)
        
@@ -220,17 +220,17 @@ case_100:
        	
        	subu $s3,$s2,$s1	# s3 = s2 - s1
        	
-   
-       	
-       	addi $t0,$zero,4	                            
-  	sw $s3,buf($t0)	    # write -> s3
-       	
+       	addi $v0,$zero,1	#print s3
+	addi $a0,$s3,0	
+       	syscall
 	j start
 	
 case_101:	
-       
+       	la $a0, newline   	#newline    
+	li $v0,4
+	syscall
 	lw $s0,info($zero) 	# s0 <- n
-       	sll $s1,$s0,4	# s1 <- 16n	   
+       	sll,$s1,$s0,4	# s1 <- 16n	   
        	sll $s2,$s0,3	# s2 <- 8n
        	sll $s3,$s0,2	# s3 <- 4n
        	add $s3,$s3,$s2	# s3 <- 12n	     (min)
@@ -240,23 +240,27 @@ case_101:
       
        	subu $s4,$s1,$s3	# s4 = s1 - s3
        	
-	addi $t0,$zero,4	                            
-  	sw $s4,buf($t0)	    # write -> s4
+       	addi $v0,$zero,1	#print s4
+	addi $a0,$s4,0	
+       	syscall
+       	la $a0, newline   	#newline    
+	li $v0,4
+	syscall
 
 	j start
 
 # here we return the 32 bit num, but we only have to show low 8-bit num on the board
 
 case_110:	
-
-	lw $v0,buf($zero)	#read the no. of the datasets -> v0
+	addi $v0,$zero,5	#read the no. of the datasets
+	syscall 	
 	addi $s0,$v0,0	# s0 = dataset no. 1 OR 2 OR 3
 
 	lw $s2,info($zero) 	# s2 <- n
 	addi $s4,$zero,0	# s4 <- 0
 	
-	lw $v0,buf($zero)	#read the index -> v0
-	
+	addi $v0,$zero,5	#read the index
+	syscall 	
 	addi $s1,$v0,0	# s1 = index
 	
 	sll $s3,$s2,2	# s3 <- 4n
@@ -271,66 +275,82 @@ finish_mul_110:		# s4 <- s0 * 4n
 	add $s1,$s4,$s1	# s0 * 4n + 4 * s1 (address)=s1 <- s4 + s1
 	lw $s1,array($s1)	# s1 = a[address]
 	
-
-	addi $t0,$zero,4	                            
-  	sw $s1,buf($t0)	    # write -> s1
-  	
+	addi $v0,$zero,1	#print s1
+	addi $a0,$s1,0	
+       	syscall
+       	la $a0, newline   	#newline    
+	li $v0,4
+	syscall
 	j start
 	
-### define the 32 bits num 
-#  0/1(1-bit)_index(15-bit)_0000_0000_8bit(result)
-#  0 means  dataset 0 !
-#  1 means  dataset 2 !
 case_111:	
 	lw $s0,info($zero) 	# s0 <- n
-	lw $v0,buf($zero)	#read the index -> v0
+	addi $v0,$zero,5	#read the index
+	syscall 	
 	
 	addi $s1,$v0,0	# s1 = index
 	
-	sll $s2,$s1,2	# s2 <-  4 * s1 
-	addi $s3,$s2,0	# s3 = 0 + 4 * s1
+	sll $s2,$s1,2	# s2 <-  4 * index
+	addi $s3,$s2,0	# s3 = 0 + 4 * index
 	sll $s4,$s0,3	# s4 <- 8n
-	add $s4,$s4,$s2	# s4 <- 8n + 4 * s1
+	add $s4,$s4,$s2	# s4 <- 8n + 4 * index
 	
 	lw $s3,array($s3)	# s3 <- num in data set 0
 	lw $s4,array($s4)	# s4 <- num in data set 2
 	
-	# unify num s3 -> s5 (0) and num s4 -> s6 (2)
- 	
- 	add $s5,$zero,$s1
- 	add $s6,$zero,$s1
- 	sll $s5,$s5,16
- 	add $s5,$s5,$s3
- 	sll $s6,$s6,16
- 	add $s6,$s6,$s4
- 	
- 	addi $s7,$zero,1
- 	sll $s7,$s7,31	
- 	or $s6,$s6,$s7
- 	
 	
-	addi $t0,$zero,4	                            
-  	sw $s5,buf($t0)	    # write -> s5
+	addi $v0,$zero,1	#print 0
+	addi $a0,$zero,0	
+       	syscall
+       	la $a0, space   	#space   
+	li $v0,4
+	syscall
 	
-
+	addi $v0,$zero,1	#print index (s1)
+	addi $a0,$s1,0	
+       	syscall
+       	
+       	la $a0, space   	#space  
+	li $v0,4
+	syscall
+	
+	addi $v0,$zero,1	#print s3 corres num
+	addi $a0,$s3,0	
+       	syscall
        	
        	
        	#############################
 	# 5 seconds time seperation #
-	
-	
-	addi $t0,$zero,0
-	sll $t0,$t0,28		#need to spercify on board
-	addi $t0,$t0,-250000000		#need to spercify on board
-	
+	      	
+       	
+       	#############################
+	# 5 seconds time seperation #
+	lw $t0,buf($zero)	    # write -> s5
 counting_start:
 	beq $t0,$zero,counting_over
-	addi $t0,$t0,1
+	addi $t0,$t0,-1
 	j counting_start
-	#############################
 	
+counting_over:	
+
+	la $a0, space   	#space   
+	li $v0,4
+	syscall
+
+	addi $v0,$zero,1	#print 2
+	addi $a0,$zero,2	
+       	syscall
+       	la $a0, space   	#space   
+	li $v0,4
+	syscall
+	addi $v0,$zero,1	#print index (s1)
+	addi $a0,$s1,0	
+       	syscall
+       	la $a0, space   	#space  
+	li $v0,4
+	syscall
+	addi $v0,$zero,1	#print s4 corres num
+	addi $a0,$s4,0	
+       	syscall
+
 	
-counting_over:
-		
-	addi $t0,$zero,4	                            
-  	sw $s6,buf($t0)	    # write -> s6
