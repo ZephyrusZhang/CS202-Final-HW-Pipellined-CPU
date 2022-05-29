@@ -402,34 +402,33 @@ module top (
     );
 
     //---------------------------------ex_mem_reg----------------------------------//
+    ex_mem_reg ex_mem_reg(
+        .clk(clk),
+        .rst_n(rst_n),
 
-ex_mem_reg ex_mem_reg(
-.clk(clk),
-.rst_n(rst_n),
+        .hazard_control(mem_hazard_control),
 
-               .hazard_control(mem_hazard_control),
+        .ex_no_op(ex_no_op),
+        .mem_no_op(mem_no_op),
 
-.ex_no_op(ex_no_op),
-.mem_no_op(mem_no_op),
+        .ex_reg_write_enable(ex_reg_write_enable),
+        .mem_reg_write_enable(mem_reg_write_enable),
 
-.ex_reg_write_enable(ex_reg_write_enable),
-.mem_reg_write_enable(mem_reg_write_enable),
+        .ex_mem_control(ex_mem_control),
+        .mem_mem_control(mem_mem_control),
 
-.ex_mem_control(ex_mem_control),
-.mem_mem_control(mem_mem_control),
+        .ex_alu_result(ex_alu_output),
+        .mem_alu_result(mem_alu_result),
 
-.ex_alu_result(ex_alu_output),
-.mem_alu_result(mem_alu_result),
+        .store_data_select(st_sel),             // ??
+        .ex_store_data(ex_store_data),
+        .mem_alu_result_prev(mem_alu_result),
+        .wb_reg_write_data(wb_reg_write_data),
+        .mem_store_data(mem_store_data),
 
-               .store_data_select(st_sel),             // ??
-               .ex_store_data(ex_store_data),
-               .mem_alu_result_prev(mem_alu_result),
-               .wb_reg_write_data(wb_reg_write_data),
-               .mem_store_data(mem_store_data),
-
-.ex_dest_reg(ex_reg_dest_idx),
-.mem_dest_reg_idx(mem_dest_reg_idx)
-);
+        .ex_dest_reg(ex_reg_dest_idx),
+        .mem_dest_reg_idx(mem_dest_reg_idx)
+    );
 
 
 //--------------------------------stage-mem------------------------------------//
