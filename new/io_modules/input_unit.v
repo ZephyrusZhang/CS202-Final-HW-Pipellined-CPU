@@ -108,7 +108,7 @@ module input_unit (
                                 cpu_pause      <= 1'b1;
                             end
                             default  : begin
-                                if (digit_counter != 4'h8) begin
+                                if (~digit_counter[4]) begin
                                     case (key_coord)
                                         ZERO   : keypad_data <= keypad_data * 10;
                                         ONE    : keypad_data <= keypad_data * 10 + 1;
