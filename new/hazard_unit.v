@@ -5,7 +5,7 @@
 this module handles hazards and interrupts 
  */
 
-module data_mem (
+module hazard_unit (
     input clk, rst_n,
 
     input      uart_complete,                                   // from uart_unit (upg_done_i)
