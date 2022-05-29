@@ -38,7 +38,6 @@ input_unit input_test (
     .input_data(output_data),
     .switch_enable(switch_enable),
     .cpu_pause(cpu_pause_led),
-    .input_state(input_state),
     .overflow(overflow)
 );
 

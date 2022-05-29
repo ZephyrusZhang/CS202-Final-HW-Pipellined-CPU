@@ -175,7 +175,7 @@ wire   uart_disable;                            // from hazard_unit (whether rea
 wire   uart_clk;                                // from uart_unit (upg_clk_i)
 wire   uart_write_enable;                       // from uart_unit (upg_wen_i)
 wire   [`ISA_WIDTH - 1:0] uart_data;            // from uart_unit (upg_dat_i)
-wire   [ROM_DEPTH:0] uart_addr;                 // from uart_unit (upg_adr_i)
+wire   [`DEFAULT_RAM_DEPTH:0] uart_addr;                 // from uart_unit (upg_adr_i)
 
 
 //----------------------------------hazard-unit------------------------------------------//
