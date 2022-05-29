@@ -1,5 +1,5 @@
 `timescale 1ns / 1ps
-`define KEYPAD_DEFAULT_DEBOUNCE_PERIOD 200_0000 //20ms for 100MHz
+`define KEYPAD_DEFAULT_DEBOUNCE_PERIOD 100_0000 //20ms for 100MHz
 
 module keypad_unit_develop #(parameter 
     DEBOUNCE_PERIOD = `KEYPAD_DEFAULT_DEBOUNCE_PERIOD
@@ -83,15 +83,20 @@ module keypad_unit_develop #(parameter
                         col_out     <= 4'b0000;
                     end
                 // pause and wait
-                DELAY: begin
-                    if (row_in != 4'hf & delay_cnt == DEBOUNCE_PERIOD) begin
-                        state       <= SCAN_COL1_2;
-                        delay_cnt   <= 0;
-                    end else begin
-                        state       <= IDLE;
-                        delay_cnt   <= delay_cnt + 1;
-                    end
-                end
+                DELAY:
+                    casex ({delay_cnt == DEBOUNCE_PERIOD - 1, row_in != 4'hf})
+                        2'b0x: delay_cnt   <= delay_cnt + 1;
+                        2'b10: begin
+                            state       <= IDLE;
+                            delay_cnt   <= 0;
+                            col_out     <= 4'b0000;
+                        end
+                        2'b11: begin
+                            state       <= SCAN_COL1_2;
+                            delay_cnt   <= 0;
+                            col_out     <= 4'b0111;
+                        end
+                    endcase
                 // scan the second time
                 SCAN_COL1_2:
                     if (row_in != 4'hf) begin
@@ -127,12 +132,13 @@ module keypad_unit_develop #(parameter
                     end
                 // check the result and compare two scans
                 CHECK: begin
-                    if (key_coord_1 == key_coord_2) begin
-                        key_coord   <= key_coord_2;
-                        key_coord_1 <= 0;
-                        key_coord_2 <= 0;
-                    end
-                        state       <= IDLE;
+                    if (key_coord_1 == key_coord_2) key_coord <= key_coord_2;
+                    else key_coord <= key_coord_1;
+                    
+                    key_coord_1 <= 0;
+                    key_coord_2 <= 0;
+                    state       <= IDLE;
+                    col_out     <= 4'b0000;
                 end
                 default: state      <= IDLE;
             endcase
