@@ -9,16 +9,14 @@
 
 
 
-module top
-       #(parameter ROM_DEPTH = `DEFAULT_ROM_DEPTH)(
-           input wire clk, rst_n,
-           input wire [3:0] row_in,
+module top (
+    input wire clk, rst_n,
+    input wire [3:0] row_in,
 
-           output reg [3:0] col_out
-           // output reg [7:0] led signal
-           // vga signal
-
-       );
+    output reg [3:0] col_out
+    // output reg [7:0] led signal
+    // vga signal
+);
 
 
 
@@ -177,7 +175,7 @@ wire   uart_disable;                            // from hazard_unit (whether rea
 wire   uart_clk;                                // from uart_unit (upg_clk_i)
 wire   uart_write_enable;                       // from uart_unit (upg_wen_i)
 wire   [`ISA_WIDTH - 1:0] uart_data;            // from uart_unit (upg_dat_i)
-wire   [ROM_DEPTH:0] uart_addr;                 // from uart_unit (upg_adr_i)
+wire   [`DEFAULT_RAM_DEPTH:0] uart_addr;                 // from uart_unit (upg_adr_i)
 
 
 
@@ -452,14 +450,14 @@ data_mem data_mem(
 //---------------------------------mem-wb-reg--------------------------------//
 
 mem_wb_reg mem_wb_reg(
-               .clk(clk),
-               .rst_n(rst_n),
-               .hazard_control(hazard_control),
-               .mem_no_op(mem_no_op),
-               .wb_no_op(wb_no_op),
-               .mem_reg_write_enable(mem_reg_write_enable),
-               .wb_reg_write_enable(wb_reg_write_enable),
-               .mem_mem_read_enable()
-           )
+    .clk(clk),
+    .rst_n(rst_n),
+    .hazard_control(hazard_control),
+    .mem_no_op(mem_no_op),
+    .wb_no_op(wb_no_op),
+    .mem_reg_write_enable(mem_reg_write_enable),
+    .wb_reg_write_enable(wb_reg_write_enable),
+    .mem_mem_read_enable()
+);
 
-           endmodule
+endmodule
