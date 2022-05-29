@@ -26,7 +26,8 @@ module control (
     output                                  jal_instruction,
     output                                  branch_instruction,
     output                                  store_instruction,
-    output reg                              wb_en
+    output reg                              wb_en,
+    output                                  condition_type
 );
 
 assign mem_control[`MEM_WRITE_BIT] = (opcode == 6'b100011);
