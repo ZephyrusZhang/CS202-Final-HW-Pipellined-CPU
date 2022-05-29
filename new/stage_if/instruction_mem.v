@@ -69,7 +69,7 @@ module instruction_mem #(parameter
         if (~rst_n) begin
             pc       <= 0;
             if_no_op <= 0;
-        end if (hazard_control[`HAZD_HOLD_BIT])
+        end else if (hazard_control[`HAZD_HOLD_BIT])
             pc <= pc;
         else 
             pc <= pc_next;

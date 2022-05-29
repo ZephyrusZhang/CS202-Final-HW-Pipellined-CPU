@@ -204,8 +204,7 @@ wire switch_enable;                           // for (1) seven_seg_unit (user is
 //     (2) output_unit (display that input is switches)
 wire cpu_pause;                               // for hazard_unit (user pressed pause)
 
-wire [1:0] input_state;
-
+wire overflow;
 
 //-------------------------------------output_unit----------------------------------------//
 
@@ -573,7 +572,7 @@ input_unit input_unit(
                .input_data(input_data),
                .switch_enable(switch_enable),
                .cpu_pause(cpu_pause),
-               .input_state(input_state)
+               .overflow(overflow)
            );
 
 //-------------------------------------output_unit----------------------------------------//
