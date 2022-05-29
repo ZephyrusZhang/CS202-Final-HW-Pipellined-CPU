@@ -43,7 +43,8 @@ module input_unit (
                 HALT        = 2'b11;
     
     // reg [1:0] input_state;
-    reg [2:0] digit_counter, keypad_digit;
+    reg [3:0] digit_counter;
+    // reg [2:0] keypad_digit;
     reg [`ISA_WIDTH - 1:0] keypad_data;
 
     assign input_data = switch_enable ? {{(`ISA_WIDTH - `SWITCH_CNT){1'b0}}, switch_map} : keypad_data;

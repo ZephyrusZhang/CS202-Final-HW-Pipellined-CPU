@@ -1,0 +1,53 @@
+set_property IOSTANDARD LVCMOS33 [get_ports rst_n]
+set_property IOSTANDARD LVCMOS33 [get_ports clk]
+set_property IOSTANDARD LVCMOS33 [get_ports {col_out[3]}]
+set_property IOSTANDARD LVCMOS33 [get_ports {col_out[2]}]
+set_property IOSTANDARD LVCMOS33 [get_ports {col_out[1]}]
+set_property IOSTANDARD LVCMOS33 [get_ports {col_out[0]}]
+
+set_property IOSTANDARD LVCMOS33 [get_ports {row_in[3]}]
+set_property IOSTANDARD LVCMOS33 [get_ports {row_in[2]}]
+set_property IOSTANDARD LVCMOS33 [get_ports {row_in[1]}]
+set_property IOSTANDARD LVCMOS33 [get_ports {row_in[0]}]
+
+set_property IOSTANDARD LVCMOS33 [get_ports {key_coord[0]}]
+set_property IOSTANDARD LVCMOS33 [get_ports {key_coord[1]}]
+set_property IOSTANDARD LVCMOS33 [get_ports {key_coord[2]}]
+set_property IOSTANDARD LVCMOS33 [get_ports {key_coord[3]}]
+set_property IOSTANDARD LVCMOS33 [get_ports {key_coord[4]}]
+set_property IOSTANDARD LVCMOS33 [get_ports {key_coord[5]}]
+set_property IOSTANDARD LVCMOS33 [get_ports {key_coord[6]}]
+set_property IOSTANDARD LVCMOS33 [get_ports {key_coord[7]}]
+
+set_property IOSTANDARD LVCMOS33 [get_ports {row_val[3]}]
+set_property IOSTANDARD LVCMOS33 [get_ports {row_val[2]}]
+set_property IOSTANDARD LVCMOS33 [get_ports {row_val[1]}]
+set_property IOSTANDARD LVCMOS33 [get_ports {row_val[0]}]
+#################################################################
+
+set_property PACKAGE_PIN Y18 [get_ports clk]
+set_property PACKAGE_PIN W4 [get_ports rst_n]
+
+set_property PACKAGE_PIN M2 [get_ports {col_out[3]}]
+set_property PACKAGE_PIN K6 [get_ports {col_out[2]}]
+set_property PACKAGE_PIN J6 [get_ports {col_out[1]}]
+set_property PACKAGE_PIN L5 [get_ports {col_out[0]}]
+
+set_property PACKAGE_PIN K4 [get_ports {row_in[3]}]
+set_property PACKAGE_PIN J4 [get_ports {row_in[2]}]
+set_property PACKAGE_PIN L3 [get_ports {row_in[1]}]
+set_property PACKAGE_PIN K3 [get_ports {row_in[0]}]
+
+set_property PACKAGE_PIN K17 [get_ports {key_coord[7]}]
+set_property PACKAGE_PIN L13 [get_ports {key_coord[6]}]
+set_property PACKAGE_PIN M13 [get_ports {key_coord[5]}]
+set_property PACKAGE_PIN K14 [get_ports {key_coord[4]}]
+set_property PACKAGE_PIN K13 [get_ports {key_coord[3]}]
+set_property PACKAGE_PIN M20 [get_ports {key_coord[2]}]
+set_property PACKAGE_PIN N20 [get_ports {key_coord[1]}]
+set_property PACKAGE_PIN N19 [get_ports {key_coord[0]}]
+
+set_property PACKAGE_PIN E21 [get_ports {row_val[3]}]
+set_property PACKAGE_PIN D22 [get_ports {row_val[2]}]
+set_property PACKAGE_PIN E22 [get_ports {row_val[1]}]
+set_property PACKAGE_PIN A21 [get_ports {row_val[0]}]
