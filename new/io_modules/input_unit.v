@@ -16,8 +16,7 @@ module input_unit (
     output reg switch_enable,                           // for (1) seven_seg_unit (user is using switches)
                                                         //     (2) output_unit (display that input is switches)
     output reg cpu_pause,                               // for hazard_unit (user pressed pause)
-
-    output reg [1:0] input_state
+    output     overflow                                 // for hardware LED to indicate a overflow of the tube display
     );
                
     localparam  ZERO        = 8'b0111_1101,
@@ -42,12 +41,12 @@ module input_unit (
                 KEYPAD      = 2'b10,
                 HALT        = 2'b11;
     
-    // reg [1:0] input_state;
+    reg [1:0] input_state;
     reg [3:0] digit_counter;
-    // reg [2:0] keypad_digit;
     reg [`ISA_WIDTH - 1:0] keypad_data;
 
     assign input_data = switch_enable ? {{(`ISA_WIDTH - `SWITCH_CNT){1'b0}}, switch_map} : keypad_data;
+    assign overflow   = 4'h8 <= digit_counter;
 
     always @(posedge clk, negedge rst_n) begin // posedge is chosen to reterive results from keypad (negedge)
         if (~rst_n) begin
@@ -108,7 +107,7 @@ module input_unit (
                                 cpu_pause      <= 1'b1;
                             end
                             default  : begin
-                                if (~digit_counter[4]) begin
+                                if (~(digit_counter[4] & digit_counter[2])) begin
                                     case (key_coord)
                                         ZERO   : keypad_data <= keypad_data * 10;
                                         ONE    : keypad_data <= keypad_data * 10 + 1;
