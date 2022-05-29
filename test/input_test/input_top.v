@@ -11,7 +11,8 @@ module input_top (
     output input_complete_led,
     output cpu_pause_led,
     output [1:0] input_state,
-    output overflow
+    output overflow,
+    output [3:0] counter
 );
 
 wire [7:0] key_coord;
@@ -38,7 +39,8 @@ input_unit input_test (
     .input_data(output_data),
     .switch_enable(switch_enable),
     .cpu_pause(cpu_pause_led),
-    .overflow(overflow)
+    .overflow(overflow),
+    .counter(counter)
 );
 
 seven_seg_unit seg(

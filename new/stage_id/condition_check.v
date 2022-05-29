@@ -8,7 +8,7 @@
         condition_satisfied:
 */
 module condition_check (
-    input                       condition_type,             // is branch type instruction
+    input [1:0]                 condition_type,             // is branch type instruction
     input [`ISA_WIDTH - 1 : 0]  read_data_1, read_data_2,
     output reg                  condition_satisfied
 );
