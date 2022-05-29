@@ -3,19 +3,17 @@
 
 
 
-
-
-
-
 module top
        #(parameter ROM_DEPTH = `DEFAULT_ROM_DEPTH)(
            input wire clk, rst_n,
            input wire [3:0] row_in,
 
-           output reg [3:0] col_out
+           output reg [3:0] col_out,
            // output reg [7:0] led signal
            // vga signal
-
+           output reg  [6:0] seg_tube,                              // control signal for tube segments
+           output reg [7:0] seg_enable,                               // control signal for tube positions
+           output reg[`VGA_BIT_DEPTH - 1:0] vga_rgb           // VGA display signal
        );
 
 
@@ -213,15 +211,12 @@ wire [1:0] input_state;
 
 wire      [`COORDINATE_WIDTH - 1:0] x, y;
 
-wire [`VGA_BIT_DEPTH - 1:0] vga_rgb;           // VGA display signal
-
 
 
 //-------------------------------------seven_seg_unit----------------------------------------//
 
 wire  [`ISA_WIDTH - 1:0] display_value;    // from keypad_unit (value to be displayed)
-wire   [6:0] seg_tube;                      // control signal for tube segments
-wire   [7:0] seg_enable;                     // control signal for tube positions
+
 
 
 //-------------------------------------keypad_unit_unit----------------------------------------//
