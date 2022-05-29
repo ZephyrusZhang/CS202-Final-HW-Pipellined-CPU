@@ -12,8 +12,6 @@ module keypad_unit_develop #(parameter
     output reg [7:0] key_coord
     );
     
-    reg [7:0] key_coord_1, key_coord_2;
-    
     localparam  SCAN_COL1   = 2'b00,
                 SCAN_COL2   = 2'b01,
                 SCAN_COL3   = 2'b10,
@@ -24,7 +22,7 @@ module keypad_unit_develop #(parameter
     
     reg [1:0] stage;
     reg [20:0] delay_duration;
-    reg [3:0] row_val [1:0];
+    reg [3:0] row_val [3:0];
     
     integer i;
     always @(negedge clk, negedge rst_n) begin
@@ -32,8 +30,6 @@ module keypad_unit_develop #(parameter
             {
                 col_out,
                 delay_duration,
-                key_coord_1,
-                key_coord_2,
                 key_coord
             } <= 0;
             stage   <= SCAN_COL1;
@@ -55,13 +51,15 @@ module keypad_unit_develop #(parameter
                     if (row_in != 4'hf & row_val[stage+:1] == 4'hf) 
                         key_coord <= {col_out, row_in};
                     else 
-                        key_coord <= 0;
+                        key_coord <= key_coord;
+                        // key_coord <= 0;
                     
                     row_val[stage+:1] <= row_in;
                     stage <= stage + 1;
                 end
                 default: 
-                    key_coord <= 0;
+                    key_coord <= key_coord;
+                    // key_coord <= 0;
             endcase
         end
     end
