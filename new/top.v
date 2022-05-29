@@ -16,8 +16,6 @@ module top (
     
     //// wire list
 
-    wire overflow;                                          // TODO #1
-
     // clocks
     wire uart_clk_out;                                      // from uart_unit (upg_clk_o)
     wire uart_clk_in;                                       // for uart_unit (10MHz)
@@ -36,9 +34,7 @@ module top (
     //--------------------------------stage-id------------------------------------//
     wire [`REG_FILE_ADDR_WIDTH - 1:0] rs, rt, rd;           // decoding from pc
     wire [`OP_CODE_WIDTH - 1:0] opcode;
-    wire [`FUNC_CODE_WIDTH - 1:0] func;
-    wire [`IMMEDIATE_WIDTH - 1:0] immediate;
-    wire [`ISA_WIDTH-1:0] extend_result;
+    wire [`ISA_WIDTH - 1:0] extend_result;
 
     // op [31:26]
     assign opcode = id_pc[`ISA_WIDTH-1:`ISA_WIDTH -`OP_CODE_WIDTH];
@@ -49,15 +45,11 @@ module top (
     // rd [15:11]
     assign rd = id_pc[`ISA_WIDTH - `OP_CODE_WIDTH - (2 * `REG_FILE_ADDR_WIDTH) - 1:`ISA_WIDTH - `OP_CODE_WIDTH - (3 * `REG_FILE_ADDR_WIDTH)];
 
-    assign func_code = id_pc[`FUNC_CODE_WIDTH - 1:0];   // function code
-    assign immediate = id_pc[`IMMEDIATE_WIDTH - 1:0];   // address I type: low 16-bit
-
-    wire [`ISA_WIDTH - 1:0] wb_reg_write_data;          // for register_file
-    wire reg_write_en;                                  // for register_file
+    wire id_reg_write_enable;                           // for future register_file
     
     wire [`ISA_WIDTH - 1:0] read_data_1, read_data_2;   // from register_file
-    wire [`ALU_CONTROL_WIDTH - 1:0] alu_opcode;         // for alu
-    wire [1:0] mem_control;                             // for data_mem
+    wire [`ALU_CONTROL_WIDTH - 1:0] id_alu_opcode;      // for alu
+    wire [1:0] id_mem_control;                          // for data_mem
 
     wire i_type_instruction;                            // from control_unit (whether it is a I type instruction)
     wire r_type_instruction;                            // from control_unit (whether it is a R type instruction)
@@ -66,7 +58,7 @@ module top (
     wire jal_instruction;                               // from control_unit (whether it is a jal insutrction)
     wire branch_instruction;                            // from control_unit (whether it is a branch instruction)
     wire store_instruction;                             // from control_unit (whether it is a strore instruction)
-    wire condition_type;                                // for condition_check
+    wire [1:0] condition_type;                          // for condition_check
     wire condition_satisfied;                           // from condition_check
     wire pc_offset;                                     // from signal_mux (whether to offset the pc)
     wire [`ISA_WIDTH - 1:0] pc_offset_value;            // from signal_mux (mux_operand_2)
@@ -116,7 +108,7 @@ module top (
                                                         //     (2) mem_wb_reg (the result of alu)
                                                         //     (3) alu (forwarding)
     wire [`ISA_WIDTH - 1:0] mem_store_data;             // for data_mem (the data to be stored)
-    wire [`REG_FILE_ADDR_WIDTH - 1:0] mem_dest_reg;     // for (1) forwarding_unit
+    wire [`REG_FILE_ADDR_WIDTH - 1:0] mem_dest_reg_idx; // for (1) forwarding_unit
                                                         //     (2) harard_unit
                                                         //     (3) mem_wb_reg
 
@@ -124,6 +116,7 @@ module top (
     wire [`ISA_WIDTH - 1:0] mem_read_data;              // for mem_wb_reg (the data read form memory)
     wire input_enable;                                  // for (1) input_unit (signal the keypad and switch to start reading)
                                                         //     (2) hazard_unit (trigger keypad hazard)
+                                                        //     (3) seven_seg_unit (display input value)
     wire vga_write_enable;                              // for output_unit (write to vga display value register)
     wire [`ISA_WIDTH - 1:0] vga_store_data;             // for output_unit (data to vga)
 
@@ -134,10 +127,11 @@ module top (
                                                         //     (2) alu (forwarding)
     wire [`ISA_WIDTH - 1:0] mem_mem_read_data;          // from data_mem (data read)
     wire [`ISA_WIDTH - 1:0] wb_mem_read_data;           // for reg_write_select (data from memory)
-    wire [`REG_FILE_ADDR_WIDTH - 1:0] wb_dest_reg_idx;      // for (1) forwarding_unit
+    wire [`REG_FILE_ADDR_WIDTH - 1:0] wb_dest_reg_idx;  // for (1) forwarding_unit
 
     //--------------------------------stage-wb------------------------------------//
-    wire[`ISA_WIDTH - 1:0] wb_reg_write_data;              // from reg_write_select in wb stage
+    wire [`ISA_WIDTH - 1:0] wb_reg_write_data;          // from reg_write_select in wb stage
+    wire wb_reg_write_enable;                           // for register_file
 
     //-------------------------------------uart_unit----------------------------------//
     wire uart_disable;                                  // from hazard_unit (whether reading from uart)
@@ -242,178 +236,172 @@ module top (
         .condition_satisfied(condition_satisfied)
     );
 
+    sign_extend sign_extend(
+        .in(id_pc[`IMMEDIATE_WIDTH - 1:0]),         // address I type: low 16-bit
+        .out(extend_result)
+    );
 
-sign_extend sign_extend(
-.in(immediate),
-.out(extend_result)
-);
+    control control(
+        .opcode(opcode),
+        .func(id_pc[`FUNC_CODE_WIDTH - 1:0]),       // function code
 
-control control(
-.opcode(opcode),
-.func(func),
+        .alu_opcode(id_alu_opcode),
+        .mem_control(id_mem_control),
 
-.alu_opcode(alu_opcode),
-.mem_control(mem_control),
-.i_type_instruction(i_type_instruction),
-.r_type_instruction(r_type_instruction),
-.j_instruction(j_instruction),
-.jr_instruction(jr_instruction),
-.jal_instruction(jal_instruction),
-.branch_instruction(branch_instruction),
-.store_instruction(store_instruction),
-.wb_en(reg_write_en),
-.condition_type(condition_type)
-);
+        .i_type_instruction(i_type_instruction),
+        .r_type_instruction(r_type_instruction),
+        .j_instruction(j_instruction),
+        .jr_instruction(jr_instruction),
+        .jal_instruction(jal_instruction),
+        .branch_instruction(branch_instruction),
+        .store_instruction(store_instruction),
 
+        .wb_en(id_reg_write_enable),
+        .condition_type(condition_type)
+    );
 
+    signal_mux signal_mux(
+        .i_type_instruction(i_type_instruction),
+        .r_type_instruction(r_type_instruction),
+        .j_instruction(j_instruction),
+        .jr_instruction(jr_instruction),
+        .jal_instruction(jal_instruction),
+        .branch_instruction(branch_instruction),
+        .store_instruction(store_instruction),
 
-signal_mux signal_mux(
-.i_type_instruction(i_type_instruction),
-.r_type_instruction(r_type_instruction),
-.j_instruction(j_instruction),
-.jr_instruction(jr_instruction),
-.jal_instruction(jal_instruction),
-.branch_instruction(branch_instruction),
-.store_instruction(store_instruction),
+        .condition_satisfied(condition_satisfied),
 
-.condition_satisfied(condition_satisfied),
-.pc_offset(pc_offset),
+        .pc_offset(pc_offset),
+        .pc_overload(pc_overload),
 
-.pc_overload(pc_overload),
+        .id_reg_1(read_data_1),
+        .id_pc(id_pc),
+        .mux_operand_1(mux_operand_1),
 
-.id_reg_1(read_data_1),
-.id_pc(id_pc),
-.mux_operand_1(mux_operand_1),
+        .id_reg_2 (read_data_2),
+        .id_sign_extend_result(extend_result),
+        .mux_operand_2(mux_operand_2),
 
-.id_reg_2 (read_data_2),
-.id_sign_extend_result(extend_result),
-.mux_operand_2(mux_operand_2),
+        .id_instruction(id_instruction),
+        .pc_overload_value(pc_overload_value),
 
-.id_instruction(id_instruction),
-.pc_overload_value(pc_overload_value),
+        .id_reg_1_idx(rs),
+        .id_reg_2_idx(rt),
+        .id_reg_dest_idx(rd),
+        .mux_reg_1_idx(mux_reg_1_idx),
+        .mux_reg_2_idx(mux_reg_2_idx),
+        .mux_reg_dest_idx(mux_reg_dest_idx),
 
-.id_reg_1_idx(rs),
-.id_reg_2_idx(rt),
-.id_reg_dest_idx(rd),
-.mux_reg_1_idx(mux_reg_1_idx),
-.mux_reg_2_idx(mux_reg_2_idx),
-.mux_reg_dest_idx(mux_reg_dest_idx),
+        .reg_1_valid(reg_1_valid),
+        .reg_2_valid(reg_2_valid)
+    );
 
-.reg_1_valid(reg_1_valid),
-.reg_2_valid(reg_2_valid)
-);
+    //--------------------------------id_ex_reg------------------------------------//
+    id_ex_reg id_ex_reg(
+        .clk(clk),
+        .rst_n(rst_n),
 
-//--------------------------------id_exe_reg------------------------------------//
+        .hazard_control(ex_hazard_control),
 
-id_ex_reg id_ex_reg(
-.clk(clk),
-.rst_n(rst_n),
+        .id_no_op(id_no_op),
+        .ex_no_op(ex_no_op),
 
-              .hazard_control(ex_hazard_control),
+        .id_reg_write_enable(id_reg_write_enable),
+        .ex_reg_write_enable(ex_reg_write_enable),
 
-.id_no_op(id_no_op),
-.ex_no_op(ex_no_op),
+        .id_mem_control(id_mem_control),
+        .ex_mem_control(ex_mem_control),
 
-.id_reg_write_enable(reg_write_en),
-.ex_reg_write_enable(ex_reg_write_enable),
+        .id_alu_control(id_alu_opcode),
+        .ex_alu_control(ex_alu_control),
 
-.id_mem_control(mem_control),
-.ex_mem_control(ex_mem_control),
+        .mux_operand_1(mux_operand_1),
+        .ex_operand_1(ex_operand_1),
 
-.id_alu_control(alu_opcode),
-.ex_alu_control(ex_alu_control),
+        .mux_operand_2(mux_operand_2),
+        .ex_operand_2(ex_operand_2),
 
-.mux_operand_1(mux_operand_1),
-.ex_operand_1(ex_operand_1),
-
-.mux_operand_2(mux_operand_2),
-.ex_operand_2(ex_operand_2),
-
-.id_reg_2(read_data_2),
-.ex_store_data(ex_store_data),
+        .id_reg_2(read_data_2),
+        .ex_store_data(ex_store_data),
 
 
-.mux_reg_1_idx(mux_reg_1_idx),
-.mux_reg_2_idx(mux_reg_2_idx),
-.mux_reg_dest_idx(mux_reg_dest_idx),
-.ex_reg_1_idx(ex_reg_1_idx),
-.ex_reg_2_idx(ex_reg_2_idx),
-.ex_reg_dest_idx(ex_reg_dest_idx)
-);
+        .mux_reg_1_idx(mux_reg_1_idx),
+        .mux_reg_2_idx(mux_reg_2_idx),
+        .mux_reg_dest_idx(mux_reg_dest_idx),
+        .ex_reg_1_idx(ex_reg_1_idx),
+        .ex_reg_2_idx(ex_reg_2_idx),
+        .ex_reg_dest_idx(ex_reg_dest_idx)
+    );
 
+    //----------------------------------hazard-unit------------------------------------------//
+    hazard_unit hazard_unit(
+        .clk(clk),
+        .rst_n(rst_n),
 
-//----------------------------------hazard-unit------------------------------------------//
+        .uart_complete(uart_complete),
+        .uart_disable(uart_disable),
 
-hazard_unit hazard_unit(
-                .clk(clk),
-                .rst_n(rst_n),
+        .reg_1_valid(reg_1_valid),
+        .reg_2_valid(reg_2_valid),
 
-                .uart_complete(uart_complete),
-                .uart_disable(uart_disable),
-                .reg_1_valid(reg_1_valid),
-                .reg_2_valid(reg_2_valid),
-                .branch_instruction(branch_instruction),
+        .branch_instruction(branch_instruction),
 
-                .ex_mem_read_enable(ex_mem_read_enable),
-                .ex_reg_write_enable(ex_reg_write_enable),
-                .ex_no_op(ex_no_op),
-                .mem_reg_write_enable(mem_reg_write_enable),
-                .mem_no_op(mem_no_op),
+        .ex_mem_read_enable(ex_mem_read_enable),
+        .ex_reg_write_enable(ex_reg_write_enable),
+        .ex_no_op(ex_no_op),
+        .mem_reg_write_enable(mem_reg_write_enable),
+        .mem_no_op(mem_no_op),
 
-                .id_reg_1_idx(read_reg_addr_1),
-                .id_reg_2_idx(read_reg_addr_2),
-                .id_reg_dest_idx(write_reg_addr),
-                .ex_reg_dest_idx(ex_reg_dest_idx),
-                .mem_reg_dest_idx(mem_dest_reg),
+        .id_reg_1_idx(mux_reg_1_idx),
+        .id_reg_2_idx(mux_reg_2_idx),
+        .ex_reg_dest_idx(ex_reg_dest_idx),
+        .mem_reg_dest_idx(mem_dest_reg_idx),
 
-                .pc_next(if_pc),
+        .pc_next(if_pc),
 
-                .input_enable(input_enable),
-                .input_complete(input_complete),
-                .cpu_pause(cpu_pause),
+        .input_enable(input_enable),
+        .input_complete(input_complete),
+        .cpu_pause(cpu_pause),
 
-                .pc_reset(pc_reset),
-                .if_hazard_control(if_hazard_control),
-                .id_hazard_control(id_hazard_control),
-                .ex_hazard_control(ex_hazard_control),
-                .mem_hazard_control(mem_hazard_control),
-                .wb_hazard_control(wb_hazard_control),
-                .issue_type(issue_type)
+        .pc_reset(pc_reset),
+        .if_hazard_control(if_hazard_control),
+        .id_hazard_control(id_hazard_control),
+        .ex_hazard_control(ex_hazard_control),
+        .mem_hazard_control(mem_hazard_control),
+        .wb_hazard_control(wb_hazard_control),
+        .issue_type(issue_type)
+    );
 
-            );
+    //--------------------------------stage-exe------------------------------------//
+    alu alu(
+        .alu_opcode(ex_alu_control),
+        .alu_result(mem_alu_result),
+        .wb_reg_write_data(wb_reg_write_data),
+        .val1_sel(val1_sel),
+        .val2_sel(val2_sel),
+        .a_input(mux_operand_1),
+        .b_input(mux_operand_2),
+        .alu_output(ex_alu_output)
+    );
 
+    //----------------------------forwarding_unit----------------------------------//
+    forwarding_unit forwarding_unit(
+        .src1(ex_reg_1_idx),
+        .src2(ex_reg_2_idx),
+        .st_src(ex_reg_dest_idx),
 
-//--------------------------------stage-exe------------------------------------//
+        .dest_mem(mem_dest_reg_idx),                // ???
+        .dest_wb(wb_dest_reg_idx),                  // ???
 
-alu alu(
-.alu_opcode(ex_alu_control),
-.alu_result(mem_alu_result),        //  ??
-.wb_reg_write_data(wb_reg_write_data),
-.val1_sel(val1_sel),
-.val2_sel(val2_sel),
-.a_input(mux_operand_1),
-.b_input(mux_operand_2),
-.alu_output(ex_alu_output)
-);
+        .mem_wb_en(wb_reg_write_enable),
+        .wb_en(ex_reg_write_enable),
 
-//----------------------------forwarding_unit----------------------------------//
-forwarding_unit forwarding_unit(
-                    .src1(ex_reg_1_idx),
-                    .src2(ex_reg_2_idx),
-                    .st_src(ex_reg_dest_idx),
+        .val1_sel(val1_sel),
+        .val2_sel(val2_sel),
+        .store_data_select(store_data_select)
+    );
 
-                    .dest_mem(mem_dest_reg),            // ???
-                    .dest_wb(wb_dest_reg_idx),              // ???
-
-                    .mem_wb_en(wb_reg_write_enable),
-                    .wb_en(ex_reg_write_enable),
-
-.val1_sel(val1_sel),
-.val2_sel(val2_sel),
-.store_data_select(store_data_select)
-);
-
-//---------------------------------ex_mem_reg----------------------------------//
+    //---------------------------------ex_mem_reg----------------------------------//
 
 ex_mem_reg ex_mem_reg(
 .clk(clk),
@@ -436,11 +424,11 @@ ex_mem_reg ex_mem_reg(
                .store_data_select(st_sel),             // ??
                .ex_store_data(ex_store_data),
                .mem_alu_result_prev(mem_alu_result),
-               .wb_wb_reg_write_data(wb_reg_write_data),
+               .wb_reg_write_data(wb_reg_write_data),
                .mem_store_data(mem_store_data),
 
 .ex_dest_reg(ex_reg_dest_idx),
-.mem_dest_reg(mem_dest_reg)
+.mem_dest_reg_idx(mem_dest_reg_idx)
 );
 
 
@@ -487,7 +475,7 @@ mem_wb_reg mem_wb_reg(
                .wb_alu_result(wb_alu_result),
                .mem_mem_read_data(mem_read_data),
                .wb_mem_read_data(wb_mem_read_data),
-               .mem_dest_reg(mem_dest_reg),
+               .mem_dest_reg_idx(mem_dest_reg_idx),
                .wb_dest_reg_idx(wb_dest_reg_idx)
            );
 
@@ -522,7 +510,6 @@ input_unit input_unit(
                .input_data(input_data),
                .switch_enable(switch_enable),
                .cpu_pause(cpu_pause),
-               .overflow(overflow)
            );
 
 //-------------------------------------output_unit----------------------------------------//

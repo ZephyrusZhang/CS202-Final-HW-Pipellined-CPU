@@ -40,6 +40,7 @@ module data_mem #(parameter
 
     output     input_enable,                            // for (1) input_unit (signal the keypad and switch to start reading)
                                                         //     (2) hazard_unit (trigger keypad hazard)
+                                                        //     (3) seven_seg_unit (display input value)
     input      [`ISA_WIDTH - 1:0] input_data,           // from input_unit (data from user input)
 
     output     vga_write_enable,                        // for output_unit (write to vga display value register)

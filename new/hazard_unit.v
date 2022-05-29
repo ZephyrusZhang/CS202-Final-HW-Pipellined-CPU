@@ -23,9 +23,8 @@ module hazard_unit (
     input      mem_reg_write_enable,                            // from ex_mem_reg (instruction needs write to register)
     input      mem_no_op,                                       // from ex_mem_reg (the mem stage is a bubble)
 
-    input      [`REG_FILE_ADDR_WIDTH - 1:0] id_reg_1_idx,       // from if_id_reg (index of first source register)
-    input      [`REG_FILE_ADDR_WIDTH - 1:0] id_reg_2_idx,       // from if_id_reg (index of second source register)
-    input      [`REG_FILE_ADDR_WIDTH - 1:0] id_reg_dest_idx,    // from if_id_reg (index of destination resgiter)
+    input      [`REG_FILE_ADDR_WIDTH - 1:0] id_reg_1_idx,       // from signal_mux (index of first source register)
+    input      [`REG_FILE_ADDR_WIDTH - 1:0] id_reg_2_idx,       // from signal_mux (index of second source register)
     input      [`REG_FILE_ADDR_WIDTH - 1:0] ex_reg_dest_idx,    // from id_ex_reg (index of destination resgiter)
     input      [`REG_FILE_ADDR_WIDTH - 1:0] mem_reg_dest_idx,   // from ex_mem_reg (index of destination resgiter)
 
