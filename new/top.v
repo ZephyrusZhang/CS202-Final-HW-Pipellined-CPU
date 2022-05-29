@@ -52,7 +52,7 @@ assign immediate = id_pc[`IMMEDIATE_WIDTH - 1:0];                             //
 
 wire  [`ISA_WIDTH - 1 : 0]              reg_write_data;                              //from register_file
 wire                                    reg_write_en;                                //from register_file
-wire                                    wb_no_op;                                    //to register_file
+
 wire  [`ISA_WIDTH - 1 : 0]              read_data_1, read_data_2;                    //to register_file
 wire [`ALU_CONTROL_WIDTH - 1:0]         alu_opcode;
 wire [1:0]                              mem_control;
@@ -66,35 +66,35 @@ wire  jal_instruction;                                       // from control_uni
 wire  branch_instruction;                                    // from control_unit (whether it is a branch instruction)
 wire  store_instruction;                                     // from control_unit (whether it is a strore instruction)
 wire  condition_satisfied;                                   //from condition_chec
-wire  pc_offset;                                            // from signal_mux
-wire  [`ISA_WIDTH - 1:0] pc_offset_value;                   // from signal_mux (mux_operand_2)
-wire  pc_overload;                                          // from signal_mux
-wire  [`ISA_WIDTH - 1:0] pc_overload_value;                 // from signal_mux (pc_overload_value)
+wire  pc_offset;                                             // from signal_mux
+wire  [`ISA_WIDTH - 1:0] pc_offset_value;                    // from signal_mux (mux_operand_2)
+wire  pc_overload;                                           // from signal_mux
+wire  [`ISA_WIDTH - 1:0] pc_overload_value;                  // from signal_mux (pc_overload_value)
 
 
 
-wire [`ISA_WIDTH - 1:0] mux_operand_1;                // for id_ex_reg (to pass on to alu)
-wire [`ISA_WIDTH - 1:0] mux_operand_2;                // for (1) id_ex_reg (to pass on to alu)
+wire [`ISA_WIDTH - 1:0] mux_operand_1;                      // for id_ex_reg (to pass on to alu)
+wire [`ISA_WIDTH - 1:0] mux_operand_2;                      // for (1) id_ex_reg (to pass on to alu)
 
-wire [`REG_FILE_ADDR_WIDTH - 1:0] mux_reg_1_idx;      // for id_ex_reg (to pass on to forwarding_unit)
-wire [`REG_FILE_ADDR_WIDTH - 1:0] mux_reg_2_idx;      // for id_ex_reg (to pass on to forwarding_unit)
-wire [`REG_FILE_ADDR_WIDTH - 1:0] mux_reg_dest_idx;   // for id_ex_reg
+wire [`REG_FILE_ADDR_WIDTH - 1:0] mux_reg_1_idx;            // for id_ex_reg (to pass on to forwarding_unit)
+wire [`REG_FILE_ADDR_WIDTH - 1:0] mux_reg_2_idx;            // for id_ex_reg (to pass on to forwarding_unit)
+wire [`REG_FILE_ADDR_WIDTH - 1:0] mux_reg_dest_idx;         // for id_ex_reg
 
-wire reg_1_valid;                                     // for hazard_unit
-wire reg_2_valid;                                     // for hazard_unit
+wire reg_1_valid;                                           // for hazard_unit
+wire reg_2_valid;                                           // for hazard_unit
 
 
 //--------------------------------id_exe_reg------------------------------------//
-wire ex_no_op;                                         // for alu (stop opeartions)
-wire ex_reg_write_enable;                              // for ex_mem_reg
-wire [1:0] ex_mem_control;                             // for ex_mem_reg
-wire [`ALU_CONTROL_WIDTH - 1:0] ex_alu_control;        // for alu
-wire [`ISA_WIDTH - 1:0] ex_operand_1;                  // for alu (first oprand for alu)
-wire [`ISA_WIDTH - 1:0] ex_operand_2;                  // for alu (second oprand for alu)
-wire [`ISA_WIDTH - 1:0] ex_store_data;                 // for ex_mem_reg (the data to be store into memory)
-wire [`REG_FILE_ADDR_WIDTH - 1:0] ex_reg_1_idx;        // for forwarding_unit
-wire [`REG_FILE_ADDR_WIDTH - 1:0] ex_reg_2_idx;        // for forwarding_unit
-wire [`REG_FILE_ADDR_WIDTH - 1:0] ex_reg_dest_idx;     // for (1) forwarding_unit
+wire ex_no_op;                                              // for alu (stop opeartions)
+wire ex_reg_write_enable;                                   // for ex_mem_reg
+wire [1:0] ex_mem_control;                                  // for ex_mem_reg
+wire [`ALU_CONTROL_WIDTH - 1:0] ex_alu_control;             // for alu
+wire [`ISA_WIDTH - 1:0] ex_operand_1;                       // for alu (first oprand for alu)
+wire [`ISA_WIDTH - 1:0] ex_operand_2;                       // for alu (second oprand for alu)
+wire [`ISA_WIDTH - 1:0] ex_store_data;                      // for ex_mem_reg (the data to be store into memory)
+wire [`REG_FILE_ADDR_WIDTH - 1:0] ex_reg_1_idx;             // for forwarding_unit
+wire [`REG_FILE_ADDR_WIDTH - 1:0] ex_reg_2_idx;             // for forwarding_unit
+wire [`REG_FILE_ADDR_WIDTH - 1:0] ex_reg_dest_idx;          // for (1) forwarding_unit
 //     (2) hazrad_unit
 //     (3) ex_mem_reg
 
@@ -141,9 +141,25 @@ wire [`REG_FILE_ADDR_WIDTH - 1:0] mem_dest_reg;    // for (1) forwarding_unit
 wire [`ISA_WIDTH - 1:0] mem_read_data;         // for mem_wb_reg (the data read form memory)
 wire input_enable;                             // for (1) input_unit (signal the keypad and switch to start reading)
 //     (2) hazard_unit (trigger keypad hazard)
+
+wire input_data;
 wire vga_write_enable;                         // for output_unit (write to vga display value register)
 wire [`ISA_WIDTH - 1:0] vga_store_data;        // for output_unit (data to vga)
-//-------------------------------------------------------------------------------//
+
+
+//---------------------------------mem-wb-reg--------------------------------//
+wire  wb_no_op;                                    //to register_file
+
+wire  wb_mem_read_enable;                          // for reg_write_select (to select data from memory)
+
+wire  [`ISA_WIDTH - 1:0] wb_alu_result;            // for (1) reg_write_select (result from alu)
+//     (2) alu (forwarding)
+
+wire  [`ISA_WIDTH - 1:0] mem_mem_read_data;        // from data_mem (data read)
+wire  [`ISA_WIDTH - 1:0] wb_mem_read_data;         // for reg_write_select (data from memory)
+
+wire  [`REG_FILE_ADDR_WIDTH - 1:0] wb_dest_reg;    // for (1) forwarding_unit
+//     (2) general_reg
 
 
 //--------------------------------stage-wb------------------------------------//
@@ -423,15 +439,27 @@ data_mem data_mem(
              .mem_store_data(mem_store_data),
              .mem_read_data(mem_read_data),
 
-             .input_enable(input_enable)
+             .input_enable(input_enable),
 
+             .input_data(input_data),
 
-
-            ////////////////////   more signal to be added
-
-
-
-
+             .vga_write_enable(vga_write_enable),
+             .vga_store_data(vga_store_data)
 
          );
-endmodule
+
+
+//---------------------------------mem-wb-reg--------------------------------//
+
+mem_wb_reg mem_wb_reg(
+               .clk(clk),
+               .rst_n(rst_n),
+               .hazard_control(hazard_control),
+               .mem_no_op(mem_no_op),
+               .wb_no_op(wb_no_op),
+               .mem_reg_write_enable(mem_reg_write_enable),
+               .wb_reg_write_enable(wb_reg_write_enable),
+               .mem_mem_read_enable()
+           )
+
+           endmodule
