@@ -46,7 +46,7 @@ module data_mem #(parameter
     output     [`ISA_WIDTH - 1:0] vga_store_data        // for output_unit (data to vga)
     );
 
-    wire io_active = (mem_addr[`IO_START_BIT:`IO_END_BIT] == `IO_HIGH_ADDR);
+    wire io_active = (mem_addr[`IO_END_BIT:`IO_START_BIT] == `IO_HIGH_ADDR);
     wire uart_instruction_write_enable = uart_write_enable & uart_addr[ROM_DEPTH];
     wire [`ISA_WIDTH - 1:0] ram_read_data;
 
@@ -57,7 +57,7 @@ module data_mem #(parameter
         .ena    (~no_op), // disabled unpon no_op
 
         .clka   (uart_disable ? clk                          : uart_clk),
-        .addra  (uart_disable ? mem_addr[ROM_DEPTH + 1:2] : uart_addr[ROM_DEPTH + 1:2]), // address unit in bytes
+        .addra  (uart_disable ? mem_addr[ROM_DEPTH + 1:2] : uart_addr[ROM_DEPTH - 1:0]), // address unit in bytes
         .douta  (ram_read_data),
 
         .dina   (uart_disable ? (vga_write_enable ? 0 : mem_store_data) : uart_data),

@@ -46,7 +46,6 @@ module input_unit (
     reg [`ISA_WIDTH - 1:0] keypad_data;
 
     assign input_data = switch_enable ? {{(`ISA_WIDTH - `SWITCH_CNT){1'b0}}, switch_map} : keypad_data;
-    assign overflow   = 4'h8 <= digit_counter;
 
     always @(posedge clk, negedge rst_n) begin // posedge is chosen to reterive results from keypad (negedge)
         if (~rst_n) begin
@@ -155,4 +154,6 @@ module input_unit (
             endcase
         end
     end
+
+    assign overflow   = (4'h8 <= digit_counter);
 endmodule
