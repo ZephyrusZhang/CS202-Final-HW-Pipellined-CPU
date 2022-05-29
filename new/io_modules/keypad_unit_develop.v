@@ -52,12 +52,12 @@ module keypad_unit_develop #(parameter
                     endcase
                 end
                 2'b10  : begin
-                    if (row_in != 4'hf & row_val[stage+:1] == 4'hf) 
+                    if (row_in != 4'hf & row_val[stage] == 4'hf) 
                         key_coord <= {col_out, row_in};
                     else 
                         key_coord <= 0;
                     
-                    row_val[stage+:1] <= row_in;
+                    row_val[stage] <= row_in;
                     stage <= stage + 1;
                 end
                 default: 

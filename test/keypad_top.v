@@ -4,6 +4,7 @@ module keypad_top (
     input clk, rst_n,
     input [3:0] row_in,
     output [3:0] col_out,
+    output [3:0] row_val,
     output [7:0] key_coord
 );
 
@@ -14,5 +15,7 @@ keypad_unit_develop keypad(
     .col_out(col_out),
     .key_coord(key_coord)
 );
+
+assign row_val = row_in;
 
 endmodule
