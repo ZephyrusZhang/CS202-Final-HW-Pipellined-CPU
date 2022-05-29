@@ -70,12 +70,12 @@ module input_unit (
                         ENTER  : begin
                             input_state    <= BLOCK;
                             input_complete <= 1'b1;
-                            digit_counter  <= 0;
+                            digit_counter  <= 4'h0;
                         end
                         PAUSE  : begin
                             input_state    <= HALT;
                             input_complete <= 1'b1;
-                            digit_counter  <= 0;
+                            digit_counter  <= 4'h0;
                             cpu_pause      <= 1'b1;
                         end
                         default:
@@ -91,24 +91,24 @@ module input_unit (
                             end
                             BACKSPACE: begin
                                 if (digit_counter != 0) begin
-                                    keypad_data <= keypad_data / 10;
+                                    keypad_data   <= keypad_data / 10;
                                     digit_counter <= digit_counter - 1;
                                 end else
-                                    keypad_data <= keypad_data;
+                                    keypad_data   <= keypad_data;
                             end
                             ENTER    : begin
                                 input_state    <= BLOCK;
                                 input_complete <= 1'b1;
-                                digit_counter  <= 0;
+                                digit_counter  <= 4'h0;
                             end
                             PAUSE  : begin
                                 input_state    <= HALT;
                                 input_complete <= 1'b1;
-                                digit_counter  <= 0;
+                                digit_counter  <= 4'h0;
                                 cpu_pause      <= 1'b1;
                             end
                             default  : begin
-                                if (digit_counter < 8) begin
+                                if (digit_counter != 4'h8) begin
                                     case (key_coord)
                                         ZERO   : keypad_data <= keypad_data * 10;
                                         ONE    : keypad_data <= keypad_data * 10 + 1;
@@ -124,7 +124,7 @@ module input_unit (
                                     endcase
                                     digit_counter <= digit_counter + 1;
                                 end else
-                                    keypad_data    <= keypad_data;
+                                    keypad_data   <= keypad_data;
                             end
                         endcase
                     end else
