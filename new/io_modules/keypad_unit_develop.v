@@ -14,133 +14,54 @@ module keypad_unit_develop #(parameter
     
     reg [7:0] key_coord_1, key_coord_2;
     
-    localparam  IDLE        = 4'b0000,
-                SCAN_COL1_1 = 4'b0001,
-                SCAN_COL2_1 = 4'b0010,
-                SCAN_COL3_1 = 4'b0011,
-                SCAN_COL4_1 = 4'b0100,
-                DELAY       = 4'b0110,
-                SCAN_COL1_2 = 4'b0111,
-                SCAN_COL2_2 = 4'b1000,
-                SCAN_COL3_2 = 4'b1001,
-                SCAN_COL4_2 = 4'b1010,
-                CHECK       = 4'b1011;
+    localparam  SCAN_COL1   = 2'b00,
+                SCAN_COL2   = 2'b01,
+                SCAN_COL3   = 2'b10,
+                SCAN_COL4   = 2'b11;
+
+    localparam  RESPONSE_PERIOD = DEBOUNCE_PERIOD / 8,
+                SCAN_PERIOD     = DEBOUNCE_PERIOD / 4;
     
-    reg [3:0] state;
-    reg [20:0] delay_cnt;
+    reg [1:0] stage;
+    reg [20:0] delay_duration;
+    reg [3:0] row_val [1:0];
     
+    integer i;
     always @(negedge clk, negedge rst_n) begin
         if (~rst_n) begin
             {
                 col_out,
-                delay_cnt,
+                delay_duration,
                 key_coord_1,
                 key_coord_2,
                 key_coord
             } <= 0;
-            state <= IDLE;
+            stage   <= SCAN_COL1;
+            for (i = 0; i < 4; i = i + 1) begin
+                row_val[i] <= 4'hf;
+            end
         end else begin
-            case (state)
-                IDLE: begin
-                    // key_coord       <= 0;
-                    if (row_in != 4'hf) begin
-                        state       <= SCAN_COL1_1;
-                        col_out     <= 4'b0111;
-                    end else
-                        state       <= state;
-                end
-                // start scanning for the first time
-                SCAN_COL1_1:
-                    if (row_in != 4'hf) begin
-                        state       <= DELAY;
-                        key_coord_1 <= {row_in, col_out};
-                    end else begin
-                        state       <= SCAN_COL2_1;
-                        col_out     <= 4'b1011;
-                    end
-                SCAN_COL2_1:
-                    if (row_in != 4'hf) begin
-                        state       <= DELAY;
-                        key_coord_1 <= {row_in, col_out};
-                    end else begin
-                        state       <= SCAN_COL3_1;
-                        col_out     <= 4'b1101;
-                    end
-                SCAN_COL3_1:
-                    if (row_in != 4'hf) begin
-                        state       <= DELAY;
-                        key_coord_1 <= {row_in, col_out};
-                    end else begin
-                        state       <= SCAN_COL4_1;
-                        col_out     <= 4'b1110;
-                    end
-                SCAN_COL4_1:
-                    if (row_in != 4'hf) begin
-                        state       <= DELAY;
-                        key_coord_1 <= {row_in, col_out};
-                    end else begin
-                        state       <= IDLE;
-                        col_out     <= 4'b0000;
-                    end
-                // pause and wait
-                DELAY:
-                    casex ({delay_cnt == DEBOUNCE_PERIOD - 1, row_in != 4'hf})
-                        2'b0x: delay_cnt   <= delay_cnt + 1;
-                        2'b10: begin
-                            state       <= IDLE;
-                            delay_cnt   <= 0;
-                            col_out     <= 4'b0000;
-                        end
-                        2'b11: begin
-                            state       <= SCAN_COL1_2;
-                            delay_cnt   <= 0;
-                            col_out     <= 4'b0111;
-                        end
+            case  ({delay_duration % RESPONSE_PERIOD == 0,  // let out the next signal for scanning
+                    delay_duration % SCAN_PERIOD == 0})     // check for changes by the scanning signal 
+                2'b01  : begin
+                    case (stage)
+                        SCAN_COL1: col_out <= 4'b0111;
+                        SCAN_COL2: col_out <= 4'b1011;
+                        SCAN_COL3: col_out <= 4'b1101;
+                        default  : col_out <= 4'b1110; // SCAN_COL4
                     endcase
-                // scan the second time
-                SCAN_COL1_2:
-                    if (row_in != 4'hf) begin
-                        state       <= CHECK;
-                        key_coord_2 <= {row_in, col_out};
-                    end else begin
-                        state       <= SCAN_COL2_2;
-                        col_out     <= 4'b1011;
-                    end
-                SCAN_COL2_2:
-                    if (row_in != 4'hf) begin
-                        state       <= CHECK;
-                        key_coord_2 <= {row_in, col_out};
-                    end else begin
-                        state       <= SCAN_COL3_2;
-                        col_out     <= 4'b1101;
-                    end
-                SCAN_COL3_2:
-                    if (row_in != 4'hf) begin
-                        state       <= CHECK;
-                        key_coord_2 <= {row_in, col_out};
-                    end else begin
-                        state       <= SCAN_COL4_2;
-                        col_out     <= 4'b1110;
-                    end
-                SCAN_COL4_2:
-                    if (row_in != 4'hf) begin
-                        state       <= CHECK;
-                        key_coord_2 <= {row_in, col_out};
-                    end else begin
-                        state       <= IDLE;
-                        col_out     <= 4'b0000;
-                    end
-                // check the result and compare two scans
-                CHECK: begin
-                    if (key_coord_1 == key_coord_2) key_coord <= key_coord_2;
-                    else key_coord <= key_coord_1;
-                    
-                    key_coord_1 <= 0;
-                    key_coord_2 <= 0;
-                    state       <= IDLE;
-                    col_out     <= 4'b0000;
                 end
-                default: state      <= IDLE;
+                2'b10  : begin
+                    if (row_in != 4'hf & row_val[stage+:1] == 4'hf) 
+                        key_coord <= {col_out, row_in};
+                    else 
+                        key_coord <= 0;
+                    
+                    row_val[stage+:1] <= row_in;
+                    stage <= stage + 1;
+                end
+                default: 
+                    key_coord <= 0;
             endcase
         end
     end
