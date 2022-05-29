@@ -10,7 +10,7 @@
         alu_result: the alu result of last instruction, used to solve data hazard like below
                     add $s0, $t0, $t1
                     sub $t2, $s0, $t3
-        mem_result: the data fetched from data memory, used to solve data hazard like below
+        reg_write_data: the data fetched from data memory, used to solve data hazard like below
                     lw $s0, 20($t1)
                     sub $t2, $s0, $t3
         val1_sel:   select signal of alu operand 1
@@ -22,7 +22,7 @@
 */
 module alu (
     input [`ALU_CONTROL_WIDTH - 1:0]    alu_opcode,
-    input [`ISA_WIDTH - 1 : 0]          alu_result, mem_result,
+    input [`ISA_WIDTH - 1 : 0]          alu_result, reg_write_data,
     input [`FORW_SEL_WIDTH - 1 : 0]     val1_sel, val2_sel,
     input [`ISA_WIDTH - 1 : 0]          a_input, b_input,
     output reg [`ISA_WIDTH - 1:0]       alu_output
@@ -34,13 +34,13 @@ always @(*) begin
     case (val1_sel)
         `FORW_SEL_INPUT:    val1 = a_input;
         `FORW_SEL_ALU_RES:  val1 = alu_result;
-        `FORW_SEL_MEM_RES:  val1 = mem_result;
+        `FORW_SEL_MEM_RES:  val1 = reg_write_data;
         default:            val1 = 0;
     endcase 
     case (val2_sel)
         `FORW_SEL_INPUT:    val2 = b_input;
         `FORW_SEL_ALU_RES:  val2 = alu_result;
-        `FORW_SEL_MEM_RES:  val2 = mem_result;
+        `FORW_SEL_MEM_RES:  val2 = reg_write_data;
         default:            val2 = 0;
     endcase
 end
