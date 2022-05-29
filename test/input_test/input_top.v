@@ -18,7 +18,7 @@ wire input_complete;
 wire [`ISA_WIDTH - 1 : 0] output_data;
 wire switch_enable;
 
-keypad_unit_develop keypad (
+keypad_unit keypad (
     .clk(clk),
     .rst_n(rst_n),
     .row_in(row_in),
