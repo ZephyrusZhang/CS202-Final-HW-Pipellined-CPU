@@ -30,9 +30,6 @@ module top_modified (
     clk_generator #(10) uart_clk_generator(clk_raw, rst_n, clk_uart);
     // clk_generator #(4)  raw_clk_generator (clk, rst_n, clk_raw);
     
-    // turn off the dots of tube
-    assign seg_tube[7] = 1'b1;
-    
     // no_op
     wire    instruction_mem_no_op = instruction_mem_no_op_input;
     wire    if_id_reg_no_op,
@@ -236,26 +233,6 @@ module top_modified (
     );
 
     //--------------------------------stage-if------------------------------------//
-        .clk                (clk_raw),
-        .rst_n              (rst_n),
-
-        .uart_disable       (hazard_unit_uart_disable),
-        .uart_clk           (uart_unit_clk_out),
-        .uart_write_enable  (uart_unit_write_enable),
-        .uart_data          (uart_unit_write_data),
-        .uart_addr          (uart_unit_write_address),
-
-        .pc_offset          (mux_pc_offset),
-        .pc_offset_value    (mux_operand_2),
-        .pc_overload        (mux_pc_overload),
-        .pc_overload_value  (mux_pc_overload_value),
-        .pc_reset           (hazard_unit_pc_reset),
-
-        .hazard_control     (hazard_unit_if_hazard_control),
-        .if_no_op           (instruction_mem_no_op),
-        .pc                 (instruction_mem_pc),                       
-        .instruction        (instruction_mem_instruction)
-    );
 
     //--------------------------------stage-id------------------------------------//
     if_id_reg if_id_reg(
@@ -532,7 +509,7 @@ module top_modified (
         .display_value      (input_unit_input_data),
         .switch_enable      (input_unit_switch_enable),
         .input_enable       (data_mem_input_enable),
-        .seg_tube           (seg_tube[6:0]),
+        .seg_tube           (seg_tube),
         .seg_enable         (seg_enable)
     );
     vga_unit vga_unit(

@@ -10,9 +10,15 @@ module seven_seg_unit #(parameter
     input      switch_enable,                       // from keypad_unit (show binary switch input)
     input      input_enable,                        // from hazard_unit (whether to display)
     
-    output reg [6:0] seg_tube,                      // control signal for tube segments
-    output reg [7:0] seg_enable                     // control signal for tube positions
+    output     [7:0] seg_tube,                      // control signal for tube segments
+    output     [7:0] seg_enable                     // control signal for tube positions
     );
+    
+    reg [7:0] seg_tube_reg;
+    reg [7:0] seg_enable_reg;
+    
+    assign seg_tube = seg_tube_reg;
+    assign seg_enable = seg_enable_reg;
     
     reg [2:0] display_counter;
     reg [3:0] diaplay_digit;
@@ -26,12 +32,12 @@ module seven_seg_unit #(parameter
             display_counter = 3'd0;
             diaplay_digit   = 4'h0;
             has_zero        = 1'b0;
-            seg_enable      = 8'b1111_1111;
+            seg_enable_reg  = 8'b1111_1111;
         end else case ({input_enable, switch_enable})
             2'b11  : begin
                 diaplay_digit = display_value[(display_counter)+:1];
-                seg_enable = 8'b1111_1111;
-                seg_enable[(display_counter)+:1] = 1'b0;
+                seg_enable_reg = 8'b1111_1111;
+                seg_enable_reg[(display_counter)+:1] = 1'b0;
                 display_counter = display_counter + 1;
             end
             2'b10  : begin
@@ -39,16 +45,16 @@ module seven_seg_unit #(parameter
                     3'd0: begin 
                         diaplay_digit = (display_value % 1_0000_0000) / 1000_0000;
                         if (diaplay_digit == 0) begin
-                            seg_enable = 8'b1111_1111;
+                            seg_enable_reg = 8'b1111_1111;
                             has_zero = 1'b1;
-                        end else seg_enable = 8'b0111_1111;
+                        end else seg_enable_reg = 8'b0111_1111;
                     end
                     3'd1: begin
                         diaplay_digit = ((display_value % 1_0000_0000) 
                                                         % 1000_0000) / 100_0000;
-                        if (has_zero && diaplay_digit == 0) seg_enable = 8'b1111_1111;
+                        if (has_zero && diaplay_digit == 0) seg_enable_reg = 8'b1111_1111;
                         else begin
-                            seg_enable = 8'b1011_1111;
+                            seg_enable_reg = 8'b1011_1111;
                             has_zero = 1'b0;
                         end
                     end
@@ -56,9 +62,9 @@ module seven_seg_unit #(parameter
                         diaplay_digit = (((display_value % 1_0000_0000) 
                                                         % 1000_0000) 
                                                         % 100_0000) / 10_0000;
-                        if (has_zero && diaplay_digit == 0) seg_enable = 8'b1111_1111;
+                        if (has_zero && diaplay_digit == 0) seg_enable_reg = 8'b1111_1111;
                         else begin
-                            seg_enable = 8'b1101_1111;
+                            seg_enable_reg = 8'b1101_1111;
                             has_zero = 1'b0;
                         end
                     end
@@ -67,9 +73,9 @@ module seven_seg_unit #(parameter
                                                         % 1000_0000) 
                                                         % 100_0000) 
                                                         % 10_0000) / 1_0000;
-                        if (has_zero && diaplay_digit == 0) seg_enable = 8'b1111_1111;
+                        if (has_zero && diaplay_digit == 0) seg_enable_reg = 8'b1111_1111;
                         else begin
-                            seg_enable = 8'b1110_1111;
+                            seg_enable_reg = 8'b1110_1111;
                             has_zero = 1'b0;
                         end
                     end
@@ -79,9 +85,9 @@ module seven_seg_unit #(parameter
                                                         % 100_0000) 
                                                         % 10_0000)
                                                         % 1_0000) / 1000;
-                        if (diaplay_digit == 0) seg_enable = 8'b1111_1111;
+                        if (has_zero && diaplay_digit == 0) seg_enable_reg = 8'b1111_1111;
                         else begin
-                            seg_enable = 8'b1111_0111;
+                            seg_enable_reg = 8'b1111_0111;
                             has_zero = 1'b0;
                         end
                     end
@@ -92,9 +98,9 @@ module seven_seg_unit #(parameter
                                                             % 10_0000)
                                                             % 1_0000)
                                                             % 1000) / 100;
-                        if (has_zero && diaplay_digit == 0) seg_enable = 8'b1111_1111;
+                        if (has_zero && diaplay_digit == 0) seg_enable_reg = 8'b1111_1111;
                         else begin
-                            seg_enable = 8'b1111_1011;
+                            seg_enable_reg = 8'b1111_1011;
                             has_zero = 1'b0;
                         end
                     end
@@ -106,9 +112,9 @@ module seven_seg_unit #(parameter
                                                             % 1_0000)
                                                             % 1000)
                                                             % 100) / 10;
-                        if (has_zero && diaplay_digit == 0) seg_enable = 8'b1111_1111;
+                        if (has_zero && diaplay_digit == 0) seg_enable_reg = 8'b1111_1111;
                         else begin
-                            seg_enable = 8'b1111_1101;
+                            seg_enable_reg = 8'b1111_1101;
                             has_zero = 1'b0;
                         end
                     end
@@ -121,30 +127,30 @@ module seven_seg_unit #(parameter
                                                             % 1000)
                                                             % 100)
                                                             % 10;
-                        if (has_zero && diaplay_digit == 0) seg_enable = 8'b1111_1111;
-                        else seg_enable = 8'b1111_1110;
+                        if (has_zero && diaplay_digit == 0) seg_enable_reg = 8'b1111_1111;
+                        else seg_enable_reg = 8'b1111_1110;
                     end
-                    default: seg_enable = 8'b1111_1111;
+                    default: seg_enable_reg = 8'b1111_1111;
                 endcase
                 display_counter = display_counter + 1;
             end
             // display is not enabled
-            default: seg_enable = 8'b1111_1111;
+            default: seg_enable_reg = 8'b1111_1111;
         endcase
     end
     
     always @(diaplay_digit)
          case (diaplay_digit)
-             4'h0:    seg_tube = 8'b01000000; // "0"
-             4'h1:    seg_tube = 8'b01111001; // "1"
-             4'h2:    seg_tube = 8'b00100100; // "2"
-             4'h3:    seg_tube = 8'b00110000; // "3"
-             4'h4:    seg_tube = 8'b00011001; // "4"
-             4'h5:    seg_tube = 8'b00010010; // "5"
-             4'h6:    seg_tube = 8'b00000010; // "6"
-             4'h7:    seg_tube = 8'b01111000; // "7"
-             4'h8:    seg_tube = 8'b00000000; // "8"
-             4'h9:    seg_tube = 8'b00010000; // "9"
-             default: seg_tube = 8'b00000000; // empty
+             4'h0:    seg_tube_reg = 8'b11000000; // "0"
+             4'h1:    seg_tube_reg = 8'b11111001; // "1"
+             4'h2:    seg_tube_reg = 8'b10100100; // "2"
+             4'h3:    seg_tube_reg = 8'b10110000; // "3"
+             4'h4:    seg_tube_reg = 8'b10011001; // "4"
+             4'h5:    seg_tube_reg = 8'b10010010; // "5"
+             4'h6:    seg_tube_reg = 8'b10000010; // "6"
+             4'h7:    seg_tube_reg = 8'b11111000; // "7"
+             4'h8:    seg_tube_reg = 8'b10000000; // "8"
+             4'h9:    seg_tube_reg = 8'b10010000; // "9"
+             default: seg_tube_reg = 8'b00000000; // empty
          endcase  
 endmodule
