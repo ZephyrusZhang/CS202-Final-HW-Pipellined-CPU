@@ -19,6 +19,7 @@ module uart_unit (
 
         .upg_clk_o(uart_clk_out),
         .upg_wen_o(uart_write_enable),
+        .upg_dat_o(uart_data),
         .upg_adr_o(uart_addr),
         .upg_done_o(uart_complete),
         .upg_tx_o(uart_tx)

@@ -77,6 +77,7 @@ module hazard_unit (
         end else begin
             case (cpu_state) 
                 `EXECUTE: begin
+                    pc_reset     <= 1'b0;
                     casex ({data_hazard, cpu_pause, uart_hazard, input_enable})
                         // data hazard will hold all stages hence covers the other hazards
                         4'b1xxx: begin
@@ -129,6 +130,7 @@ module hazard_unit (
                             issue_type   <= `NONE;
                             cpu_state    <= `EXECUTE;
                             uart_disable <= 1'b1;
+                            pc_reset     <= 1'b1;
                             if_hazard_control <= `NORMAL;
                         end
                         default: 

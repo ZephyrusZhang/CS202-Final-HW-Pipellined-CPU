@@ -52,7 +52,7 @@ module ex_mem_reg (
                 mem_dest_reg_idx
             }                        <= 0;
         end else begin
-            if (hazard_control[`HAZD_HOLD_BIT]) 
+            if (hazard_control[`HAZD_HOLD_BIT] == 1'b1) 
                 mem_reg_write_enable <= mem_reg_write_enable; // prevent auto latches
             else begin
                 mem_reg_write_enable <= ex_reg_write_enable;

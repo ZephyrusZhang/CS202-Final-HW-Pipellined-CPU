@@ -164,7 +164,7 @@ module top (
             uart_unit_write_enable,
             uart_unit_uart_complete;
     wire [`ISA_WIDTH - 1:0] uart_unit_write_data;
-    wire [`DEFAULT_RAM_DEPTH - 1:0] uart_unit_write_address;
+    wire [`DEFAULT_RAM_DEPTH:0] uart_unit_write_address;
             
 
     // LED
@@ -437,7 +437,7 @@ module top (
         .uart_disable       (hazard_unit_uart_disable),
         .uart_clk           (uart_unit_clk_out),
         .uart_write_enable  (uart_unit_write_enable),
-        .uart_data          (uart_unit_write_address),
+        .uart_data          (uart_unit_write_data),
         .uart_addr          (uart_unit_write_address),
 
         .no_op              (ex_mem_reg_no_op),
