@@ -15,7 +15,7 @@ module input_unit (
     
     output reg switch_enable,                           // for (1) seven_seg_unit (user is using switches)
                                                         //     (2) output_unit (display that input is switches)
-    output reg cpu_pause                               // for hazard_unit (user pressed pause)
+    output reg cpu_pause                                // for hazard_unit (user pressed pause)
     // output     overflow                                 // for hardware LED to indicate a overflow of the tube display
     );
                
