@@ -1,3 +1,5 @@
+`timescale 1ns / 1ps
+
 module top_test ();
     reg clk = 0, rst_n = 1, instruction_mem_no_op_input = 0;
     wire uart_in_progress = 0, hsync = 0, vsync = 0, uart_tx = 0;
