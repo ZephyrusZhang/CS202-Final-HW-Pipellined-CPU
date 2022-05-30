@@ -34,13 +34,13 @@ module moduleName ();
             instruction_mem_pc_input = 0;
             instruction_mem_instruction_input = 32'h8C020000;
         #10
-            instruction_mem_pc_input = instruction_mem_pc_input + 1;
+            instruction_mem_pc_input = instruction_mem_pc_input + 4;
             instruction_mem_instruction_input = 32'h20080004;
         #10
-            instruction_mem_pc_input = instruction_mem_pc_input + 1;
+            instruction_mem_pc_input = instruction_mem_pc_input + 4;
             instruction_mem_instruction_input = 32'had020000;
         #10
-            instruction_mem_pc_input = instruction_mem_pc_input + 1;
+            instruction_mem_pc_input = instruction_mem_pc_input + 4;
             instruction_mem_instruction_input = 32'h08000000;
         
     end
