@@ -58,24 +58,26 @@ module id_ex_reg (
                 ex_reg_2_idx,
                 ex_reg_dest_idx
             }                   <= 0;
-        end else if (hazard_control[`HAZD_HOLD_BIT])
-            ex_reg_write_enable <= ex_reg_write_enable;     // prevent auto latches
-        else begin
-            ex_reg_write_enable <= id_reg_write_enable;
-            ex_mem_control      <= id_mem_control;
-            ex_alu_control      <= id_alu_control;
-            
-            ex_operand_1        <= mux_operand_1;
-            ex_operand_2        <= mux_operand_2;
+        end else begin
+            if (hazard_control[`HAZD_HOLD_BIT])
+                ex_reg_write_enable <= ex_reg_write_enable;     // prevent auto latches
+            else begin
+                ex_reg_write_enable <= id_reg_write_enable;
+                ex_mem_control      <= id_mem_control;
+                ex_alu_control      <= id_alu_control;
+                
+                ex_operand_1        <= mux_operand_1;
+                ex_operand_2        <= mux_operand_2;
 
-            ex_store_data       <= id_reg_2;
+                ex_store_data       <= id_reg_2;
 
-            ex_reg_1_idx        <= mux_reg_1_idx;
-            ex_reg_2_idx        <= mux_reg_2_idx;
-            ex_reg_dest_idx     <= mux_reg_dest_idx;
+                ex_reg_1_idx        <= mux_reg_1_idx;
+                ex_reg_2_idx        <= mux_reg_2_idx;
+                ex_reg_dest_idx     <= mux_reg_dest_idx;
+            end
+
+            ex_no_op <= hazard_control[`HAZD_NO_OP_BIT] | id_no_op;
         end
-
-        ex_no_op <= hazard_control[`HAZD_NO_OP_BIT] | id_no_op;
     end
     
 endmodule

@@ -51,24 +51,26 @@ module ex_mem_reg (
                 mem_store_data,
                 mem_dest_reg_idx
             }                        <= 0;
-        end else if (hazard_control[`HAZD_HOLD_BIT]) 
-            mem_reg_write_enable <= mem_reg_write_enable; // prevent auto latches
-        else begin
-            mem_reg_write_enable <= ex_reg_write_enable;
-            mem_mem_control      <= ex_mem_control;
+        end else begin
+            if (hazard_control[`HAZD_HOLD_BIT]) 
+                mem_reg_write_enable <= mem_reg_write_enable; // prevent auto latches
+            else begin
+                mem_reg_write_enable <= ex_reg_write_enable;
+                mem_mem_control      <= ex_mem_control;
 
-            mem_alu_result       <= ex_alu_result;
-            mem_dest_reg_idx         <= ex_dest_reg_idx;
+                mem_alu_result       <= ex_alu_result;
+                mem_dest_reg_idx         <= ex_dest_reg_idx;
 
-            case (store_data_select)
-                `FORW_SEL_INPUT:    mem_store_data <= ex_store_data;
-                `FORW_SEL_ALU_RES:  mem_store_data <= mem_alu_result_prev;
-                `FORW_SEL_MEM_RES:  mem_store_data <= wb_reg_write_data;
-                default:            mem_store_data <= 0;
-            endcase
+                case (store_data_select)
+                    `FORW_SEL_INPUT:    mem_store_data <= ex_store_data;
+                    `FORW_SEL_ALU_RES:  mem_store_data <= mem_alu_result_prev;
+                    `FORW_SEL_MEM_RES:  mem_store_data <= wb_reg_write_data;
+                    default:            mem_store_data <= 0;
+                endcase
+            end
+            
+            mem_no_op <= hazard_control[`HAZD_NO_OP_BIT] | ex_no_op;
         end
-        
-        mem_no_op <= hazard_control[`HAZD_NO_OP_BIT] | ex_no_op;
     end
     
 endmodule

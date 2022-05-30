@@ -44,17 +44,19 @@ module mem_wb_reg (
                 wb_mem_read_data,
                 wb_dest_reg_idx
             }                   <= 0;
-        end else if (hazard_control[`HAZD_HOLD_BIT])
-            wb_reg_write_enable <= mem_reg_write_enable; // prevent auto latches
-        else begin
-            wb_reg_write_enable <= mem_reg_write_enable;
-            wb_mem_read_enable  <= mem_mem_read_enable;
-            wb_alu_result       <= mem_alu_result;
-            wb_mem_read_data    <= mem_mem_read_data;
-            wb_dest_reg_idx     <= mem_dest_reg_idx;
-        end
+        end else begin
+            if (hazard_control[`HAZD_HOLD_BIT])
+                wb_reg_write_enable <= mem_reg_write_enable; // prevent auto latches
+            else begin
+                wb_reg_write_enable <= mem_reg_write_enable;
+                wb_mem_read_enable  <= mem_mem_read_enable;
+                wb_alu_result       <= mem_alu_result;
+                wb_mem_read_data    <= mem_mem_read_data;
+                wb_dest_reg_idx     <= mem_dest_reg_idx;
+            end
 
-        wb_no_op <= hazard_control[`HAZD_NO_OP_BIT] | mem_no_op;
+            wb_no_op <= hazard_control[`HAZD_NO_OP_BIT] | mem_no_op;
+        end
     end
     
 endmodule

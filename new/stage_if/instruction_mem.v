@@ -67,14 +67,14 @@ module instruction_mem #(parameter
     
     always @(posedge clk, negedge rst_n) begin
         if (~rst_n) begin
-            pc       <= 0;
+            pc       <= 32'h0;
             if_no_op <= 0;
-        end else if (hazard_control[`HAZD_HOLD_BIT])
-            pc <= pc;
-        else 
-            pc <= pc_next;
-        
-        if_no_op <= hazard_control[`HAZD_NO_OP_BIT];
+        end else begin
+            if (hazard_control[`HAZD_HOLD_BIT]) pc <= pc;
+            else                                pc <= pc_next;
+            
+            if_no_op <= hazard_control[`HAZD_NO_OP_BIT];
+        end
     end
     
 endmodule
