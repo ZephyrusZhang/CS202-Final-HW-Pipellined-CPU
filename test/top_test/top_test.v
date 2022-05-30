@@ -1,9 +1,10 @@
 module top_test ();
-    wire clk = 0, rst_n = 0, uart_in_progress = 0, hsync = 0, vsync = 0, uart_tx = 0, instruction_mem_no_op_input = 0;
+    reg clk = 0, rst_n = 0, instruction_mem_no_op_input = 0;
+    wire uart_in_progress = 0, hsync = 0, vsync = 0, uart_tx = 0;
     wire [3:0] col_out = 0;
     wire [7:0] seg_tube = 0, seg_enable = 0;
     wire [11:0] vga_signal = 0;
-    wire [31:0] instruction_mem_pc_input = 0, instruction_mem_instruction_input = 0;
+    reg [31:0] instruction_mem_pc_input = 0, instruction_mem_instruction_input = 0;
 
     top_modified uut(
         clk, rst_n,
@@ -31,6 +32,7 @@ module top_test ();
         #5 rst_n = 1;
         #5 rst_n = 0;
         #10 
+            rst_n = 1;
             instruction_mem_pc_input = 0;
             instruction_mem_instruction_input = 32'h8C020000;
         #10

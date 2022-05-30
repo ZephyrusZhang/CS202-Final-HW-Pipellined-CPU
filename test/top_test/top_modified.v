@@ -1,4 +1,4 @@
-`include "definitions.v"
+`include "../../new/definitions.v"
 `timescale 1ns / 1ps
 
 module top_modified (
@@ -34,15 +34,15 @@ module top_modified (
     assign seg_tube[7] = 1'b1;
     
     // no_op
-    wire    instruction_mem_no_op = instruction_mem_no_op_input,
-            if_id_reg_no_op,
+    wire    instruction_mem_no_op = instruction_mem_no_op_input;
+    wire    if_id_reg_no_op,
             id_ex_reg_no_op,
             ex_mem_reg_no_op,
             mem_wb_reg_no_op;
 
     // instruction
-    wire [`ISA_WIDTH - 1:0] instruction_mem_instruction = instruction_mem_instruction_input,
-                            if_id_reg_instruction;
+    wire [`ISA_WIDTH - 1:0] instruction_mem_instruction = instruction_mem_instruction_input;
+    wire [`ISA_WIDTH - 1:0] if_id_reg_instruction;
     // instruction segments
     wire [`OP_CODE_WIDTH - 1:0] op_code = if_id_reg_instruction[`ISA_WIDTH-1:`ISA_WIDTH -`OP_CODE_WIDTH];   // op [31:26]
     wire [`FUNC_CODE_WIDTH - 1:0] func_code = if_id_reg_instruction[`FUNC_CODE_WIDTH - 1:0];
@@ -65,8 +65,9 @@ module top_modified (
             `ISA_WIDTH - `OP_CODE_WIDTH - (3 * `REG_FILE_ADDR_WIDTH)];
     
     // pc
-    wire [`ISA_WIDTH - 1:0] instruction_mem_pc = instruction_mem_pc_input,
-                            if_id_reg_pc;
+    wire [`ISA_WIDTH - 1:0] instruction_mem_pc = instruction_mem_pc_input;
+    
+    wire [`ISA_WIDTH - 1:0] if_id_reg_pc;
 
     // register_file data
     wire [`ISA_WIDTH - 1:0] reg_file_reg_1_data,
