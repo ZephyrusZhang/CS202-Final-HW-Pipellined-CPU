@@ -1,7 +1,7 @@
 `include "definitions.v"
 `timescale 1ns / 1ps
 
-module top (
+module top_modified (
     input  clk_raw, rst_n,
     input  [`SWITCH_CNT - 1:0] switch_map,                  // 8 switches
     input  uart_rx,                                         // for uart_unit
@@ -12,32 +12,34 @@ module top (
     output [`VGA_BIT_DEPTH - 1:0] vga_signal,
     output uart_in_progress,                                // LED indicator for UART process
     output hsync, vsync,
-    output uart_tx                                          // from uart_unit
+    output uart_tx,                                         // from uart_unit
+
+    input [`ISA_WIDTH - 1:0] instruction_mem_no_op_input,
+    input instruction_mem_pc_input,
+    input instruction_mem_instruction_input
     );
-    
+
     //// wire list, format: [signal_source]_[signal_name]
     
     // clocks
     wire    clk_uart;                                       // for uart_unit (10MHz)
     wire    clk_vga;                                        // for vga_unit (25MHz)
-    // wire    clk_raw;
     
     clk_generator #(4)  vga_clk_generator (clk, rst_n, clk_vga);
     clk_generator #(10) uart_clk_generator(clk, rst_n, clk_uart);
-    // clk_generator #(4)  raw_clk_generator (clk, rst_n, clk_raw);
     
     // turn off the dots of tube
-    assign seg_tube[7] = 1'b1;
+    assign seg_tube[7] = 1'b0;
     
     // no_op
-    wire    instruction_mem_no_op,
+    wire    instruction_mem_no_op = instruction_mem_instruction_input,
             if_id_reg_no_op,
             id_ex_reg_no_op,
             ex_mem_reg_no_op,
             mem_wb_reg_no_op;
 
     // instruction
-    wire [`ISA_WIDTH - 1:0] instruction_mem_instruction,
+    wire [`ISA_WIDTH - 1:0] instruction_mem_instruction = instruction_mem_instruction_input,
                             if_id_reg_instruction;
     // instruction segments
     wire [`OP_CODE_WIDTH - 1:0] op_code = if_id_reg_instruction[`ISA_WIDTH-1:`ISA_WIDTH -`OP_CODE_WIDTH];   // op [31:26]
@@ -61,7 +63,7 @@ module top (
             `ISA_WIDTH - `OP_CODE_WIDTH - (3 * `REG_FILE_ADDR_WIDTH)];
     
     // pc
-    wire [`ISA_WIDTH - 1:0] instruction_mem_pc,
+    wire [`ISA_WIDTH - 1:0] instruction_mem_pc = instruction_mem_pc_input,
                             if_id_reg_pc;
 
     // register_file data
@@ -230,27 +232,6 @@ module top (
     );
 
     //--------------------------------stage-if------------------------------------//
-    instruction_mem instruction_mem(
-        .clk                (clk_raw),
-        .rst_n              (rst_n),
-
-        .uart_disable       (hazard_unit_uart_disable),
-        .uart_clk           (uart_unit_clk_out),
-        .uart_write_enable  (uart_unit_write_enable),
-        .uart_data          (uart_unit_write_data),
-        .uart_addr          (uart_unit_write_address),
-
-        .pc_offset          (mux_pc_offset),
-        .pc_offset_value    (mux_operand_2),
-        .pc_overload        (mux_pc_overload),
-        .pc_overload_value  (mux_pc_overload_value),
-        .pc_reset           (hazard_unit_pc_reset),
-
-        .hazard_control     (hazard_unit_if_hazard_control),
-        .if_no_op           (instruction_mem_no_op),
-        .pc                 (instruction_mem_pc),                       
-        .instruction        (instruction_mem_instruction)
-    );
 
     //--------------------------------stage-id------------------------------------//
     if_id_reg if_id_reg(
