@@ -9,8 +9,7 @@ module input_top (
     output [7:0] seg_tube,
     output [7:0] seg_enable,
     output input_complete_led,
-    output cpu_pause_led,
-    output [1:0] input_state
+    output cpu_pause_led
 );
 
 wire [7:0] key_coord;
