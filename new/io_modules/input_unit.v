@@ -16,8 +16,7 @@ module input_unit (
     output reg switch_enable,                           // for (1) seven_seg_unit (user is using switches)
                                                         //     (2) output_unit (display that input is switches)
     output reg cpu_pause,                               // for hazard_unit (user pressed pause)
-    output [3:0] counter,
-    output     overflow                                 // for hardware LED to indicate a overflow of the tube display
+    // output     overflow                                 // for hardware LED to indicate a overflow of the tube display
     );
                
     localparam  ZERO        = 8'b0111_1101,
@@ -107,7 +106,7 @@ module input_unit (
                                 cpu_pause      <= 1'b1;
                             end
                             default  : begin
-                                if (~(digit_counter[4] & digit_counter[2])) begin
+                                // if (~(digit_counter[4] & digit_counter[2])) begin
                                     case (key_coord)
                                         ZERO   : keypad_data <= keypad_data * 10;
                                         ONE    : keypad_data <= keypad_data * 10 + 1;
@@ -122,8 +121,8 @@ module input_unit (
                                         default: keypad_data <= keypad_data;  // 0 key_coord will be handled here
                                     endcase
                                     digit_counter <= digit_counter + 1;
-                                end else
-                                    keypad_data   <= keypad_data;
+                                // end else
+                                //     keypad_data   <= keypad_data;
                             end
                         endcase
                     end else
@@ -156,6 +155,5 @@ module input_unit (
         end
     end
 
-    assign overflow   = (4'h8 <= digit_counter);
-    assign counter = digit_counter;
+    // assign overflow   = (4'h8 <= digit_counter);
 endmodule
