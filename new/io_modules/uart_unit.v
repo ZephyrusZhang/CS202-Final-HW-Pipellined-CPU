@@ -12,7 +12,7 @@ module uart_unit (
     uart_interface uart_interface (
         .upg_clk_i(clk_uart),
         .upg_rst_i(uart_disable),
-        .upg_rx(uart_rx),
+        .upg_rx_i(uart_rx),
 
         .upg_clk_o(uart_clk_out),
         .upg_wen_o(uart_write_enable),
