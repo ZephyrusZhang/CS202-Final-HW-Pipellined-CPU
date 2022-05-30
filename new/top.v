@@ -17,11 +17,17 @@ module top (
     );
     
     //// wire list, format: [signal_source]_[signal_name]
-
+    
     // clocks
     wire    clk_uart;                                       // for uart_unit (10MHz)
     wire    clk_vga;                                        // for vga_unit (25MHz)
-
+    
+    clk_ip (
+        .clk_in1(clk_raw),
+        .clk_out1(clk_uart),                                // 10 MHz
+        .clk_out2(clk_vga)                                  // 25 MHz
+    );
+    
     // no_op
     wire    instruction_mem_no_op,
             if_id_reg_no_op,
@@ -231,7 +237,7 @@ module top (
         .uart_clk           (uart_unit_clk_out),
         .uart_write_enable  (uart_unit_write_enable),
         .uart_data          (uart_unit_write_data),
-        .uart_addr          (uart_addr),
+        .uart_addr          (uart_unit_write_address),
 
         .pc_offset          (mux_pc_offset),
         .pc_offset_value    (mux_operand_2),
@@ -269,7 +275,7 @@ module top (
         .read_reg_addr_1    (rs),
         .read_reg_addr_2    (rt),
 
-        .write_reg_addr     (mem_wb_reg_dest_idx),
+        .write_reg_addr     (mem_wb_reg_reg_dest_idx),
         .write_data         (reg_write_select_reg_write_data),
         .write_en           (mem_wb_reg_reg_write_enable),
         .wb_no_op           (mem_wb_reg_no_op),
@@ -330,7 +336,7 @@ module top (
         .mux_operand_2      (mux_operand_2),
 
         .id_instruction     (if_id_reg_instruction),
-        .pc_overload_value  (pc_overload_value),
+        .pc_overload_value  (mux_pc_overload_value),
 
         .id_reg_1_idx       (rs),
         .id_reg_2_idx       (rt),
