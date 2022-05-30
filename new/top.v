@@ -184,7 +184,7 @@ module top (
 
         .val1_sel           (forwarding_oeprand_1_data_selection),
         .val2_sel           (forwarding_oeprand_2_data_selection),
-        .store_data_select  (forwarding_store_data_selection)
+        .st_sel             (forwarding_store_data_selection)
     );
 
     //----------------------------------hazard-unit------------------------------------------//
@@ -389,7 +389,7 @@ module top (
     alu alu(
         .alu_opcode         (id_ex_reg_alu_op_code),
         .alu_result         (ex_mem_reg_alu_result),
-        .wb_reg_write_data  (reg_write_select_reg_write_data),
+        .reg_write_data     (reg_write_select_reg_write_data),
         .val1_sel           (forwarding_oeprand_1_data_selection),
         .val2_sel           (forwarding_oeprand_2_data_selection),
         .a_input            (id_ex_reg_operand_1),
@@ -423,7 +423,7 @@ module top (
         // select output
         .mem_store_data     (ex_mem_reg_store_data),
 
-        .ex_dest_reg        (id_ex_reg_reg_dest_idx),
+        .ex_dest_reg_idx    (id_ex_reg_reg_dest_idx),
         .mem_dest_reg_idx   (ex_mem_reg_reg_dest_idx)
     );
 
