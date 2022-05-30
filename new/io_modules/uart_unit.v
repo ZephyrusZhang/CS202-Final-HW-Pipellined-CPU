@@ -1,3 +1,6 @@
+`timescale 1ns / 1ps
+`include "../definitions.v"
+
 module uart_unit (
     input  clk_uart,                            // upg_clk_i
     input  uart_disable,                        // upg_rst_i
