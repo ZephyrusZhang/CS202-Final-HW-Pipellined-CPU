@@ -432,7 +432,6 @@ module top (
     //--------------------------------stage-mem------------------------------------//
     data_mem data_mem(
         .clk                (clk_raw),
-        .rst_n              (rst_n),
 
         .uart_disable       (hazard_unit_uart_disable),
         .uart_clk           (uart_unit_clk_out),

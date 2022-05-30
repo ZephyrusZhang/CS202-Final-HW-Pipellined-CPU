@@ -24,7 +24,7 @@ address utilized:
 module data_mem #(parameter 
     ROM_DEPTH = `DEFAULT_ROM_DEPTH                      // size of addressable memory
     )(
-    input clk, rst_n,
+    input clk,
 
     input      uart_disable,                            // from hazard_unit (whether reading from uart)
     input      uart_clk,                                // from uart_unit (upg_clk_i)

@@ -105,13 +105,11 @@ module hazard_unit (
                         4'b0001: begin
                             issue_type   <= `KEYPAD;
                             cpu_state    <= `INTERRUPT;
-                            {
-                                if_hazard_control, 
-                                id_hazard_control,
-                                ex_hazard_control,
-                                mem_hazard_control,
-                                wb_hazard_control
-                            }            <= {`STAGE_CNT{`NO_OP}};
+                            if_hazard_control   <= `NO_OP;
+                            id_hazard_control   <= `NO_OP;
+                            ex_hazard_control   <= `NO_OP;
+                            mem_hazard_control  <= `NO_OP;
+                            wb_hazard_control   <= `NO_OP;
                         end
                         default:
                             issue_type   <= issue_type; // prevent auto latches
@@ -122,16 +120,16 @@ module hazard_unit (
                         2'b10  : begin
                             issue_type   <= `NONE;
                             cpu_state    <= `EXECUTE;
-                            if_hazard_control <= `NORMAL;
-                            id_hazard_control <= `NORMAL;
-                            ex_hazard_control <= `NORMAL;
+                            if_hazard_control   <= `NORMAL;
+                            id_hazard_control   <= `NORMAL;
+                            ex_hazard_control   <= `NORMAL;
                         end
                         2'b01  : begin
                             issue_type   <= `NONE;
                             cpu_state    <= `EXECUTE;
                             uart_disable <= 1'b1;
                             pc_reset     <= 1'b1;
-                            if_hazard_control <= `NORMAL;
+                            if_hazard_control   <= `NORMAL;
                         end
                         default: 
                             if (issue_type == `UART & cpu_pause) 
@@ -144,13 +142,11 @@ module hazard_unit (
                     if (input_complete) begin
                         issue_type <= `NONE;
                         cpu_state  <= `EXECUTE;
-                        {
-                            if_hazard_control, 
-                            id_hazard_control,
-                            ex_hazard_control,
-                            mem_hazard_control,
-                            wb_hazard_control
-                        }          <= {`STAGE_CNT{`NORMAL}};
+                        if_hazard_control   <= `NORMAL;
+                        id_hazard_control   <= `NORMAL;
+                        ex_hazard_control   <= `NORMAL;
+                        mem_hazard_control  <= `NORMAL; 
+                        wb_hazard_control   <= `NORMAL;
                     end else 
                         issue_type <= issue_type; // prevent auto latches
                 end

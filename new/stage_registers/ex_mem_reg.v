@@ -59,7 +59,7 @@ module ex_mem_reg (
                 mem_mem_control      <= ex_mem_control;
 
                 mem_alu_result       <= ex_alu_result;
-                mem_dest_reg_idx         <= ex_dest_reg_idx;
+                mem_dest_reg_idx     <= ex_dest_reg_idx;
 
                 case (store_data_select)
                     `FORW_SEL_INPUT:    mem_store_data <= ex_store_data;
