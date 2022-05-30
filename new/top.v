@@ -162,9 +162,10 @@ module top (
     // uart unit
     wire    uart_unit_clk_out,
             uart_unit_write_enable,
-            uart_unit_write_address,
-            uart_unit_write_data,
             uart_unit_uart_complete;
+    wire [`ISA_WIDTH - 1:0] uart_unit_write_data;
+    wire [`DEFAULT_RAM_DEPTH - 1:0] uart_unit_write_address,
+            
 
     // LED
     assign uart_in_progress = ~uart_unit_uart_complete;
