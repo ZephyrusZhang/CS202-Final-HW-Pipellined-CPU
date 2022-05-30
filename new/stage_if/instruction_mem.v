@@ -43,7 +43,7 @@ module instruction_mem #(parameter
     );
 
     wire uart_instruction_write_enable = uart_write_enable & ~uart_addr[ROM_DEPTH];
-    reg [`ISA_WIDTH - 1:0] pc_next;
+    reg [`ISA_WIDTH - 1:0] pc_next, pc_4 = pc + 4;
 
     ROM rom(
         .ena    (~if_no_op), // disabled unpon no_op
@@ -58,20 +58,20 @@ module instruction_mem #(parameter
     
     always @(*) begin
         case ({pc_offset, pc_overload, pc_reset})
-            3'b100 : pc_next = pc + 4 + (pc_offset_value << 2);
+            3'b100 : pc_next = pc_4 + (pc_offset_value << 2);
             3'b010 : pc_next = pc_overload_value;
             3'b001 : pc_next = 0;
-            default: pc_next = pc + 4;
+            default: pc_next = pc_4;
         endcase
     end
     
     always @(posedge clk, negedge rst_n) begin
         if (~rst_n) begin
-            pc       <= 32'h0;
+            pc       <= 'b0;
             if_no_op <= 0;
         end else begin
-            if (hazard_control[`HAZD_HOLD_BIT]) pc <= pc;
-            else                                pc <= pc_next;
+            if (hazard_control[`HAZD_HOLD_BIT] == 1'b1) pc <= pc;
+            else                                        pc <= pc_next;
             
             if_no_op <= hazard_control[`HAZD_NO_OP_BIT];
         end
