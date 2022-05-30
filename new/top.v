@@ -188,7 +188,7 @@ module top (
         .st_sel             (forwarding_store_data_selection)
     );
 
-    //----------------------------------hazard-unit------------------------------------------//
+    //-------------------------------hazard-unit------------------------------------//
     hazard_unit hazard_unit(
         .clk                (clk_raw),
         .rst_n              (rst_n),
