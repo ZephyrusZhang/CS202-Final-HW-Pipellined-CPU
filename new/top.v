@@ -22,8 +22,8 @@ module top (
     wire    clk_vga;                                        // for vga_unit (25MHz)
     // wire    clk_raw;
     
-    clk_generator #(4)  vga_clk_generator (clk_raw, rst_n, clk_vga);
-    clk_generator #(10) uart_clk_generator(clk_raw, rst_n, clk_uart);
+    clk_generator #(4)  vga_clk_generator (clk, rst_n, clk_vga);
+    clk_generator #(10) uart_clk_generator(clk, rst_n, clk_uart);
     // clk_generator #(4)  raw_clk_generator (clk, rst_n, clk_raw);
     
     // turn off the dots of tube
@@ -262,13 +262,13 @@ module top (
         .pc_offset          (mux_pc_offset),
         .pc_overload        (mux_pc_overload),
 
-        .id_no_op           (instruction_mem_no_op),
-        .id_pc              (instruction_mem_pc),
-        .id_instruction     (instruction_mem_instruction),
+        .id_no_op           (if_id_reg_no_op),
+        .id_pc              (if_id_reg_pc),
+        .id_instruction     (if_id_reg_instruction),
 
-        .if_instruction     (if_id_reg_instruction),
-        .if_no_op           (if_id_reg_no_op),
-        .if_pc              (if_id_reg_pc)
+        .if_instruction     (instruction_mem_instruction),
+        .if_no_op           (instruction_mem_no_op),
+        .if_pc              (instruction_mem_pc)
     );
     register_file register_file(
         .clk                (clk_raw),
