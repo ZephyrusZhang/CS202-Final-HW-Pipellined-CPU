@@ -29,7 +29,7 @@ module vga_top (
         .vga_rgb(vga_rgb)
     );
 
-    vga_signal vga_uut(
+    vga_unit vga_uut(
         .clk_vga(clk_vga), 
         .rst_n(rst_n),
         .hsync(hsync),
