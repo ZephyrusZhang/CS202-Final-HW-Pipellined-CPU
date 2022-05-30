@@ -8,7 +8,7 @@ module top (
     input  [3:0] row_in,
     output [3:0] col_out,
     output [6:0] seg_tube,   
-    output [7:0] seg_enable  
+    output [7:0] seg_enable, 
     output [7:0] led_signal,
     output [`VGA_BIT_DEPTH - 1:0] vga_signal,
     output uart_in_progress,                                // LED indicator for UART process
@@ -119,7 +119,7 @@ module top (
     
     // forwarding unit
     wire [`FORW_SEL_WIDTH - 1:0] forwarding_oeprand_1_data_selection,
-                                 forwarding_oeprand_2_data_selection
+                                 forwarding_oeprand_2_data_selection,
                                  forwarding_store_data_selection;
 
     // data memory
@@ -256,7 +256,7 @@ module top (
 
         .id_no_op           (instruction_mem_no_op),
         .id_pc              (instruction_mem_pc),
-        .id_instruction     (instruction_mem_instruction)
+        .id_instruction     (instruction_mem_instruction),
 
         .if_instruction     (if_id_reg_instruction),
         .if_no_op           (if_id_reg_no_op),
@@ -511,7 +511,7 @@ module top (
         .input_complete     (input_unit_input_complete),
         .input_data         (input_unit_input_data),
         .switch_enable      (input_unit_switch_enable),
-        .cpu_pause          (input_unit_cpu_pause),
+        .cpu_pause          (input_unit_cpu_pause)
     );
 
     //-------------------------------------output----------------------------------------//
