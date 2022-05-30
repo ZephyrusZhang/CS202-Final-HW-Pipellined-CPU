@@ -1,8 +1,8 @@
-module moduleName ();
-    wire clk = 0, rst_n = 0, uart_in_progress, hsync, vsync, uart_tx, instruction_mem_no_op_input = 0;
-    wire [3:0] col_out;
-    wire [7:0] seg_tube, seg_enable;
-    wire [11:0] vga_signal;
+module top_test ();
+    wire clk = 0, rst_n = 0, uart_in_progress = 0, hsync = 0, vsync = 0, uart_tx = 0, instruction_mem_no_op_input = 0;
+    wire [3:0] col_out = 0;
+    wire [7:0] seg_tube = 0, seg_enable = 0;
+    wire [11:0] vga_signal = 0;
     wire [31:0] instruction_mem_pc_input = 0, instruction_mem_instruction_input = 0;
 
     top_modified uut(
