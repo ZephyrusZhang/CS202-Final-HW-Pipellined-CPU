@@ -21,11 +21,8 @@ module top (
     wire    clk_uart;                                       // for uart_unit (10MHz)
     wire    clk_vga;                                        // for vga_unit (25MHz)
     
-    clk_ip (
-        .clk_in1(clk_raw),
-        .clk_out1(clk_uart),                                // 10 MHz
-        .clk_out2(clk_vga)                                  // 25 MHz
-    );
+    clk_generator #(4)  vga_clk_generator (clk_raw, rst_n, clk_vga);
+    clk_generator #(10) uart_clk_generator(clk_raw, rst_n, clk_uart);
     
     // turn off the dots of tube
     assign seg_tube[7] = 1'b0;
