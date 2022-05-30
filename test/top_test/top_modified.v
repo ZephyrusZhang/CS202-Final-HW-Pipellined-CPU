@@ -235,7 +235,6 @@ module top_modified (
     );
 
     //--------------------------------stage-if------------------------------------//
-    instruction_mem instruction_mem(
         .clk                (clk_raw),
         .rst_n              (rst_n),
 
