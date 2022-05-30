@@ -7,9 +7,8 @@ module top (
     input  uart_rx,                                         // for uart_unit
     input  [3:0] row_in,
     output [3:0] col_out,
-    output [6:0] seg_tube,   
+    output [7:0] seg_tube,   
     output [7:0] seg_enable,
-    output [7:0] led_signal,
     output [`VGA_BIT_DEPTH - 1:0] vga_signal,
     output uart_in_progress,                                // LED indicator for UART process
     output hsync, vsync,
@@ -27,6 +26,9 @@ module top (
         .clk_out1(clk_uart),                                // 10 MHz
         .clk_out2(clk_vga)                                  // 25 MHz
     );
+    
+    // turn off the dots of tube
+    assign seg_tube[7] = 1'b0;
     
     // no_op
     wire    instruction_mem_no_op,
