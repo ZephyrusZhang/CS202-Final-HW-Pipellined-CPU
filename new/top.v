@@ -528,7 +528,7 @@ module top (
         .display_value      (input_unit_input_data),
         .switch_enable      (input_unit_switch_enable),
         .input_enable       (data_mem_input_enable),
-        .seg_tube           (seg_tube),
+        .seg_tube           (seg_tube[6:0]),
         .seg_enable         (seg_enable)
     );
     vga_unit vga_unit(
