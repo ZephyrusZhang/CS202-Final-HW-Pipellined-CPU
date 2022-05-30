@@ -3,12 +3,12 @@
 
 module top (
     input  clk_raw, rst_n,
-    input  [7:0] switch_map,                                // 8 switches
+    input  [`SWITCH_CNT - 1:0] switch_map,                  // 8 switches
     input  uart_rx,                                         // for uart_unit
     input  [3:0] row_in,
     output [3:0] col_out,
     output [6:0] seg_tube,   
-    output [7:0] seg_enable, 
+    output [7:0] seg_enable,
     output [7:0] led_signal,
     output [`VGA_BIT_DEPTH - 1:0] vga_signal,
     output uart_in_progress,                                // LED indicator for UART process
@@ -17,9 +17,6 @@ module top (
     );
     
     //// wire list, format: [signal_source]_[signal_name]
-
-    // LED
-    wire uart_in_progress = ~uart_unit_uart_complete;
 
     // clocks
     wire    clk_uart;                                       // for uart_unit (10MHz)
@@ -162,6 +159,9 @@ module top (
             uart_unit_write_data,
             uart_unit_uart_complete;
 
+    // LED
+    assign uart_in_progress = ~uart_unit_uart_complete;
+
     //// module list
 
     //----------------------------forwarding_unit----------------------------------//
@@ -178,7 +178,7 @@ module top (
 
         .val1_sel           (forwarding_oeprand_1_data_selection),
         .val2_sel           (forwarding_oeprand_2_data_selection),
-        .st_sel  (forwarding_store_data_selection)
+        .store_data_select  (forwarding_store_data_selection)
     );
 
     //----------------------------------hazard-unit------------------------------------------//
@@ -383,7 +383,7 @@ module top (
     alu alu(
         .alu_opcode         (id_ex_reg_alu_op_code),
         .alu_result         (ex_mem_reg_alu_result),
-        .reg_write_data  (reg_write_select_reg_write_data),
+        .wb_reg_write_data  (reg_write_select_reg_write_data),
         .val1_sel           (forwarding_oeprand_1_data_selection),
         .val2_sel           (forwarding_oeprand_2_data_selection),
         .a_input            (id_ex_reg_operand_1),
@@ -417,7 +417,7 @@ module top (
         // select output
         .mem_store_data     (ex_mem_reg_store_data),
 
-        .ex_dest_reg_idx    (id_ex_reg_reg_dest_idx),
+        .ex_dest_reg        (id_ex_reg_reg_dest_idx),
         .mem_dest_reg_idx   (ex_mem_reg_reg_dest_idx)
     );
 

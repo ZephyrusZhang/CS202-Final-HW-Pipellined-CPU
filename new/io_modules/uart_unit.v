@@ -9,5 +9,15 @@ module uart_unit (
     output uart_write_enable,                   // upg_wen_o
     output uart_complete                        // upg_done_o
 );
-    
+    uart_interface uart_interface (
+        .upg_clk_i(clk_uart),
+        .upg_rst_i(uart_disable),
+        .upg_rx(uart_rx),
+
+        .upg_clk_o(uart_clk_out),
+        .upg_wen_o(uart_write_enable),
+        .upg_adr_o(uart_addr),
+        .upg_done_o(uart_complete),
+        .upg_tx_o(uart_tx)
+    );
 endmodule
