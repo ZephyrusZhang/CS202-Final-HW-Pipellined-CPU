@@ -16,9 +16,9 @@
 //------------------------------------------------------------------------------//
 
 //-----------------------------------IO-----------------------------------------//
-`define IO_START_BIT        10              // lowest bit of memory_mapped IO address
+`define IO_START_BIT        8               // lowest bit of memory_mapped IO address
 `define IO_END_BIT          31              // highest bit of memory-mapped IO address
-`define IO_HIGH_ADDR        22'h3FFFFF      // address used identify memory-mapped IO
+`define IO_HIGH_ADDR        24'hFFFFFC      // address used identify memory-mapped IO
 `define IO_TYPE_BIT         4               // bit for determining IO type 
 `define SWITCH_CNT          8
 
