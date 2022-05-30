@@ -2,7 +2,7 @@
 `timescale 1ns / 1ps
 
 module top (
-    input  clk_raw, rst_n,
+    input  clk, rst_n,
     input  [`SWITCH_CNT - 1:0] switch_map,                  // 8 switches
     input  uart_rx,                                         // for uart_unit
     input  [3:0] row_in,
@@ -20,9 +20,11 @@ module top (
     // clocks
     wire    clk_uart;                                       // for uart_unit (10MHz)
     wire    clk_vga;                                        // for vga_unit (25MHz)
+    wire    clk_raw;
     
-    clk_generator #(4)  vga_clk_generator (clk_raw, rst_n, clk_vga);
-    clk_generator #(10) uart_clk_generator(clk_raw, rst_n, clk_uart);
+    clk_generator #(4)  vga_clk_generator (clk, rst_n, clk_vga);
+    clk_generator #(10) uart_clk_generator(clk, rst_n, clk_uart);
+    clk_generator #(4)  raw_clk_generator (clk, rst_n, clk_raw);
     
     // turn off the dots of tube
     assign seg_tube[7] = 1'b0;
