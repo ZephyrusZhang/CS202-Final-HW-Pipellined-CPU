@@ -25,10 +25,7 @@ module top (
     clk_generator #(4)  vga_clk_generator (clk_raw, rst_n, clk_vga);
     clk_generator #(10) uart_clk_generator(clk_raw, rst_n, clk_uart);
     // clk_generator #(4)  raw_clk_generator (clk, rst_n, clk_raw);
-    
-    // turn off the dots of tube
-    assign seg_tube[7] = 1'b1;
-    
+        
     // no_op
     wire    instruction_mem_no_op,
             if_id_reg_no_op,
@@ -528,7 +525,7 @@ module top (
         .display_value      (input_unit_input_data),
         .switch_enable      (input_unit_switch_enable),
         .input_enable       (data_mem_input_enable),
-        .seg_tube           (seg_tube[6:0]),
+        .seg_tube           (seg_tube),
         .seg_enable         (seg_enable)
     );
     vga_unit vga_unit(
