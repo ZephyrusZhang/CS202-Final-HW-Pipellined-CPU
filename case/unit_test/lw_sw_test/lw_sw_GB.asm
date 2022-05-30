@@ -6,4 +6,3 @@ start:
 	addi $t0,$zero,4
 	sw $v0,buf($t0)
 	j	 start
-
