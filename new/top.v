@@ -3,12 +3,12 @@
 
 module top (
     input  clk_raw, rst_n,
-    input  [7:0] switch_map,                                // 8 switches
+    input  [`SWITCH_CNT - 1:0] switch_map,                  // 8 switches
     input  uart_rx,                                         // for uart_unit
     input  [3:0] row_in,
     output [3:0] col_out,
     output [6:0] seg_tube,   
-    output [7:0] seg_enable  
+    output [7:0] seg_enable,
     output [7:0] led_signal,
     output [`VGA_BIT_DEPTH - 1:0] vga_signal,
     output uart_in_progress,                                // LED indicator for UART process
@@ -17,9 +17,6 @@ module top (
     );
     
     //// wire list, format: [signal_source]_[signal_name]
-
-    // LED
-    wire uart_in_progress = ~uart_unit_uart_complete;
 
     // clocks
     wire    clk_uart;                                       // for uart_unit (10MHz)
@@ -119,7 +116,7 @@ module top (
     
     // forwarding unit
     wire [`FORW_SEL_WIDTH - 1:0] forwarding_oeprand_1_data_selection,
-                                 forwarding_oeprand_2_data_selection
+                                 forwarding_oeprand_2_data_selection,
                                  forwarding_store_data_selection;
 
     // data memory
@@ -161,6 +158,9 @@ module top (
             uart_unit_write_address,
             uart_unit_write_data,
             uart_unit_uart_complete;
+
+    // LED
+    assign uart_in_progress = ~uart_unit_uart_complete;
 
     //// module list
 
@@ -256,7 +256,7 @@ module top (
 
         .id_no_op           (instruction_mem_no_op),
         .id_pc              (instruction_mem_pc),
-        .id_instruction     (instruction_mem_instruction)
+        .id_instruction     (instruction_mem_instruction),
 
         .if_instruction     (if_id_reg_instruction),
         .if_no_op           (if_id_reg_no_op),
@@ -511,7 +511,7 @@ module top (
         .input_complete     (input_unit_input_complete),
         .input_data         (input_unit_input_data),
         .switch_enable      (input_unit_switch_enable),
-        .cpu_pause          (input_unit_cpu_pause),
+        .cpu_pause          (input_unit_cpu_pause)
     );
 
     //-------------------------------------output----------------------------------------//
