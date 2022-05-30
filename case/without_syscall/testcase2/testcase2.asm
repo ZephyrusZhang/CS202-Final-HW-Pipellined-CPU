@@ -1,4 +1,4 @@
-.data 
+.data  0x00
 	buf: .word  0xFFFFFC60,0xFFFFFC70,0x09E4F580
  	array:.space 200	# store element
     	info:.space 20	# store n

@@ -1,4 +1,3 @@
-
 .data
 	newline:.asciiz "\n"
 	buf:   .word  0x00000055, 0x000000A #input and output address in main

@@ -1,10 +1,11 @@
-.data
+.data 
  	array:.space 200	# store element
  	info:.space 20	# store n
  	newline:.asciiz "\n"
  	space: .asciiz " "
  	buf:.word 0x000329E0
-.text 
+
+.text  
 
 #notice: the input can not be more than 255 in these cases
 
