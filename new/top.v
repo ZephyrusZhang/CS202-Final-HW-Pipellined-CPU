@@ -11,6 +11,8 @@ module top (
     output     [7:0] seg_enable,
     output     [`VGA_BIT_DEPTH - 1:0] vga_signal,
     output reg uart_in_progress,                            // LED indicator for UART process
+    output     digit_overflow_9th,                          // LED indicator for seven seg tube digit overflow of 9th digit
+    output     digit_overflow_10th,
     output     hsync, vsync,
     output     uart_tx                                      // from uart_unit
     );
@@ -522,7 +524,9 @@ module top (
         .input_complete     (input_unit_input_complete),
         .input_data         (input_unit_input_data),
         .switch_enable      (input_unit_switch_enable),
-        .cpu_pause          (input_unit_cpu_pause)
+        .cpu_pause          (input_unit_cpu_pause),
+        .overflow_9th       (digit_overflow_9th),
+        .overflow_10th      (digit_overflow_10th)
     );
 
     //-------------------------------------output----------------------------------------//
