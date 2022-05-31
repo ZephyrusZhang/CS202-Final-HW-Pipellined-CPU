@@ -7,7 +7,7 @@ module input_unit (
     input      [7:0] key_coord,                         // from keypad_decoder with format {row_val, col_val}
     input      [`SWITCH_CNT - 1:0] switch_map,          // from toggle switches directly
 
-    input      uart_complete,                           // from uart_unit (upg_done_i)
+    input      uart_disable,                            // from hazard_unit (whether uart is needed)
 
     input      input_enable,                            // from data_mem (the keypad input will be memory data)
     output reg input_complete,                          // for hazard_unit (user pressed enter)
@@ -158,7 +158,7 @@ module input_unit (
                         input_state        <= BLOCK;
                 end
                 HALT   : begin
-                    if (uart_complete & key_coord == PAUSE) begin
+                    if (uart_disable & key_coord == PAUSE) begin
                         input_state        <= BLOCK;
                         cpu_pause          <= 1'b0;
                     end else

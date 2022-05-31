@@ -170,7 +170,7 @@ module top_modified (
             
 
     // LED
-    assign uart_in_progress = ~uart_unit_uart_complete;
+    assign uart_in_progress = uart_unit_write_enable;
 
     //// module list
 

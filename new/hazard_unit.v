@@ -58,7 +58,7 @@ module hazard_unit (
 
     wire data_resolved    = issue_type == `DATA   & ~data_hazard;
     wire uart_resolved    = issue_type == `UART   & uart_complete;
-    wire pause_resolved   = issue_type == `PAUSE  & ~cpu_pause & uart_complete;
+    wire pause_resolved   = issue_type == `PAUSE  & ~cpu_pause;
 
     always @(negedge clk, negedge rst_n) begin
         if (~rst_n) begin
@@ -115,23 +115,27 @@ module hazard_unit (
                     endcase
                 end
                 `HAZARD: begin
-                    case ({data_resolved, pause_resolved | uart_resolved})
-                        2'b10  : begin
+                    casex ({data_resolved, uart_resolved, pause_resolved})
+                        3'b100 : begin
                             issue_type   <= `NONE;
                             cpu_state    <= `EXECUTE;
                             if_hazard_control   <= `NORMAL;
                             id_hazard_control   <= `NORMAL;
                             // ex_hazard_control   <= `NORMAL;
                         end
-                        2'b01  : begin
+                        3'b01x : begin
+                            issue_type   <= `PAUSE;
+                            uart_disable <= 1'b1;
+                            pc_reset     <= 1'b1;
+                        end
+                        3'b001 : begin
                             issue_type   <= `NONE;
                             cpu_state    <= `EXECUTE;
                             uart_disable <= 1'b1;
-                            pc_reset     <= 1'b1;
-                            if_hazard_control   <= `NORMAL;
+                            if_hazard_control   <= `NORMAL; // resuming the entire cpu from the next instruction
                         end
                         default: 
-                            if (issue_type == `UART & cpu_pause) 
+                            if (issue_type == `UART & (cpu_pause | uart_complete)) 
                                 issue_type <= `PAUSE;       // pause after pc overflow which then the CPU must wait for the user to resume it
                             else 
                                 issue_type <= issue_type;   // prevent auto latches

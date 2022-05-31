@@ -165,7 +165,7 @@ module top (
             
 
     // LED
-    assign uart_in_progress = ~uart_unit_uart_complete;
+    assign uart_in_progress = uart_unit_write_enable;
 
     //// module list
 
@@ -510,7 +510,7 @@ module top (
         .rst_n              (rst_n),
         .key_coord          (keypad_unit_key_coord),
         .switch_map         (switch_map),
-        .uart_complete      (uart_unit_uart_complete),
+        .uart_disable       (hazard_unit_uart_disable),
         .input_enable       (data_mem_input_enable),
         .input_complete     (input_unit_input_complete),
         .input_data         (input_unit_input_data),
