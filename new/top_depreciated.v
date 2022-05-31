@@ -1,14 +1,14 @@
 `include "definitions.v"
 `timescale 1ns / 1ps
 
-module top (
+module top_depreciated (
     input  clk_raw, rst_n,
     input  [7:0] switch_map,
     input  upg_rx,                                          // from uart_unit
     input  [3:0] row_in,
     output [3:0] col_out,
     output [6:0] seg_tube,   
-    output [7:0] seg_enable  
+    output [7:0] seg_enable, 
     output [7:0] led_signal,
     output [`VGA_BIT_DEPTH - 1:0] vga_signal,
     output hsync, vsync,

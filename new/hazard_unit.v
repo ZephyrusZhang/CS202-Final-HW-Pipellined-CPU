@@ -43,7 +43,6 @@ module hazard_unit (
     output reg [2:0] issue_type                                 // for vga_unit (both hazard and interrupt)
     );
     
-    reg [1:0] hazard_control [`STAGE_CNT - 1:0];    // hazard control signal for each stage register
     reg [1:0] cpu_state;    // the state CPU is in
 
     wire mem_conflict = mem_reg_write_enable & ~mem_no_op &                     // wirte enabled and operational
@@ -84,8 +83,8 @@ module hazard_unit (
                             issue_type <= `DATA;
                             cpu_state  <= `HAZARD;
                             if_hazard_control <= `HOLD;  // if stage will not be a bubble
-                            id_hazard_control <= `HOLD;  // id stage will not be a bubble
-                            ex_hazard_control <= `NO_OP; // ex stage will be a bubble (the instruction in ex will enter wb by then)
+                            id_hazard_control <= `NO_OP; // ex stage will be a bubble (the instruction in ex will enter wb by then)
+                            // ex_hazard_control <= `NO_OP; // id stage will not be a bubble
                         end
                         // the user paused the CPU, the user can do UART rewrite during this period
                         4'b01xx: begin
@@ -122,7 +121,7 @@ module hazard_unit (
                             cpu_state    <= `EXECUTE;
                             if_hazard_control   <= `NORMAL;
                             id_hazard_control   <= `NORMAL;
-                            ex_hazard_control   <= `NORMAL;
+                            // ex_hazard_control   <= `NORMAL;
                         end
                         2'b01  : begin
                             issue_type   <= `NONE;

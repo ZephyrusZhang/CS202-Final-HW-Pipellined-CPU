@@ -199,12 +199,12 @@ module top (
 
         .branch_instruction (branch_instruction),
 
-        .ex_mem_read_enable (ex_mem_reg_mem_control[`MEM_READ_BIT]),
-        .ex_reg_write_enable(ex_mem_reg_reg_write_enable),
-        .ex_no_op           (ex_mem_reg_no_op),
+        .ex_mem_read_enable (id_ex_reg_mem_control[`MEM_READ_BIT]),
+        .ex_reg_write_enable(id_ex_reg_reg_write_enable),
+        .ex_no_op           (id_ex_reg_no_op),
 
-        .mem_reg_write_enable(mem_wb_reg_reg_write_enable),
-        .mem_no_op          (mem_wb_reg_no_op),
+        .mem_reg_write_enable(ex_mem_reg_reg_write_enable),
+        .mem_no_op          (ex_mem_reg_no_op),
 
         .id_reg_1_idx       (mux_reg_1_idx),
         .id_reg_2_idx       (mux_reg_2_idx),

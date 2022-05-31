@@ -9,7 +9,7 @@
 //---------------------------------Memory---------------------------------------//
 `define DEFAULT_RAM_DEPTH   14              // ram size = 2^DEFAULT_RAM_DEPTH
 `define DEFAULT_ROM_DEPTH   14              // rom size = 2^DEFAULT_ROM_DEPTH
-`define PC_MAX_VALUE        ((1 << (`DEFAULT_ROM_DEPTH + 2)) - 1)
+`define PC_MAX_VALUE        65_535          // ((1 << (`DEFAULT_ROM_DEPTH + 2)) - 1)
 
 `define MEM_WRITE_BIT       0               // bit for determining memory write enable
 `define MEM_READ_BIT        1               // bit for determining memory read enable
@@ -89,9 +89,9 @@
 
 // signals for the stage registers
 `define NORMAL              2'b00
-`define HOLD                2'b10
+`define HOLD                2'b01
 `define NO_OP               2'b11
-`define NO_OP_ONLY          2'b01           // normally should not be used as no_op implies hold
+`define NO_OP_ONLY          2'b10           // normally should not be used as no_op implies hold
 
 // states for cpu_state 
 `define IDLE                2'b00

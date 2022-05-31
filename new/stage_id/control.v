@@ -30,8 +30,8 @@ module control (
     output reg [1:0]                        condition_type
 );
 
-assign mem_control[`MEM_WRITE_BIT] = (opcode == 6'b100011);
-assign mem_control[`MEM_READ_BIT] = (opcode == 6'b101011);
+assign mem_control[`MEM_READ_BIT] = (opcode == 6'b100011);
+assign mem_control[`MEM_WRITE_BIT] = (opcode == 6'b101011);
 
 assign i_type_instruction = (opcode[5:2] != 4'b0000);
 assign r_type_instruction = (opcode == 6'b000000);
@@ -50,8 +50,8 @@ always @(*) begin
         8'b1000_0000: begin alu_opcode <= func;         wb_en <= 1; end     // R format and is not jr
         8'b1100_0000: begin alu_opcode <= `EXE_NO_OP;   wb_en <= 0; end     // R format and is jr
         8'b0010_0000: begin alu_opcode <= `EXE_NO_OP;   wb_en <= 0; end     // branch instruction
-        8'b0001_0000: begin alu_opcode <= `EXE_ADD;     wb_en <= 0; end     // lw
-        8'b0000_1000: begin alu_opcode <= `EXE_ADD;     wb_en <= 1; end     // sw
+        8'b0001_0000: begin alu_opcode <= `EXE_ADD;     wb_en <= 1; end     // lw
+        8'b0000_1000: begin alu_opcode <= `EXE_ADD;     wb_en <= 0; end     // sw
         8'b0000_0001: begin alu_opcode <= `EXE_ADD;     wb_en <= 1; end     // jal
         8'b0000_0010: begin alu_opcode <= `EXE_NO_OP;   wb_en <= 0; end     // j
         8'b0000_0100: begin alu_opcode <= opcode;       wb_en <= 1; end     // I format and is not branch and lw and sw
