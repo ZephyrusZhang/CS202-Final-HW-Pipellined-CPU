@@ -2,17 +2,17 @@
 `timescale 1ns / 1ps
 
 module top (
-    input  clk_raw, rst_n,
-    input  [`SWITCH_CNT - 1:0] switch_map,                  // 8 switches
-    input  uart_rx,                                         // for uart_unit
-    input  [3:0] row_in,
-    output [3:0] col_out,
-    output [7:0] seg_tube,   
-    output [7:0] seg_enable,
-    output [`VGA_BIT_DEPTH - 1:0] vga_signal,
-    output uart_in_progress,                                // LED indicator for UART process
-    output hsync, vsync,
-    output uart_tx                                          // from uart_unit
+    input      clk_raw, rst_n,
+    input      [`SWITCH_CNT - 1:0] switch_map,              // 8 switches
+    input      uart_rx,                                     // for uart_unit
+    input      [3:0] row_in,
+    output     [3:0] col_out,
+    output     [7:0] seg_tube,   
+    output     [7:0] seg_enable,
+    output     [`VGA_BIT_DEPTH - 1:0] vga_signal,
+    output reg uart_in_progress,                            // LED indicator for UART process
+    output     hsync, vsync,
+    output     uart_tx                                      // from uart_unit
     );
     
     //// wire list, format: [signal_source]_[signal_name]
@@ -165,7 +165,11 @@ module top (
             
 
     // LED
-    assign uart_in_progress = uart_unit_write_enable;
+    always @(posedge clk_raw, negedge rst_n) begin
+        if (~rst_n)                      uart_in_progress <= 1'b0;
+        else if (uart_unit_write_enable) uart_in_progress <= 1'b1;
+        else                             uart_in_progress <= 1'b0;
+    end
 
     //// module list
 
