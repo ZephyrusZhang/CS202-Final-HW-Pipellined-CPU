@@ -42,7 +42,7 @@ module input_unit (
                 HALT        = 2'b11;
     
     reg [1:0] input_state;
-    reg [2:0] digit_counter;
+    reg [3:0] digit_counter;
     reg [`ISA_WIDTH - 1:0] keypad_data;
 
     assign input_data = switch_enable ? {{(`ISA_WIDTH - `SWITCH_CNT){1'b0}}, switch_map} : keypad_data;
@@ -108,19 +108,48 @@ module input_unit (
                             default  : begin
                                 if (digit_counter < 8) begin
                                     case (key_coord)
-                                        ZERO   : keypad_data <= keypad_data * 10;
-                                        ONE    : keypad_data <= keypad_data * 10 + 1;
-                                        TWO    : keypad_data <= keypad_data * 10 + 2;
-                                        THREE  : keypad_data <= keypad_data * 10 + 3;
-                                        FOUR   : keypad_data <= keypad_data * 10 + 4;
-                                        FIVE   : keypad_data <= keypad_data * 10 + 5;
-                                        SIX    : keypad_data <= keypad_data * 10 + 6;
-                                        SEVEN  : keypad_data <= keypad_data * 10 + 7;
-                                        EIGHT  : keypad_data <= keypad_data * 10 + 8;
-                                        NINE   : keypad_data <= keypad_data * 10 + 9;
-                                        default: keypad_data <= keypad_data;  // 0 key_coord will be handled here
+                                        ZERO   : begin
+                                            keypad_data   <= keypad_data * 10;
+                                            digit_counter <= digit_counter + 1;
+                                        end
+                                        ONE    : begin
+                                            keypad_data   <= keypad_data * 10 + 1;
+                                            digit_counter <= digit_counter + 1;
+                                        end
+                                        TWO    : begin
+                                            keypad_data   <= keypad_data * 10 + 2;
+                                            digit_counter <= digit_counter + 1;
+                                        end
+                                        THREE  : begin
+                                            keypad_data   <= keypad_data * 10 + 3;
+                                            digit_counter <= digit_counter + 1;
+                                        end
+                                        FOUR   : begin
+                                            keypad_data   <= keypad_data * 10 + 4;
+                                            digit_counter <= digit_counter + 1;
+                                        end
+                                        FIVE   : begin
+                                            keypad_data   <= keypad_data * 10 + 5;
+                                            digit_counter <= digit_counter + 1;
+                                        end
+                                        SIX    : begin
+                                            keypad_data   <= keypad_data * 10 + 6;
+                                            digit_counter <= digit_counter + 1;
+                                        end
+                                        SEVEN  : begin
+                                            keypad_data   <= keypad_data * 10 + 7;
+                                            digit_counter <= digit_counter + 1;
+                                        end
+                                        EIGHT  : begin
+                                            keypad_data   <= keypad_data * 10 + 8;
+                                            digit_counter <= digit_counter + 1;
+                                        end
+                                        NINE   : begin
+                                            keypad_data   <= keypad_data * 10 + 9;
+                                            digit_counter <= digit_counter + 1;
+                                        end
+                                        default: digit_counter <= digit_counter;  // 0 key_coord will be handled here
                                     endcase
-                                    digit_counter <= digit_counter + 1;
                                 end else
                                     keypad_data   <= keypad_data;
                             end
