@@ -15,6 +15,7 @@ module signal_mux (
     input      store_instruction,                               // from control_unit (whether it is a strore instruction)
     
     input      condition_satisfied,                             // from condition_check (whether the branch condition is met)
+    input      id_no_op,                                        // from if_id_reg (whether the current instruction is a gap)
     output     pc_offset,                                       // for (1) if_id_reg (whether the branch is taken thus prediction failed)
                                                                 //     (2) instruction_mem (whether the pc should be offsetted)
     output     pc_overload,                                     // for (1) if_id_reg (whether a jump occured thus prediction failed)
@@ -49,8 +50,8 @@ module signal_mux (
     assign reg_1_valid = ~j_type_normal;
     assign reg_2_valid = r_type_instruction | i_type_abnormal;
 
-    assign pc_offset         = condition_satisfied & branch_instruction;
-    assign pc_overload       = j_type_normal | jr_instruction;
+    assign pc_offset         = condition_satisfied & branch_instruction & ~id_no_op;
+    assign pc_overload       = (j_type_normal | jr_instruction) & ~id_no_op;
     assign pc_overload_value = j_type_normal ? {
                                     id_pc[`ISA_WIDTH - 1:`ADDRES_WIDTH + 2],
                                     id_instruction[`ADDRES_WIDTH - 1:0], 

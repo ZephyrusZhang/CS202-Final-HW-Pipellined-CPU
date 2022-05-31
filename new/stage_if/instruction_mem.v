@@ -48,7 +48,7 @@ module instruction_mem #(parameter
     ROM rom(
         .ena    (~if_no_op), // disabled unpon no_op
 
-        .clka   (uart_disable ? clk                 : uart_clk),
+        .clka   (uart_disable ? ~clk                : uart_clk),
         .addra  (uart_disable ? pc[ROM_DEPTH + 1:2] : uart_addr[ROM_DEPTH - 1:0]), // pc address is in unit of bytes
         .douta  (instruction),
 

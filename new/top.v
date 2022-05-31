@@ -326,6 +326,7 @@ module top (
         .store_instruction  (store_instruction),
 
         .condition_satisfied(condition_check_satisfied),
+        .id_no_op           (if_id_reg_no_op),
 
         .pc_offset          (mux_pc_offset),
         .pc_overload        (mux_pc_overload),

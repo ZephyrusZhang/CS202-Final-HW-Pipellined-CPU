@@ -38,16 +38,13 @@ module top_test ();
         #5 rst_n = 1;
         #10 
             instruction_mem_pc_input = 0;
-            instruction_mem_instruction_input = 32'h8c020000;
-        #10
-            instruction_mem_pc_input = instruction_mem_pc_input + 4;
-            instruction_mem_instruction_input = 32'h8c490000;
+            instruction_mem_instruction_input = 32'h8c090000;
         #10
             instruction_mem_pc_input = instruction_mem_pc_input + 4;
             instruction_mem_instruction_input = 32'h20080004;
         #10
             instruction_mem_pc_input = instruction_mem_pc_input + 4;
-            instruction_mem_instruction_input = 32'had020000;
+            instruction_mem_instruction_input = 32'h8d020000;
         #10
             instruction_mem_pc_input = instruction_mem_pc_input + 4;
             instruction_mem_instruction_input = 32'hac490000;

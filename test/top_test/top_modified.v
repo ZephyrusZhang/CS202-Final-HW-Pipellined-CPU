@@ -306,6 +306,7 @@ module top_modified (
         .store_instruction  (store_instruction),
 
         .condition_satisfied(condition_check_satisfied),
+        .id_no_op           (if_id_reg_no_op),
 
         .pc_offset          (mux_pc_offset),
         .pc_overload        (mux_pc_overload),
@@ -494,7 +495,7 @@ module top_modified (
         .rst_n              (rst_n),
         .key_coord          (keypad_unit_key_coord),
         .switch_map         (switch_map),
-        .uart_complete      (uart_unit_uart_complete),
+        .uart_disable       (hazard_unit_uart_disable),
         .input_enable       (data_mem_input_enable),
         .input_complete     (input_unit_input_complete),
         .input_data         (input_unit_input_data),

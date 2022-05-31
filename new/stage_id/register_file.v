@@ -20,7 +20,7 @@ module register_file (
     output reg [`ISA_WIDTH - 1 : 0]         read_data_1, read_data_2
 );
 
-reg [`ISA_WIDTH - 1 : 0] registers [0 : `ISA_WIDTH - 1];
+reg [`ISA_WIDTH - 1:0] registers [`ISA_WIDTH - 1:0];
 
 always @(negedge clk) begin
     if (~id_no_op) begin
@@ -30,7 +30,7 @@ always @(negedge clk) begin
 end
 
 integer i;
-always @(posedge clk) begin
+always @(*) begin
     if (~rst_n) begin
         for (i = 0; i < `ISA_WIDTH; i = i + 1)
             registers[i] <= 0;
