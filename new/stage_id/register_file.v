@@ -17,26 +17,31 @@ module register_file (
     input [`ISA_WIDTH - 1 : 0]              write_data,
     input                                   write_en,
     input                                   wb_no_op, id_no_op,
-    output reg [`ISA_WIDTH - 1 : 0]         read_data_1, read_data_2
+    output [`ISA_WIDTH - 1 : 0]             read_data_1, read_data_2
 );
 
 reg [`ISA_WIDTH - 1:0] registers [`ISA_WIDTH - 1:0];
 
-always @(negedge clk) begin
-    if (~id_no_op) begin
-        read_data_1 <= registers[read_reg_addr_1];
-        read_data_2 <= registers[read_reg_addr_2];
-    end
-end
+// always @(negedge clk) begin
+//     if (~id_no_op) begin
+//         read_data_1 <= registers[read_reg_addr_1];
+//         read_data_2 <= registers[read_reg_addr_2];
+//     end
+// end
 
 integer i;
-always @(*) begin
+always @(negedge clk, negedge rst_n) begin
     if (~rst_n) begin
         for (i = 0; i < `ISA_WIDTH; i = i + 1)
             registers[i] <= 0;
-    end else
-        if (write_en && ~wb_no_op && write_reg_addr != 0)
-            registers[write_reg_addr] <= write_data;
+    end else if (write_en && ~wb_no_op && write_reg_addr != 0) begin
+        registers[write_reg_addr] <= write_data;
+    end else begin
+        registers[0] <= 0;
+    end
 end
+
+assign read_data_1 = (registers[read_reg_addr_1]);
+assign read_data_2 = (registers[read_reg_addr_2]);
 
 endmodule

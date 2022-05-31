@@ -20,11 +20,13 @@ module top (
     // clocks
     wire    clk_uart;                                       // for uart_unit (10MHz)
     wire    clk_vga;                                        // for vga_unit (25MHz)
-    // wire    clk_raw;
+    wire    clk_cpu, clk_cpu_n;                             // for cpu components except hazard_unit (50MHz)
     
     clk_generator #(4)  vga_clk_generator (clk_raw, rst_n, clk_vga);
     clk_generator #(10) uart_clk_generator(clk_raw, rst_n, clk_uart);
-    // clk_generator #(4)  raw_clk_generator (clk, rst_n, clk_raw);
+    // clk_generator #(4)  raw_clk_generator (clk_raw, rst_n, clk_cpu_n);
+
+    assign clk_cpu = clk_raw;
         
     // no_op
     wire    instruction_mem_no_op,
@@ -165,7 +167,7 @@ module top (
             
 
     // LED
-    always @(posedge clk_raw, negedge rst_n) begin
+    always @(posedge clk_cpu, negedge rst_n) begin
         if (~rst_n)                      uart_in_progress <= 1'b0;
         else if (uart_unit_write_enable) uart_in_progress <= 1'b1;
         else                             uart_in_progress <= 1'b0;
@@ -192,7 +194,7 @@ module top (
 
     //-------------------------------hazard-unit------------------------------------//
     hazard_unit hazard_unit(
-        .clk                (clk_raw),
+        .clk                (clk_cpu),
         .rst_n              (rst_n),
 
         .uart_complete      (uart_unit_uart_complete),
@@ -233,7 +235,7 @@ module top (
 
     //--------------------------------stage-if------------------------------------//
     instruction_mem instruction_mem(
-        .clk                (clk_raw),
+        .clk                (clk_cpu),
         .rst_n              (rst_n),
 
         .uart_disable       (hazard_unit_uart_disable),
@@ -256,7 +258,7 @@ module top (
 
     //--------------------------------stage-id------------------------------------//
     if_id_reg if_id_reg(
-        .clk                (clk_raw),
+        .clk                (clk_cpu),
         .rst_n              (rst_n),
 
         .hazard_control     (hazard_unit_id_hazard_control),
@@ -272,7 +274,7 @@ module top (
         .if_pc              (instruction_mem_pc)
     );
     register_file register_file(
-        .clk                (clk_raw),
+        .clk                (clk_cpu),
         .rst_n              (rst_n),
 
         .read_reg_addr_1    (rs),
@@ -355,7 +357,7 @@ module top (
 
     //--------------------------------stage-if------------------------------------//
     id_ex_reg id_ex_reg(
-        .clk                (clk_raw),
+        .clk                (clk_cpu),
         .rst_n              (rst_n),
 
         .hazard_control     (hazard_unit_ex_hazard_control),
@@ -401,7 +403,7 @@ module top (
         .alu_output         (alu_alu_result)
     );
     ex_mem_reg ex_mem_reg(
-        .clk                (clk_raw),
+        .clk                (clk_cpu),
         .rst_n              (rst_n),
 
         .hazard_control     (hazard_unit_mem_hazard_control),
@@ -433,7 +435,7 @@ module top (
 
     //--------------------------------stage-mem------------------------------------//
     data_mem data_mem(
-        .clk                (clk_raw),
+        .clk                (clk_cpu),
 
         .uart_disable       (hazard_unit_uart_disable),
         .uart_clk           (uart_unit_clk_out),
@@ -455,7 +457,7 @@ module top (
         .vga_store_data     (data_mem_vga_store_data)
     );
     mem_wb_reg mem_wb_reg(
-        .clk                (clk_raw),
+        .clk                (clk_cpu),
         .rst_n              (rst_n),
 
         .hazard_control     (hazard_unit_wb_hazard_control),

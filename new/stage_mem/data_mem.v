@@ -51,8 +51,8 @@ module data_mem #(parameter
     wire uart_instruction_write_enable = uart_write_enable & uart_addr[ROM_DEPTH];
     wire [`ISA_WIDTH - 1:0] ram_read_data;
 
-    assign input_enable       = ~mem_addr[`IO_TYPE_BIT] & io_active & mem_control[`MEM_READ_BIT];
-    assign vga_write_enable   =  mem_addr[`IO_TYPE_BIT] & io_active & mem_control[`MEM_WRITE_BIT];
+    assign input_enable       = (~mem_addr[`IO_TYPE_BIT] & io_active & mem_control[`MEM_READ_BIT]) ? 1'b1 : 1'b0;
+    assign vga_write_enable   = (mem_addr[`IO_TYPE_BIT] & io_active & mem_control[`MEM_WRITE_BIT]) ? 1'b1 : 1'b0;
 
     RAM ram(
         .ena    (~no_op), // disabled unpon no_op
