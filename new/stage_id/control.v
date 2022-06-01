@@ -24,6 +24,7 @@ module control (
     output                                  j_instruction,
     output                                  jr_instruction,
     output                                  jal_instruction,
+    output                                  shift_instruction,
     output                                  branch_instruction,
     output                                  store_instruction,
     output reg                              wb_en,
@@ -40,6 +41,7 @@ assign jr_instruction = (opcode == 6'b000000 && func == 6'b001000);
 assign jal_instruction = (opcode == 6'b000011);
 assign branch_instruction = (opcode == 6'b000100 || opcode == 6'b000101);
 assign store_instruction = (opcode == 6'b101011);
+assign shift_instruction = (opcode == 6'b000000 & func[5:3] == 3'b000);
 
 wire lw = (opcode == 6'b10_0011);
 wire sw = (opcode == 6'b10_1011);
