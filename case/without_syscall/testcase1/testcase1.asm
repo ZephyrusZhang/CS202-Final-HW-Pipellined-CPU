@@ -7,8 +7,9 @@
 	
 start:
 
-	lw $v0,buf($zero)	#read the no. of case
-	
+	lw $v0, buf($zero)	#read the no. of case
+	lw $v0, 0($v0)
+
 	ori $t0,$zero,0
 	ori $t1,$zero,1
 	ori $t2,$zero,2
@@ -29,7 +30,9 @@ start:
 	j start
 	
 case1_000:
-	lw $v0,buf($zero)	#read the no. of case
+	lw $v0,buf($zero)	#read num a
+	lw $v0,0($v0)
+
 	
 	add $s0,$zero,$v0
 	add $t0,$zero,$v0 
@@ -62,71 +65,88 @@ case1_000:
 	
   case1_000_label2:
   		  
-  	addi $t0,$zero,4	                            
-  	sw $a0,buf($t0)	    # write -> a0  0 or 1  not or is
+  	addi $t0,$zero,4	          # write -> a0  0 or 1  not or is                        	
+  	lw $v0, buf($t0)
+	sw $a0, 0($v0)
+
 
   	j start
 case1_001:
   			     
-	lw $v0,buf($zero)		#read integer -> v0 
-	
+	lw $v0, buf($zero)		#read integer -> v0 
+	lw $v0, 0($v0)
+
+
   	addi $s1,$v0,0            	#input a -> s1
 			  
-  	addi $t0,$zero,4	                            
-  	sw $s1,buf($t0)	    	# write result s1
+	addi $t0,$zero,4	           # write result s1                      	
+  	lw $v0, buf($t0)
+	sw $s1, 0($v0)
+
+  	 
+  	lw $v0, buf($zero)		#read integer b -> v0
+	lw $v0, 0($v0)
 
 	
- 	lw $v0,buf($zero)		#read integer b -> v0 	  
-  	 
-	
   	addi $s2,$v0,0            	#input b -> s2
+  	  	
+  	addi $t0,$zero,4	           # write result s2                    	
+  	lw $v0, buf($t0)
+	sw $s1, 0($v0)
+
   	
-  	addi $t0,$zero,4	                            
-  	sw $s2,buf($t0)	    	# write result s2
-	
 	j start
 case1_010:
 	and $s3,$s1,$s2		# result -> s3
-	
-	addi $t0,$zero,4	                            
-  	sw $s3,buf($t0)	    	# write result s3	   
+		
+  	addi $t0,$zero,4	     # write result s3                	
+  	lw $v0, buf($t0)
+	sw $s3, 0($v0)
+   
   	
 	j start
 case1_011: 	
 	or $s3,$s1,$s2		# result -> s3
 	
-	addi $t0,$zero,4	                            
-  	sw $s3,buf($t0)	    	# write result s3	  	   
+	addi $t0,$zero,4	     # write result s3                	
+  	lw $v0, buf($t0)
+	sw $s3, 0($v0)
+	   
   	
   	j start
 case1_100:   	
   	xor $s3,$s1,$s2		# result -> s3
 	
-	addi $t0,$zero,4	                            
-  	sw $s3,buf($t0)	    	# write result s3	 
+	addi $t0,$zero,4	     # write result s3                	
+  	lw $v0, buf($t0)
+	sw $s3, 0($v0)
+	 
 
 	j start
   	
 case1_101:   	
   	sllv $s3,$s1,$s2		# result -> s3
 	
-	addi $t0,$zero,4	                            
-  	sw $s3,buf($t0)	    	# write result s3
+	addi $t0,$zero,4	     # write result s3                	
+  	lw $v0, buf($t0)
+	sw $s3, 0($v0)
   	
   	j start
   	
 case1_110:   	
   	srlv $s3,$s1,$s2		# result -> s3
 	
-	addi $t0,$zero,4	                            
-  	sw $s3,buf($t0)	    	# write result s3
+	addi $t0,$zero,4	     # write result s3                	
+  	lw $v0, buf($t0)
+	sw $s3, 0($v0)
   	
   	j start
 case1_111:   	
   	srav $s3,$s1,$s2		# result -> s3
 	
-	addi $t0,$zero,4	                            
-  	sw $s3,buf($t0)	    	# write result s3
+	addi $t0,$zero,4	     # write result s3                	
+  	lw $v0, buf($t0)
+	sw $s3, 0($v0)
 		  	
 	j start
 	
