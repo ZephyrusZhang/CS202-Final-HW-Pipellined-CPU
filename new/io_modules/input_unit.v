@@ -111,10 +111,6 @@ module input_unit (
                             default  : begin
                                 if (digit_counter < 11) begin
                                     case (key_coord)
-                                        ZERO   : begin
-                                            keypad_data   <= keypad_data * 10;
-                                            digit_counter <= digit_counter + 1;
-                                        end
                                         ONE    : begin
                                             keypad_data   <= keypad_data * 10 + 1;
                                             digit_counter <= digit_counter + 1;
@@ -150,6 +146,10 @@ module input_unit (
                                         NINE   : begin
                                             keypad_data   <= keypad_data * 10 + 9;
                                             digit_counter <= digit_counter + 1;
+                                        end
+                                        ZERO   : begin
+                                            keypad_data   <= keypad_data * 10;
+                                            if (0 < keypad_data) digit_counter <= digit_counter + 1;
                                         end
                                         default: digit_counter <= digit_counter;  // 0 key_coord will be handled here
                                     endcase
