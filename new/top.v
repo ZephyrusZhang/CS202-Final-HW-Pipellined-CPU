@@ -186,6 +186,9 @@ module top (
         .dest_mem           (ex_mem_reg_reg_dest_idx),
         .dest_wb            (mem_wb_reg_reg_dest_idx),
 
+        .dest_mem_no_op     (ex_mem_reg_no_op), 
+        .dest_wb_no_op      (mem_wb_reg_no_op),
+
         .mem_wb_en          (ex_mem_reg_reg_write_enable),
         .wb_en              (mem_wb_reg_reg_write_enable),
 

@@ -91,7 +91,7 @@
 `define NORMAL              2'b00
 `define HOLD                2'b01
 `define NO_OP               2'b11
-`define NO_OP_ONLY          2'b10           // normally should not be used as no_op implies hold
+`define RESUME              2'b10           // no hold and do not accept no_op signal from previous stage
 
 // states for cpu_state 
 `define IDLE                2'b00

@@ -57,7 +57,7 @@ module data_mem #(parameter
     RAM ram(
         .ena    (~no_op), // disabled unpon no_op
 
-        .clka   ((uart_disable == 1'b1) ? clk                       : uart_clk),
+        .clka   ((uart_disable == 1'b1) ? ~clk                      : uart_clk),
         .addra  ((uart_disable == 1'b1) ? mem_addr[ROM_DEPTH + 1:2] : uart_addr[ROM_DEPTH - 1:0]),  // address unit in bytes
         .douta  (ram_read_data),
 

@@ -76,7 +76,8 @@ module id_ex_reg (
                 ex_reg_dest_idx     <= mux_reg_dest_idx;
             end
 
-            ex_no_op <= hazard_control[`HAZD_NO_OP_BIT] | id_no_op;
+            if (hazard_control == `RESUME) ex_no_op <= 1'b0;
+            else                           ex_no_op <= hazard_control[`HAZD_NO_OP_BIT] | id_no_op;
         end
     end
     

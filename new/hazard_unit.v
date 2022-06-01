@@ -81,9 +81,11 @@ module hazard_unit (
                         // data hazard will hold all stages hence covers the other hazards
                         4'b1xxx: begin
                             issue_type <= `DATA;
-                            cpu_state  <= `HAZARD;
+                            // cpu_state  <= `HAZARD;
                             if_hazard_control <= `HOLD;  // if stage will not be a bubble
-                            id_hazard_control <= `NO_OP; // ex stage will be a bubble (the instruction in ex will enter wb by then)
+                            id_hazard_control <= `HOLD; // ex stage will be a bubble (the instruction in ex will enter wb by then)
+                            ex_hazard_control <= `NO_OP;
+                            // mem_hazard_control <= `;
                             // ex_hazard_control <= `NO_OP; // id stage will not be a bubble
                         end
                         // the user paused the CPU, the user can do UART rewrite during this period
@@ -92,6 +94,7 @@ module hazard_unit (
                             cpu_state    <= `HAZARD;
                             uart_disable <= 1'b0;
                             if_hazard_control <= `NO_OP; // start pumping no_op signals into the pipeline
+                            id_hazard_control <= `NORMAL;
                         end
                         // the user did not pause the CPU but the pc overflowed, the CPU will automatically resume upon UART completion
                         4'b001x: begin
@@ -99,6 +102,7 @@ module hazard_unit (
                             cpu_state    <= `HAZARD;
                             uart_disable <= 1'b0;
                             if_hazard_control <= `NO_OP;
+                            id_hazard_control <= `NORMAL;
                         end
                         // CPU waits for the user's keypad input
                         4'b0001: begin
@@ -110,8 +114,13 @@ module hazard_unit (
                             mem_hazard_control  <= `NO_OP;
                             wb_hazard_control   <= `NO_OP;
                         end
-                        default:
-                            issue_type   <= issue_type; // prevent auto latches
+                        default: begin
+                            if_hazard_control   <= `NORMAL;
+                            id_hazard_control   <= `NORMAL;
+                            ex_hazard_control   <= `NORMAL;
+                            mem_hazard_control  <= `NORMAL; 
+                            wb_hazard_control   <= `NORMAL;
+                        end
                     endcase
                 end
                 `HAZARD: begin
@@ -145,11 +154,11 @@ module hazard_unit (
                     if (input_complete) begin
                         issue_type <= `NONE;
                         cpu_state  <= `EXECUTE;
-                        if_hazard_control   <= `NORMAL;
-                        id_hazard_control   <= `NORMAL;
-                        ex_hazard_control   <= `NORMAL;
-                        mem_hazard_control  <= `NORMAL; 
-                        wb_hazard_control   <= `NORMAL;
+                        if_hazard_control   <= `RESUME;
+                        id_hazard_control   <= `RESUME;
+                        ex_hazard_control   <= `RESUME;
+                        mem_hazard_control  <= `RESUME; 
+                        wb_hazard_control   <= `RESUME;
                     end else 
                         issue_type <= issue_type; // prevent auto latches
                 end

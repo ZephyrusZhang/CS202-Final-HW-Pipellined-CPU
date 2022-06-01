@@ -54,8 +54,9 @@ module mem_wb_reg (
                 wb_mem_read_data    <= mem_mem_read_data;
                 wb_dest_reg_idx     <= mem_dest_reg_idx;
             end
-
-            wb_no_op <= hazard_control[`HAZD_NO_OP_BIT] | mem_no_op;
+            
+            if (hazard_control == `RESUME) wb_no_op <= 1'b0;
+            else                           wb_no_op <= hazard_control[`HAZD_NO_OP_BIT] | mem_no_op;
         end
     end
     

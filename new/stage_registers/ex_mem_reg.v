@@ -69,7 +69,8 @@ module ex_mem_reg (
                 endcase
             end
             
-            mem_no_op <= hazard_control[`HAZD_NO_OP_BIT] | ex_no_op;
+            if (hazard_control == `RESUME) mem_no_op <= 1'b0;
+            else                           mem_no_op <= hazard_control[`HAZD_NO_OP_BIT] | ex_no_op;
         end
     end
     

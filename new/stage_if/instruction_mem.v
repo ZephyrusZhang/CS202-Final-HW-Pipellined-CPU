@@ -73,7 +73,8 @@ module instruction_mem #(parameter
             if (hazard_control[`HAZD_HOLD_BIT] == 1'b1) pc <= pc;
             else                                        pc <= pc_next;
             
-            if_no_op <= hazard_control[`HAZD_NO_OP_BIT];
+            if (hazard_control == `RESUME) if_no_op <= 1'b0;
+            else                           if_no_op <= hazard_control[`HAZD_NO_OP_BIT];
         end
     end
     

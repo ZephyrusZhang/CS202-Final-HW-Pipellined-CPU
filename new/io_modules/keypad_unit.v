@@ -52,7 +52,7 @@ module keypad_unit #(parameter
                     if (row_in != 4'hf & row_val[stage] == 4'hf) 
                         key_coord = {row_in, col_out};
                     else 
-                       key_coord = 0;
+                        key_coord = 0;
                     
                     row_val[stage] = row_in;
                     stage = stage + 1;

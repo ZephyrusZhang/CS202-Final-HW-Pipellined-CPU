@@ -18,9 +18,10 @@ module output_unit (
 
     reg [`ISA_WIDTH - 1:0] value_to_display;
 
-    always @(negedge clk) begin
-        if (vga_write_enable) value_to_display <= vga_store_data;
-        else                  value_to_display <= value_to_display;
+    always @(negedge clk, negedge rst_n) begin
+        if (~rst_n)                value_to_display <= 0;
+        else if (vga_write_enable) value_to_display <= vga_store_data;
+        else                       value_to_display <= value_to_display;
     end
     
     wire [`VGA_BIT_DEPTH - 1:0] zero_rgb, 

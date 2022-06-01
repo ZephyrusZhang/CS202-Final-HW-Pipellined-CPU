@@ -30,6 +30,23 @@ module top_complete_testbench ();
     initial begin
         #5 rst_n = 0;
         #5 rst_n = 1;
+        #7500030
+            row_in = 4'b1101;
+        #2500010
+            row_in = 4'b1111;
+        #2500010
+            row_in = 4'b0111;
+        #2500010
+            row_in = 4'b1111;
+        #10000040
+        #2500010
+            row_in = 4'b1011;
+        #2500010
+            row_in = 4'b1111;
+        #2500010
+            row_in = 4'b0111;
+        #2500010
+            row_in = 4'b1111;
     end
 
 endmodule

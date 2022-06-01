@@ -43,9 +43,10 @@ module if_id_reg (
                 id_instruction <= if_instruction;
             end
 
-            id_no_op <= if_no_op |                          // previous stage have stopped
-                        hazard_control[`HAZD_NO_OP_BIT] |   // or hazard detected
-                        pc_abnormal;                        // or the next insturction (pc + 4) is not valid
+            if (hazard_control == `RESUME) id_no_op <= 1'b0;
+            else                           id_no_op <= if_no_op |                          // previous stage have stopped
+                                                       hazard_control[`HAZD_NO_OP_BIT] |   // or hazard detected
+                                                       pc_abnormal;                        // or the next insturction (pc + 4) is not valid
         end
     end
     
