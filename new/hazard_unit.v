@@ -16,6 +16,7 @@ module hazard_unit (
     input      reg_1_valid,                                     // from signal_mux (whether register 1 is valid)
     input      reg_2_valid,                                     // from signal_mux (whether register 2 is valid)
     input      branch_instruction,                              // from control_unit (whether it is a branch instruction)
+    input      store_instruction,                               // from control_unit
 
     input      ex_mem_read_enable,                              // from id_ex_reg (instruction needs to read from memory)
     input      ex_reg_write_enable,                             // from id_ex_reg (instruction needs write to register)
@@ -25,6 +26,7 @@ module hazard_unit (
 
     input      [`REG_FILE_ADDR_WIDTH - 1:0] id_reg_1_idx,       // from signal_mux (index of first source register)
     input      [`REG_FILE_ADDR_WIDTH - 1:0] id_reg_2_idx,       // from signal_mux (index of second source register)
+    input      [`REG_FILE_ADDR_WIDTH - 1:0] id_reg_dest_idx,    // from signal_mux (index of the destination register or the source for store)
     input      [`REG_FILE_ADDR_WIDTH - 1:0] ex_reg_dest_idx,    // from id_ex_reg (index of destination resgiter)
     input      [`REG_FILE_ADDR_WIDTH - 1:0] mem_reg_dest_idx,   // from ex_mem_reg (index of destination resgiter)
 
@@ -54,7 +56,8 @@ module hazard_unit (
                          (reg_2_valid & id_reg_2_idx == mem_reg_dest_idx));     // valid and conflict
     wire ex_conflict  = ex_reg_write_enable  & ~ex_no_op  &                     // wirte enabled and operational
                         ((reg_1_valid & id_reg_1_idx == ex_reg_dest_idx)  |     // valid and conflict
-                         (reg_2_valid & id_reg_2_idx == ex_reg_dest_idx));      // valid and conflict
+                         (reg_2_valid & id_reg_2_idx == ex_reg_dest_idx)  |     // valid and conflict
+                         (store_instruction & id_reg_dest_idx == ex_reg_dest_idx)); // the value to store is the previous result
     
     wire data_hazard    = (branch_instruction & (ex_conflict | mem_conflict)) |     // data hazard when branch depends on data from previous stages 
                           (ex_mem_read_enable & ex_conflict);                       // data hazard when alu depends on data from memory at the next stage

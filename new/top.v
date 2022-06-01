@@ -177,9 +177,9 @@ module top (
 
     // LED
     always @(posedge clk_cpu, negedge rst_n) begin
-        if (~rst_n)                      uart_in_progress <= 1'b0;
-        else if (uart_unit_write_enable) uart_in_progress <= 1'b1;
-        else                             uart_in_progress <= 1'b0;
+        if (~rst_n)                         uart_in_progress <= 1'b0;
+        else if (~hazard_unit_uart_disable) uart_in_progress <= 1'b1;
+        else                                uart_in_progress <= 1'b0;
     end
 
     //// module list
@@ -216,6 +216,7 @@ module top (
         .reg_2_valid        (mux_reg_2_valid),
 
         .branch_instruction (branch_instruction),
+        .store_instruction  (store_instruction),
 
         .ex_mem_read_enable (id_ex_reg_mem_control[`MEM_READ_BIT]),
         .ex_reg_write_enable(id_ex_reg_reg_write_enable),
@@ -229,6 +230,7 @@ module top (
 
         .id_reg_1_idx       (mux_reg_1_idx),
         .id_reg_2_idx       (mux_reg_2_idx),
+        .id_reg_dest_idx    (mux_reg_dest_idx),
         .ex_reg_dest_idx    (id_ex_reg_reg_dest_idx),
         .mem_reg_dest_idx   (ex_mem_reg_reg_dest_idx),
 

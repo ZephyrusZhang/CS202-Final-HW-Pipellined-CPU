@@ -50,7 +50,7 @@ module signal_mux (
     wire j_type_normal   = j_instruction | jal_instruction;
 
     assign reg_1_valid = ~(j_type_normal | shift_instruction);
-    assign reg_2_valid = r_type_instruction | i_type_abnormal;
+    assign reg_2_valid = r_type_instruction | branch_instruction;
 
     assign pc_offset         = condition_satisfied & branch_instruction & ~id_no_op;
     assign pc_overload       = (j_type_normal | jr_instruction) & ~id_no_op;
@@ -69,7 +69,7 @@ module signal_mux (
     assign mux_reg_2_idx = reg_2_valid ? id_reg_2_idx : 0;
 
     always @(*) begin
-        case ({i_type_instruction, i_type_abnormal | jr_instruction, jal_instruction})
+        case ({i_type_instruction, branch_instruction | jr_instruction, jal_instruction})
             3'b100 : mux_reg_dest_idx <= id_reg_2_idx;       // I type instruction
             3'b010 : mux_reg_dest_idx <= 0;                  // store or branch or jump register instruction
             3'b001 : mux_reg_dest_idx <= `JAL_REG_IDX;       // jump and link store to 31st register
