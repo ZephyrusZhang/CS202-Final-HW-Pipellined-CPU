@@ -217,6 +217,9 @@ module top (
         .mem_reg_write_enable(ex_mem_reg_reg_write_enable),
         .mem_no_op          (ex_mem_reg_no_op),
 
+        .if_no_op           (instruction_mem_no_op),
+        .id_no_op           (if_id_reg_no_op),
+
         .id_reg_1_idx       (mux_reg_1_idx),
         .id_reg_2_idx       (mux_reg_2_idx),
         .ex_reg_dest_idx    (id_ex_reg_reg_dest_idx),

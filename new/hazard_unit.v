@@ -34,6 +34,9 @@ module hazard_unit (
     input      input_complete,                                  // from keypad_unit (user pressed enter)
     input      cpu_pause,                                       // from keypad_unit (user pressed pause)
 
+    input      if_no_op,
+    input      id_no_op,
+
     output reg pc_reset,                                        // for instruction_mem (reset the pc to 0)
     output reg [1:0] if_hazard_control,                         // hazard control signal for each stage register
                      id_hazard_control,
@@ -44,6 +47,7 @@ module hazard_unit (
     );
     
     reg [1:0] cpu_state;    // the state CPU is in
+    reg [`STAGE_CNT - 1:0] no_op_snapshot;
 
     wire mem_conflict = mem_reg_write_enable & ~mem_no_op &                     // wirte enabled and operational
                         ((reg_1_valid & id_reg_1_idx == mem_reg_dest_idx) |     // valid and conflict
@@ -71,22 +75,21 @@ module hazard_unit (
                 id_hazard_control,
                 ex_hazard_control,
                 mem_hazard_control,
-                wb_hazard_control
+                wb_hazard_control,
+                no_op_snapshot
             }            <= 0;
         end else begin
             case (cpu_state) 
                 `EXECUTE: begin
                     pc_reset     <= 1'b0;
-                    casex ({data_hazard, cpu_pause, uart_hazard, input_enable})
+                    casex ({data_hazard, cpu_pause, uart_hazard, input_enable & ~mem_no_op})
                         // data hazard will hold all stages hence covers the other hazards
                         4'b1xxx: begin
                             issue_type <= `DATA;
                             // cpu_state  <= `HAZARD;
                             if_hazard_control <= `HOLD;  // if stage will not be a bubble
-                            id_hazard_control <= `HOLD; // ex stage will be a bubble (the instruction in ex will enter wb by then)
-                            ex_hazard_control <= `NO_OP;
-                            // mem_hazard_control <= `;
-                            // ex_hazard_control <= `NO_OP; // id stage will not be a bubble
+                            id_hazard_control <= `HOLD;  // id stage will not be a bubble
+                            ex_hazard_control <= `NO_OP; // ex stage will be a bubble (the instruction in ex will enter wb by then)
                         end
                         // the user paused the CPU, the user can do UART rewrite during this period
                         4'b01xx: begin
@@ -113,6 +116,7 @@ module hazard_unit (
                             ex_hazard_control   <= `NO_OP;
                             mem_hazard_control  <= `NO_OP;
                             wb_hazard_control   <= `NO_OP;
+                            no_op_snapshot      <= {mem_no_op, ex_no_op, id_no_op, if_no_op};
                         end
                         default: begin
                             if_hazard_control   <= `NORMAL;
@@ -155,10 +159,10 @@ module hazard_unit (
                         issue_type <= `NONE;
                         cpu_state  <= `EXECUTE;
                         if_hazard_control   <= `RESUME;
-                        id_hazard_control   <= `RESUME;
-                        ex_hazard_control   <= `RESUME;
-                        mem_hazard_control  <= `RESUME; 
-                        wb_hazard_control   <= `RESUME;
+                        id_hazard_control   <= no_op_snapshot[0] ? `NO_OP : `RESUME;
+                        ex_hazard_control   <= no_op_snapshot[1] ? `NO_OP : `RESUME;
+                        mem_hazard_control  <= no_op_snapshot[2] ? `NO_OP : `RESUME;
+                        wb_hazard_control   <= no_op_snapshot[3] ? `NO_OP : `RESUME;
                     end else 
                         issue_type <= issue_type; // prevent auto latches
                 end

@@ -6,6 +6,9 @@
 .text	    0x0000
 	
 start:
+	addi $t0,$zero,4	          # write -> a0  0 or 1  not or is                        	
+  	lw $v0,  buf($t0)
+	sw $t0,  0($v0)
 
 	lw $v0, buf($zero)	#read the no. of case
 	lw $v0, 0($v0)
@@ -92,7 +95,7 @@ case1_001:
   	  	
   	addi $t0,$zero,4	           # write result s2                    	
   	lw $v0, buf($t0)
-	sw $s1, 0($v0)
+	sw $s2, 0($v0)
 
   	
 	j start

@@ -58,7 +58,7 @@ module instruction_mem #(parameter
     
     always @(*) begin
         case ({pc_offset, pc_overload, pc_reset})
-            3'b100 : pc_next = pc + 4 + (pc_offset_value << 2);
+            3'b100 : pc_next = pc + (pc_offset_value << 2);
             3'b010 : pc_next = pc_overload_value;
             3'b001 : pc_next = 0;
             default: pc_next = pc + 4;

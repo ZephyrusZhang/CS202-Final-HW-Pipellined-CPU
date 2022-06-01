@@ -109,7 +109,7 @@ module input_unit (
                                 cpu_pause      <= 1'b1;
                             end
                             default  : begin
-                                if (digit_counter < 11) begin
+                                if (digit_counter < 10) begin
                                     case (key_coord)
                                         ONE    : begin
                                             keypad_data   <= keypad_data * 10 + 1;

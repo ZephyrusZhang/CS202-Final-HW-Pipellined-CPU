@@ -7,8 +7,7 @@ module top_complete_testbench ();
     wire [3:0] col_out = 0;
     wire [7:0] seg_tube = 0, seg_enable = 0;
     wire [11:0] vga_signal = 0;
-    reg [31:0] instruction_mem_pc_input = 0, instruction_mem_instruction_input = 0;
-
+    
     top uut(
     .clk_raw(clk), .rst_n(rst_n),
     .switch_map(8'b1111_1111),
@@ -32,7 +31,7 @@ module top_complete_testbench ();
         #5 rst_n = 0;
         #5 rst_n = 1;
         #7500030
-            row_in = 4'b1101;
+            row_in = 4'b1110;
         #2500010
             row_in = 4'b1111;
         #2500010
