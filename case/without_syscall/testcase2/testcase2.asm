@@ -1,7 +1,8 @@
 .data  0x00
-	buf: .word  0xFFFFFC60,0xFFFFFC70,0x09E4F580
- 	array:.space 200	# store element
-    	info:.space 20	# store n
+	buf: .word  0xFFFFFC60,0xFFFFFC70,0x09EF2EAA
+	info:.word       	 # store n
+ 	array:.word 		 # store element
+
  
  	
 .text	  0x0000
