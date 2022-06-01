@@ -320,11 +320,11 @@ case_111:
        	syscall
        	
        	
-       	#############################
+     #############################
 	# 5 seconds time seperation #
 	      	
        	
-       	#############################
+     #############################
 	# 5 seconds time seperation #
 	lw $t0,buf($zero)	    # write -> s5
 counting_start:

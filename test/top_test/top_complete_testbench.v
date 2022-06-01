@@ -19,7 +19,8 @@ module top_complete_testbench ();
     .seg_enable(seg_enable),
     .vga_signal(vga_signal),
     .uart_in_progress(uart_in_progress),
-    .hsync(hsync), .vsync(vsync),
+    .hsync(hsync), 
+    .vsync(vsync),
     .uart_tx(uart_tx)
     );
 
