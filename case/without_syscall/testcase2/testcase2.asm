@@ -37,6 +37,12 @@ case_000:
 
 	lw $v0, buf($zero)	#read the n
 	lw $v0, 0($v0)
+	
+	add $s5,$zero,$v0
+
+	addi $t0,$zero,4	    # write -> s5	
+  	lw $v0, buf($t0)
+	sw $s5, 0($v0)
 
 	
 	sw $v0,info($zero) 	#reserve n in the memory
