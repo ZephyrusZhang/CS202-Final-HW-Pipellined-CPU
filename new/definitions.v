@@ -2,6 +2,7 @@
 `define ISA_WIDTH           32              // width of a word in the ISA
 `define ADDRES_WIDTH        26              // address lenth in instruction for j and jal extension
 `define STAGE_CNT           5
+`define SHIFT_AMOUNT_WIDTH  5
 `define JAL_REG_IDX         31
 `define IMMEDIATE_WIDTH     16
 //------------------------------------------------------------------------------//

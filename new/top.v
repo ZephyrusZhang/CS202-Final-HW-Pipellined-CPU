@@ -44,6 +44,12 @@ module top (
     wire [`OP_CODE_WIDTH - 1:0] op_code = if_id_reg_instruction[`ISA_WIDTH-1:`ISA_WIDTH -`OP_CODE_WIDTH];   // op [31:26]
     wire [`FUNC_CODE_WIDTH - 1:0] func_code = if_id_reg_instruction[`FUNC_CODE_WIDTH - 1:0];
     wire [`IMMEDIATE_WIDTH - 1:0] immediate = if_id_reg_instruction[`IMMEDIATE_WIDTH - 1:0];
+    wire [`SHIFT_AMOUNT_WIDTH - 1:0] 
+        // shamt [25:21]
+        shift_amount = if_id_reg_instruction[
+            `ISA_WIDTH - `OP_CODE_WIDTH - (3 * `REG_FILE_ADDR_WIDTH) - 1
+            :
+            `ISA_WIDTH - `OP_CODE_WIDTH - (3 * `REG_FILE_ADDR_WIDTH) - `SHIFT_AMOUNT_WIDTH];
     wire [`REG_FILE_ADDR_WIDTH - 1:0] 
         // rs [25:21]
         rs = if_id_reg_instruction[
@@ -113,6 +119,7 @@ module top (
     wire    jal_instruction;
     wire    branch_instruction;
     wire    store_instruction;
+    wire    shift_instruction;
     
     // condition check
     wire    condition_check_satisfied;
@@ -322,6 +329,7 @@ module top (
         .jal_instruction    (jal_instruction),
         .branch_instruction (branch_instruction),
         .store_instruction  (store_instruction),
+        .shift_instruction  (shift_instruction),
 
         .wb_en              (control_reg_write_enable),
         .condition_type     (control_condition_type)
@@ -334,6 +342,7 @@ module top (
         .jal_instruction    (jal_instruction),
         .branch_instruction (branch_instruction),
         .store_instruction  (store_instruction),
+        .shift_instruction  (shift_instruction),
 
         .condition_satisfied(condition_check_satisfied),
         .id_no_op           (if_id_reg_no_op),
@@ -343,6 +352,7 @@ module top (
 
         .id_reg_1           (reg_file_reg_1_data),
         .id_pc              (if_id_reg_pc),
+        .shift_amount       (shift_amount),
         .mux_operand_1      (mux_operand_1),
 
         .id_reg_2           (reg_file_reg_2_data),

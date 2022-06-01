@@ -47,12 +47,12 @@ end
 
 always @(alu_opcode or val1 or val2) begin
     case (alu_opcode)
-        `EXE_SLL:   alu_output = val1 << val2;                                    // sll
-        `EXE_SRL:   alu_output = val1 >> val2;                                    // srl
-        `EXE_SLLV:  alu_output = val1 << val2;                                    // sllv
-        `EXE_SRLV:  alu_output = val1 >> val2;                                    // srlv
-        `EXE_SRA:   alu_output = val1 >>> val2;                                   // sra
-        `EXE_SRAV:  alu_output = val1 >>> val2;                                   // srav
+        `EXE_SLL:   alu_output = val2 << val1;                                    // sll
+        `EXE_SRL:   alu_output = val2 << val1;                                    // srl
+        `EXE_SLLV:  alu_output = val2 >> val1;                                    // sllv
+        `EXE_SRLV:  alu_output = val2 << val1;                                    // srlv
+        `EXE_SRA:   alu_output = val2 >>> val1;                                   // sra
+        `EXE_SRAV:  alu_output = val2 >>> val1;                                   // srav
         `EXE_ADD:   alu_output = $signed(val1) + $signed(val2);                   // add
         `EXE_ADDU:  alu_output = $unsigned(val1) + $unsigned(val2);               // addu
         `EXE_SUB:   alu_output = $signed(val1) - $signed(val2);                   // sub

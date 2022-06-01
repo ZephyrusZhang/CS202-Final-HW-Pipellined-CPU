@@ -13,6 +13,7 @@ module signal_mux (
     input      jal_instruction,                                 // from control_unit (whether it is a jal insutrction)
     input      branch_instruction,                              // from control_unit (whether it is a branch instruction)
     input      store_instruction,                               // from control_unit (whether it is a strore instruction)
+    input      shift_instruction,                               // from control_unit (whether it is a shift instruction) 
     
     input      condition_satisfied,                             // from condition_check (whether the branch condition is met)
     input      id_no_op,                                        // from if_id_reg (whether the current instruction is a gap)
@@ -23,6 +24,7 @@ module signal_mux (
     
     input      [`ISA_WIDTH - 1:0] id_reg_1,                     // from general_reg (first register's value)
     input      [`ISA_WIDTH - 1:0] id_pc,                        // from if_id_reg (pc)
+    input      [`SHIFT_AMOUNT_WIDTH - 1:0] shift_amount,        // from if_id_reg (shift amount)
     output     [`ISA_WIDTH - 1:0] mux_operand_1,                // for id_ex_reg (to pass on to alu)
     
     input      [`ISA_WIDTH - 1:0] id_reg_2,                     // from general_reg (second register's value)
@@ -47,7 +49,7 @@ module signal_mux (
     wire i_type_abnormal = store_instruction | branch_instruction;
     wire j_type_normal   = j_instruction | jal_instruction;
 
-    assign reg_1_valid = ~j_type_normal;
+    assign reg_1_valid = ~(j_type_normal | shift_instruction);
     assign reg_2_valid = r_type_instruction | i_type_abnormal;
 
     assign pc_offset         = condition_satisfied & branch_instruction & ~id_no_op;
@@ -58,7 +60,8 @@ module signal_mux (
                                     2'b00
                                 } : id_reg_1; // for J type instruction address extension 
 
-    assign mux_operand_1 = jal_instruction    ? id_pc : id_reg_1;
+    assign mux_operand_1 = jal_instruction    ? id_pc                 : (
+                           shift_instruction  ? shift_amount          : id_reg_1);
     assign mux_operand_2 = i_type_instruction ? id_sign_extend_result : (
                            jal_instruction    ? 4                     : id_reg_2);
 
