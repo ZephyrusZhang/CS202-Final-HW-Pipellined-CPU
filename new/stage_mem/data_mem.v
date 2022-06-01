@@ -51,13 +51,13 @@ module data_mem #(parameter
     wire uart_instruction_write_enable = uart_write_enable & uart_addr[ROM_DEPTH];
     wire [`ISA_WIDTH - 1:0] ram_read_data;
 
-    assign input_enable       = (~mem_addr[`IO_TYPE_BIT] & io_active & mem_control[`MEM_READ_BIT]) ? 1'b1 : 1'b0;
-    assign vga_write_enable   = (mem_addr[`IO_TYPE_BIT] & io_active & mem_control[`MEM_WRITE_BIT]) ? 1'b1 : 1'b0;
+    assign input_enable     = (~mem_addr[`IO_TYPE_BIT] & io_active & mem_control[`MEM_READ_BIT]) ? 1'b1 : 1'b0;
+    assign vga_write_enable = (mem_addr[`IO_TYPE_BIT] & io_active & mem_control[`MEM_WRITE_BIT]) ? 1'b1 : 1'b0;
 
     RAM ram(
         .ena    (~no_op), // disabled unpon no_op
 
-        .clka   ((uart_disable == 1'b1) ? ~clk                      : uart_clk),
+        .clka   ((uart_disable == 1'b1) ? clk                       : uart_clk),
         .addra  ((uart_disable == 1'b1) ? mem_addr[ROM_DEPTH + 1:2] : uart_addr[ROM_DEPTH - 1:0]),  // address unit in bytes
         .douta  (ram_read_data),
 
@@ -66,5 +66,5 @@ module data_mem #(parameter
     );
 
     assign vga_store_data = mem_store_data;
-    assign mem_read_data  = input_enable ? input_data : ram_read_data;
+    assign mem_read_data  = (input_enable == 1'b1) ? input_data : ram_read_data;
 endmodule
