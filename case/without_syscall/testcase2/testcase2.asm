@@ -38,17 +38,17 @@ case_000:
 	lw $v0, buf($zero)	#read the n
 	lw $v0, 0($v0)
 	
-	add $s5,$zero,$v0
-
-	addi $t0,$zero,4	    # write -> s5	
-  	lw $v0, buf($t0)
-	sw $s5, 0($v0)
-
 	
 	sw $v0,info($zero) 	#reserve n in the memory
 	
 	addi $t0, $zero,0  	# t0: offset
 	lw $t1,info($zero) 	# t1 <- n
+	
+	
+	addi $t0,$zero,4	    # write -> s5	
+  	lw $v0, buf($t0)
+	sw $t1, 0($v0)
+
 	
 init_000:	
 	beq $t1,$zero,finish_init_000
@@ -58,8 +58,18 @@ init_000:
 
 
 	sw $v0,array($t0) 	# fill array[0-4]
+	
+	
+	lw $t2,array($t0) 	
+	addi $t0,$zero,4	    # write -> data to array 	
+  	lw $v0, buf($t0)
+	sw $t2, 0($v0)
+
+	
 	addi $t0, $t0, 4
 	addi $t1, $t1,-1
+	
+	
 
 	j init_000
 	
