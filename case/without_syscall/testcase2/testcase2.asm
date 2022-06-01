@@ -1,7 +1,7 @@
 .data  0x00
 	buf: .word  0xFFFFFC60,0xFFFFFC70,0x09EF2EAA
-	info:.word       	 # store n
- 	array:.word 		 # store element
+	info:.word  0x00000000     	 # store n
+ 	array:.word 0x00000000	 # store element
 
  
  	
@@ -58,7 +58,7 @@ init_000:
 	j init_000
 	
 finish_init_000:	
-       	j start
+      j start
        	
 case_001:
 	lw $t1,info($zero) 	# t1 <- n
@@ -354,4 +354,6 @@ counting_over:
   	addi $t0,$zero,4	    # write -> s6    	
   	lw $v0, buf($t0)
 	sw $s6, 0($v0)
+	
+	j start
 
