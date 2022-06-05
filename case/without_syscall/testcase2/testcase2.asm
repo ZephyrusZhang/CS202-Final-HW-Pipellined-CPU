@@ -1,10 +1,8 @@
 .data  0x00
 	buf: .word  0xFFFFFC60,0xFFFFFC70,0x09EF2EAA
 	info:.word  0x00000000     	 # store n
- 	array:.word 0x00000000	 # store element
-
- 
- 	
+ 	array:.word 0x00000000	 	 # store element
+	
 .text	  0x0000
 
 #notice: the input can not be more than 255 in these cases
@@ -35,17 +33,17 @@ start:
 	
 case_000:
 
-	lw $v0, buf($zero)	#read the n
+	lw $v0, buf($zero)	  #read the n
 	lw $v0, 0($v0)
 	
 	
-	sw $v0,info($zero) 	#reserve n in the memory
+	sw $v0,info($zero) 	  #reserve n in the memory
+	 
+	addi $t0, $zero,0  	  # t0: offset
+	lw $t1,info($zero) 	  # t1 <- n
 	
-	addi $t0, $zero,0  	# t0: offset
-	lw $t1,info($zero) 	# t1 <- n
 	
-	
-	addi $t0,$zero,4	    # write -> s5	
+	addi $t0,$zero,4	    	  # write -> s5	
   	lw $v0, buf($t0)
 	sw $t1, 0($v0)
 
@@ -53,15 +51,15 @@ case_000:
 init_000:	
 	beq $t1,$zero,finish_init_000
 
-	lw $v0, buf($zero)	#read the num i
+	lw $v0, buf($zero)	   #read the num i
 	lw $v0, 0($v0)
 
 
-	sw $v0,array($t0) 	# fill array[0-4]
+	sw $v0,array($t0) 	   # fill array[0-4]
 	
 	
 	lw $t2,array($t0) 	
-	addi $t0,$zero,4	    # write -> data to array 	
+	addi $t0,$zero,4	    	    # write -> data to array 	
   	lw $v0, buf($t0)
 	sw $t2, 0($v0)
 
@@ -77,14 +75,14 @@ finish_init_000:
       j start
        	
 case_001:
-	lw $t1,info($zero) 	# t1 <- n
-	addi $t0, $zero,0  	# t0: address (a)
-	sll $t2,$t1,2		# t2 <- offset = n * 4
+	lw $t1,info($zero) 		# t1 <- n
+	addi $t0, $zero,0  		# t0: address (a)
+	sll $t2,$t1,2			# t2 <- offset = n * 4
 	
 init_001:	
 	beq $t1,$zero,bubble_sort_001
 
-	lw $v0,array($t0) 	#array[a] -> v0 -> array[a+4 * n]
+	lw $v0,array($t0) 		#array[a] -> v0 -> array[a+4 * n]
 	add $t0,$t0,$t2
 	sw $v0,array($t0)
 	sub $t0,$t0,$t2
@@ -96,32 +94,32 @@ init_001:
 	
 bubble_sort_001:
        	
-     lw $s0,info($zero) 	# s0 <- n
-     addi $s1,$zero,0		# s1 <- i init i = 0
-     sll $s3,$s0,2		# s3 <- 4n
-     addi $t8,$s0,-1		# t8 <- n-1
+     lw $s0,info($zero) 		  # s0 <- n
+     addi $s1,$zero,0			  # s1 <- i init i = 0
+     sll $s3,$s0,2			  # s3 <- 4n
+     addi $t8,$s0,-1			  # t8 <- n-1
      
 forout_001:
 	beq  $s1,$t8,forout_end_001  # while  i < n - 1
 	
-	add $s2,$zero,$zero	        # init s2 <- j  <-0
+	add $s2,$zero,$zero	       # init s2 <- j  <-0
 	sub $t9,$t8,$s1              # t9 <- (n - i - 1)
 forin_001:		
 	beq $s2,$t9,forin_end_001	  # when j < (n - i - 1)
 	sll $s7,$s2,2	   		  # s7 <- 4j align address
 	
-	add $t3,$s3,$s7			# t3 <- 4n + 4j
-	addi $t4,$t3,4			# t4 <- 4n + 4j + 4
+	add $t3,$s3,$s7			  # t3 <- 4n + 4j
+	addi $t4,$t3,4			  # t4 <- 4n + 4j + 4
 	lw $s4,array($t3)
 	lw $s5,array($t4)
 	sltu $s6,$s4,$s5	#unsigned bubble sort
-	bne $s6,$zero,miss_001	# s4 <= s5 , miss
+	bne $s6,$zero,miss_001	  # s4 <= s5 , miss
 	
-swap_001:					# s4 >s5 ,  swap and sw	
-	add $t3,$s3,$s7			# t3 <- 4n + 4j
-	addi $t4,$t3,4			# t4 <- 4n + 4j + 4
-	sw $s4,array($t4)		# a[j] -> a[base+4n]
-	sw $s5,array($t3)		# a[j+1] -> a[base+4n+j]
+swap_001:					  # s4 >s5 ,  swap and sw	
+	add $t3,$s3,$s7			  # t3 <- 4n + 4j
+	addi $t4,$t3,4			  # t4 <- 4n + 4j + 4
+	sw $s4,array($t4)		  # a[j] -> a[base+4n]
+	sw $s5,array($t3)		  # a[j+1] -> a[base+4n+j]
 miss_001:
 	addi $s2,$s2,1
 	j forin_001
@@ -345,7 +343,7 @@ case_111:
  	sll $s7,$s7,31	
  	or $s6,$s6,$s7
  		
-	addi $t0,$zero,4	    # write -> s5      	
+	addi $t0,$zero,4	    	# write -> s5      	
   	lw $v0, buf($t0)
 	sw $s5, 0($v0)
 
@@ -367,7 +365,7 @@ counting_start:
 	
 counting_over:
 		
-  	addi $t0,$zero,4	    # write -> s6    	
+  	addi $t0,$zero,4	    	  # write -> s6    	
   	lw $v0, buf($t0)
 	sw $s6, 0($v0)
 	

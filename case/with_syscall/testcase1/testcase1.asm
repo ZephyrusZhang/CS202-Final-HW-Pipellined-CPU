@@ -16,7 +16,7 @@ start:
 	beq $v0,5,case1_101
 	beq $v0,6,case1_110
 	beq $v0,7,case1_111
-	j start
+	j startx
 	
 case1_000:
 	addi $v0,$zero,5		#read integer  
