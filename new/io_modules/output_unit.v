@@ -73,7 +73,7 @@ module output_unit (
                         `ISSUE_NONE       : vga_rgb <= normal_rgb;
                         `ISSUE_UART       : vga_rgb <= uart_rgb;
                         `ISSUE_PAUSE      : vga_rgb <= pause_rgb;
-                        `ISSUE_FALLTHROUGH: vag_rgb <= fallthrough_rgb;
+                        `ISSUE_FALLTHROUGH: vga_rgb <= fallthrough_rgb;
                         `ISSUE_KEYPAD     :
                             if (switch_enable) vga_rgb <= switch_rgb;
                             else               vga_rgb <= keypad_rgb;

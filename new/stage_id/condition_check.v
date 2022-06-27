@@ -17,8 +17,8 @@ wire eq = (read_data_1 == read_data_2) ? 1 : 0;
 
 always @(*) begin
     case (condition_type)
-        `CONDITION_TYPE_BEQ: condition_satisfied <= eq;
-        `CONDITION_TYPE_BNQ: condition_satisfied <= ~eq;
+        `COND_TYPE_BEQ: condition_satisfied <= eq;
+        `COND_TYPE_BNQ: condition_satisfied <= ~eq;
         default:             condition_satisfied <= 0;
     endcase
 end

@@ -215,6 +215,7 @@ module top (
         .rst_n                  (rst_n),
 
         .uart_complete          (uart_unit_uart_complete),
+        .uart_write_enable      (uart_unit_write_enable),
         .uart_disable           (hazard_unit_uart_disable),
 
         .reg_1_valid            (mux_reg_1_valid),

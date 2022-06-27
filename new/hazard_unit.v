@@ -9,6 +9,7 @@ module hazard_unit (
     input clk, rst_n,
 
     input      uart_complete,                                   // from uart_unit (upg_done_i)
+    input      uart_write_enable,                               // from uart_unit (upg_wen_o)
     output reg uart_disable,                                    // for (1) uart_unit (upg_rst_i)
                                                                 //     (2) instruction_mem (switch to uart write mode)
                                                                 //     (3) data_mem (switch to uart write mode)
@@ -159,7 +160,7 @@ module hazard_unit (
                                 default: 
                                     cpu_state         <= cpu_state; // prevent auto latches
                             endcase
-                        `ISSUE_PAUSE      : 
+                        `ISSUE_PAUSE      : begin
                             pc_reset <= 1'b0;
                             if (uart_write_enable) begin
                                 issue_type        <= `ISSUE_UART;
@@ -171,6 +172,7 @@ module hazard_unit (
                                 if_hazard_control <= `HAZD_CTL_NORMAL; // resuming the entire cpu from the next instruction
                             end else 
                                 cpu_state         <= cpu_state;
+                        end
                         `ISSUE_UART       : begin
                             if (uart_complete) begin
                                 issue_type        <= `ISSUE_PAUSE;
