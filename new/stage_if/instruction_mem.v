@@ -33,8 +33,8 @@ module instruction_mem #(parameter
     input      [`ISA_WIDTH - 1:0] pc_overload_value,    // from signal_mux (pc_overload_value)
     
     input      pc_reset,                                // from hazard_unit (reset pc when UART is completed)
-    input      [1:0] hazard_control,                    // from hazard_unit [HAZD_HOLD_BIT] discard pc_next result
-                                                        //                  [HAZD_if_no_op_BIT] pause if stage
+    input      [`HAZD_CTL_WIDTH - 1:0] hazard_control,  // from hazard_unit (specifies the next state for if stage)
+
     output reg if_no_op,                                // for if_id_reg (stop id operations)
 
     output reg [`ISA_WIDTH - 1:0] pc,                   // for (1) hazard_unit (to detect UART hazard)
@@ -67,14 +67,24 @@ module instruction_mem #(parameter
     
     always @(posedge clk, negedge rst_n) begin
         if (~rst_n) begin
-            pc       <= 'b0;
-            if_no_op <= 0;
+            {
+                if_no_op,
+                pc
+            }                <= 0;
         end else begin
-            if (hazard_control[`HAZD_HOLD_BIT] == 1'b1) pc <= pc;
-            else                                        pc <= pc_next;
-            
-            if (hazard_control == `RESUME) if_no_op <= 1'b0;
-            else                           if_no_op <= hazard_control[`HAZD_NO_OP_BIT];
+            case (hazard_control)
+                `HAZD_CTL_NO_OP: begin
+                    if_no_op <= 1'b1;
+                    pc       <= pc_next;
+                end
+                `HAZD_CTL_RETRY: 
+                    if_no_op <= 1'b0;
+                /* this is the `HAZD_CTL_NORMAL state */
+                default        : begin
+                    if_no_op <= 1'b0;
+                    pc       <= pc_next;
+                end
+            endcase
         end
     end
     

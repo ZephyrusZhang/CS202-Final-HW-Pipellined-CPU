@@ -10,8 +10,9 @@ this is the stage register between:
 module mem_wb_reg (
     input clk, rst_n,
 
-    input      [1:0] hazard_control,                            // from hazard_unit [HAZD_HOLD_BIT] discard mem result
-                                                                //                  [HAZD_NO_OP_BIT] pause wb stage
+    input      [`HAZD_CTL_WIDTH - 1:0] hazard_control,          // from hazard_unit (specifies the next state for wb stage)
+    input      ignore_no_op,                                    // from hazard_unit (whether to ignore no_op from mem stage)
+
     input      mem_no_op,                                       // from ex_mem_reg (the operations of mem have been stopped)
     output reg wb_no_op,                                        // for general_reg (stop write opeartions)
 
@@ -43,20 +44,24 @@ module mem_wb_reg (
                 wb_alu_result,
                 wb_mem_read_data,
                 wb_dest_reg_idx
-            }                   <= 0;
+            }                           <= 0;
         end else begin
-            if (hazard_control[`HAZD_HOLD_BIT])
-                wb_reg_write_enable <= mem_reg_write_enable; // prevent auto latches
-            else begin
-                wb_reg_write_enable <= mem_reg_write_enable;
-                wb_mem_read_enable  <= mem_mem_read_enable;
-                wb_alu_result       <= mem_alu_result;
-                wb_mem_read_data    <= mem_mem_read_data;
-                wb_dest_reg_idx     <= mem_dest_reg_idx;
-            end
-            
-            if (hazard_control == `RESUME) wb_no_op <= 1'b0;
-            else                           wb_no_op <= hazard_control[`HAZD_NO_OP_BIT] | mem_no_op;
+            case (hazard_control)
+                `HAZD_CTL_NO_OP: 
+                    wb_no_op            <= 1'b1;
+                `HAZD_CTL_RETRY: 
+                    wb_no_op            <= 1'b0;
+                /* this is the `HAZD_CTL_NORMAL state */
+                default        : begin
+                    wb_no_op            <= mem_no_op & ~ignore_no_op;
+                    
+                    wb_reg_write_enable <= mem_reg_write_enable;
+                    wb_mem_read_enable  <= mem_mem_read_enable;
+                    wb_alu_result       <= mem_alu_result;
+                    wb_mem_read_data    <= mem_mem_read_data;
+                    wb_dest_reg_idx     <= mem_dest_reg_idx;
+                end
+            endcase
         end
     end
     

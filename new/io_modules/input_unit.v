@@ -7,7 +7,7 @@ module input_unit (
     input      [7:0] key_coord,                         // from keypad_decoder with format {row_val, col_val}
     input      [`SWITCH_CNT - 1:0] switch_map,          // from toggle switches directly
 
-    input      uart_disable,                            // from hazard_unit (whether uart is needed)
+    input      ignore_input,                            // from hazard_unit (whether user input is ignored during UART transmission)
 
     input      input_enable,                            // from data_mem (the keypad input will be memory data)
     output reg input_complete,                          // for hazard_unit (user pressed enter)
@@ -16,8 +16,8 @@ module input_unit (
     output reg switch_enable,                           // for (1) seven_seg_unit (user is using switches)
                                                         //     (2) output_unit (display that input is switches)
     output reg cpu_pause,                               // for hazard_unit (user pressed pause)
-    output     overflow_9th,                            // for hardware LED to indicate a overflow of the 9th digit on tube display
-    output     overflow_10th
+    output     overflow_9th,                            // for hardware LED to indicate a overflow of the 9th  digit on tube display
+    output     overflow_10th                            // for hardware LED to indicate a overflow of the 10th digit on tube display
     );
                
     localparam  ZERO        = 8'b0111_1101,
@@ -75,9 +75,10 @@ module input_unit (
                         end
                         PAUSE  : begin
                             input_state    <= HALT;
+                            cpu_pause      <= 1'b1;
+                            
                             input_complete <= 1'b1;
                             digit_counter  <= 4'h0;
-                            cpu_pause      <= 1'b1;
                         end
                         default:
                             input_state    <= input_state;
@@ -104,9 +105,10 @@ module input_unit (
                             end
                             PAUSE  : begin
                                 input_state    <= HALT;
+                                cpu_pause      <= 1'b1;
+
                                 input_complete <= 1'b1;
                                 digit_counter  <= 4'h0;
-                                cpu_pause      <= 1'b1;
                             end
                             default  : begin
                                 if (digit_counter < 10) begin
@@ -151,21 +153,22 @@ module input_unit (
                                             keypad_data   <= keypad_data * 10;
                                             if (0 < keypad_data) digit_counter <= digit_counter + 1;
                                         end
-                                        default: digit_counter <= digit_counter;  // 0 key_coord will be handled here
+                                        default: 
+                                            keypad_data <= keypad_data; // 0 key_coord will be handled here
                                     endcase
                                 end else
-                                    keypad_data   <= keypad_data;
+                                    keypad_data <= keypad_data;
                             end
                         endcase
                     end else
                         input_state        <= BLOCK;
                 end
                 HALT   : begin
-                    if (uart_disable & key_coord == PAUSE) begin
+                    if (~ignore_input & key_coord == PAUSE) begin
                         input_state        <= BLOCK;
                         cpu_pause          <= 1'b0;
                     end else
-                        cpu_pause          <= 1'b1;
+                        cpu_pause          <= cpu_pause; // prevent auto latches
                 end
                 // this is the BLOCK state
                 default: begin
