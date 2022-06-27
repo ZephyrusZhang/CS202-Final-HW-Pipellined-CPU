@@ -28,7 +28,7 @@ module control (
     output                                  branch_instruction,
     output                                  store_instruction,
     output reg                              wb_en,
-    output reg [1:0]                        condition_type
+    output reg [`COND_TYPE_WIDTH - 1:0]     condition_type
 );
 
 assign mem_control[`MEM_READ_BIT] = (opcode == 6'b100011);
@@ -60,8 +60,8 @@ always @(*) begin
         default:      begin alu_opcode <= `EXE_NO_OP;   wb_en <= 0; end
     endcase
     case (opcode)
-        6'b00_0100: condition_type <= `CONDITION_TYPE_BEQ;
-        6'b00_0101: condition_type <= `CONDITION_TYPE_BNQ;
+        6'b00_0100: condition_type <= `COND_TYPE_BEQ;
+        6'b00_0101: condition_type <= `COND_TYPE_BNQ;
         default:    condition_type <= `NOT_BRANCH;
     endcase
 end

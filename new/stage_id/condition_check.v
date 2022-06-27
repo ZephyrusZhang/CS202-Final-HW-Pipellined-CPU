@@ -8,9 +8,9 @@
         condition_satisfied:
 */
 module condition_check (
-    input [1:0]                 condition_type,             // is branch type instruction
-    input [`ISA_WIDTH - 1 : 0]  read_data_1, read_data_2,
-    output reg                  condition_satisfied
+    input [`COND_TYPE_WIDTH - 1:0]  condition_type,             // is branch type instruction
+    input [`ISA_WIDTH - 1 : 0]      read_data_1, read_data_2,
+    output reg                      condition_satisfied
 );
 
 wire eq = (read_data_1 == read_data_2) ? 1 : 0;

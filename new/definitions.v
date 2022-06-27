@@ -1,6 +1,6 @@
 //----------------------------ISA Specifications--------------------------------//
 `define ISA_WIDTH           32              // width of a word in the ISA
-`define ADDRES_WIDTH        26              // address lenth in instruction for j and jal extension
+`define ADDRES_WIDTH        26              // address lenth of instructions for j and jal extension
 `define STAGE_CNT           5
 `define SHIFT_AMOUNT_WIDTH  5
 `define JAL_REG_IDX         31
@@ -57,7 +57,7 @@
 `define DIGIT_W_WIDTH       4               // width 12 <= 2^4
 `define DIGIT_H_WIDTH       4               // height 16 <= 2^4
 
-`define STATUS_WIDTH        58
+`define STATUS_WIDTH        88
 `define STATUS_W_WIDTH      6               // width 58 <= 2^6
 `define STATUS_HEIGHT       22
 `define STATUS_H_WIDTH      5               // height 22 <= 2^5
@@ -78,9 +78,6 @@
 //------------------------------------------------------------------------------//
 
 //---------------------------------Hazard---------------------------------------//
-`define HAZD_HOLD_BIT       0               // bit for determining hazard hold signal
-`define HAZD_NO_OP_BIT      1               // bit for determining hazard no operation signal
-
 // index for the specific stage registers (both hold and no_op)
 `define HAZD_IF_IDX         0
 `define HAZD_ID_IDX         1
@@ -88,26 +85,23 @@
 `define HAZD_MEM_IDX        3
 `define HAZD_WB_IDX         4
 
-// signals for the stage registers
-`define NORMAL              2'b00
-`define HOLD                2'b01
-`define NO_OP               2'b11
-`define RESUME              2'b10           // no hold and do not accept no_op signal from previous stage
-
-// states for cpu_state 
-`define IDLE                2'b00
-`define EXECUTE             2'b01
-`define HAZARD              2'b10
-`define INTERRUPT           2'b11
+// signals for the stage registers (hazard_control)
+`define HAZD_CTL_WIDTH      2
+`define HAZD_CTL_NORMAL     2'b00           // normal execution state
+`define HAZD_CTL_RETRY      2'b01           // deny values from pervious stage only
+`define HAZD_CTL_NO_OP      2'b11           // deny values from previous stage and no_op the next stage
+// `define HAZD_CTL_RESUME     2'b10           // no hold and do not accept no_op signal from previous stage
 
 // values of issue_type 
-`define NONE                3'b000
-`define DATA                3'b001
-`define CONTROL             3'b010          // not handled by hazard_unit (determined after negedge)
-`define UART                3'b011
-`define PAUSE               3'b100
-`define VGA                 3'b101          // not handled by hazard_unit
-`define KEYPAD              3'b110
+`define ISSUE_TYPE_WIDTH    3
+`define ISSUE_NONE          3'b000
+`define ISSUE_DATA          3'b001
+`define ISSUE_CONTROL       3'b010          // not handled by hazard_unit (determined after negedge with pc_abnormal in if_id_reg)
+`define ISSUE_UART          3'b011          // during uart transmission only
+`define ISSUE_PAUSE         3'b100
+`define ISSUE_VGA           3'b101          // not handled by hazard_unit (as this typically holds only for a few cycles)
+`define ISSUE_KEYPAD        3'b110
+`define ISSUE_FALLTHROUGH   3'b111          // the next instruction address exceeds `PC_MAX_VALUE 
 //------------------------------------------------------------------------------//
 
 //------------------------------Register File-----------------------------------//
@@ -153,7 +147,8 @@
 //------------------------------------------------------------------------------//
 
 //----------------------------Condition Check-----------------------------------//
-`define CONDITION_TYPE_BEQ 2'b10
-`define CONDITION_TYPE_BNQ 2'b11
-`define NOT_BRANCH         2'b00
+`define COND_TYPE_WIDTH     2                   // width of condition type
+`define COND_TYPE_BEQ       2'b10
+`define COND_TYPE_BNQ       2'b11
+`define NOT_BRANCH          2'b00
 //------------------------------------------------------------------------------//

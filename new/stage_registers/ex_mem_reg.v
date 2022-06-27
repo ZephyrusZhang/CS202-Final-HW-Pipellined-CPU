@@ -10,8 +10,9 @@ this is the stage register between:
 module ex_mem_reg (
     input clk, rst_n,
 
-    input      [1:0] hazard_control,                            // from hazard_unit [HAZD_HOLD_BIT] discard ex result
-                                                                //                  [HAZD_NO_OP_BIT] pause mem stage
+    input      [`HAZD_CTL_WIDTH - 1:0] hazard_control,          // from hazard_unit (specifies the next state for mem stage)
+    input      ignore_no_op,                                    // from hazard_unit (whether to ignore no_op from ex stage)
+
     input      ex_no_op,                                        // from id_ex_reg (the operations of ex have been stoped)
     output reg mem_no_op,                                       // for alu (stop opeartions)
 
@@ -50,27 +51,31 @@ module ex_mem_reg (
                 mem_alu_result,
                 mem_store_data,
                 mem_dest_reg_idx
-            }                        <= 0;
+            }                            <= 0;
         end else begin
-            if (hazard_control[`HAZD_HOLD_BIT] == 1'b1) 
-                mem_reg_write_enable <= mem_reg_write_enable; // prevent auto latches
-            else begin
-                mem_reg_write_enable <= ex_reg_write_enable;
-                mem_mem_control      <= ex_mem_control;
+            case (hazard_control)
+                `HAZD_CTL_NO_OP: 
+                    mem_no_op            <= 1'b1;
+                `HAZD_CTL_RETRY: 
+                    mem_no_op            <= 1'b0;
+                /* this is the `HAZD_CTL_NORMAL state */
+                default        : begin
+                    mem_no_op            <= ex_no_op & ~ignore_no_op;
 
-                mem_alu_result       <= ex_alu_result;
-                mem_dest_reg_idx     <= ex_dest_reg_idx;
+                    mem_reg_write_enable <= ex_reg_write_enable;
+                    mem_mem_control      <= ex_mem_control;
 
-                case (store_data_select)
-                    `FORW_SEL_INPUT:    mem_store_data <= ex_store_data;
-                    `FORW_SEL_ALU_RES:  mem_store_data <= mem_alu_result_prev;
-                    `FORW_SEL_MEM_RES:  mem_store_data <= wb_reg_write_data;
-                    default:            mem_store_data <= 0;
-                endcase
-            end
-            
-            if (hazard_control == `RESUME) mem_no_op <= 1'b0;
-            else                           mem_no_op <= hazard_control[`HAZD_NO_OP_BIT] | ex_no_op;
+                    mem_alu_result       <= ex_alu_result;
+                    mem_dest_reg_idx     <= ex_dest_reg_idx;
+
+                    case (store_data_select)
+                        `FORW_SEL_INPUT:    mem_store_data <= ex_store_data;
+                        `FORW_SEL_ALU_RES:  mem_store_data <= mem_alu_result_prev;
+                        `FORW_SEL_MEM_RES:  mem_store_data <= wb_reg_write_data;
+                        default:            mem_store_data <= 0;
+                    endcase
+                end
+            endcase
         end
     end
     

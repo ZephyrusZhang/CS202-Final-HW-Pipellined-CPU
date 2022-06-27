@@ -10,7 +10,7 @@ module output_unit (
     input      vga_write_enable,                        // from data_mem (vga write enable)
     input      [`ISA_WIDTH - 1:0] vga_store_data,       // from data_mem (data to vga)
 
-    input      [2:0] issue_type,                        // from hazard_unit (both hazard and interrupt)
+    input      [`ISSUE_TYPE_WIDTH - 1:0] issue_type,    // from hazard_unit (both hazard and interrupt)
     input      switch_enable,                           // from input_unit (user is using switches)
 
     output reg [`VGA_BIT_DEPTH - 1:0] vga_rgb           // VGA display signal
@@ -30,7 +30,8 @@ module output_unit (
                                 uart_rgb,
                                 pause_rgb,
                                 keypad_rgb, 
-                                switch_rgb;
+                                switch_rgb,
+                                fallthrough_rgb;
     
     wire [`DIGIT_H_WIDTH - 1:0]  y_digits = (y - `DIGITS_Y);                    // y coordinate inside the digits area
     wire [`DIGITS_W_WIDTH - 1:0] x_digits = (x - `DIGITS_X);                    // x coordinate inside the digits area
@@ -54,11 +55,12 @@ module output_unit (
     ONE_rom     one_rom     (.clk(clk), .row(y_digits), .col(x_digit) , .color_data(one_rgb));
     
     // block memory for type of issue to be displayed
-    Normal_rom  normal_rom  (.clk(clk), .row(y_status), .col(x_status), .color_data(normal_rgb));
-    UART_rom    uart_rom    (.clk(clk), .row(y_status), .col(x_status), .color_data(uart_rgb));
-    Pause_rom   pause_rom   (.clk(clk), .row(y_status), .col(x_status), .color_data(pause_rgb));
-    Keypad_rom  keypad_rom  (.clk(clk), .row(y_status), .col(x_status), .color_data(keypad_rgb));
-    Switch_rom  switch_rom  (.clk(clk), .row(y_status), .col(x_status), .color_data(switch_rgb));
+    Normal_rom      normal_rom      (.clk(clk), .row(y_status), .col(x_status), .color_data(normal_rgb));
+    UART_rom        uart_rom        (.clk(clk), .row(y_status), .col(x_status), .color_data(uart_rgb));
+    Pause_rom       pause_rom       (.clk(clk), .row(y_status), .col(x_status), .color_data(pause_rgb));
+    Keypad_rom      keypad_rom      (.clk(clk), .row(y_status), .col(x_status), .color_data(keypad_rgb));
+    Switch_rom      switch_rom      (.clk(clk), .row(y_status), .col(x_status), .color_data(switch_rgb));
+    Fallthrough_rom fallthrough_rom (.clk(clk), .row(y_status), .col(x_status), .color_data(fallthrough_rgb));
     
     always @(posedge clk, negedge rst_n) begin
         if (~rst_n) begin
@@ -68,13 +70,14 @@ module output_unit (
                 // status box reached
                 3'b011 : begin
                     case (issue_type)
-                        `NONE  : vga_rgb <= normal_rgb;
-                        `UART  : vga_rgb <= uart_rgb;
-                        `PAUSE : vga_rgb <= pause_rgb;
-                        `KEYPAD:
+                        `ISSUE_NONE       : vga_rgb <= normal_rgb;
+                        `ISSUE_UART       : vga_rgb <= uart_rgb;
+                        `ISSUE_PAUSE      : vga_rgb <= pause_rgb;
+                        `ISSUE_FALLTHROUGH: vag_rgb <= fallthrough_rgb;
+                        `ISSUE_KEYPAD     :
                             if (switch_enable) vga_rgb <= switch_rgb;
                             else               vga_rgb <= keypad_rgb;
-                        default: vga_rgb <= `BG_COLOR;
+                        default           : vga_rgb <= `BG_COLOR;
                     endcase
                 end
                 // digits box reached
@@ -88,7 +91,8 @@ module output_unit (
                 // outside the text area
                 default: vga_rgb <= `BG_COLOR;
             endcase
-        end else vga_rgb <= 0;
+        end else 
+            vga_rgb <= 0;
     end
 
 endmodule
