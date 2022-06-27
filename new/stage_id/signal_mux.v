@@ -46,7 +46,7 @@ module signal_mux (
     output     reg_2_valid                                      // for hazard_unit
     );
 
-    wire i_type_abnormal = store_instruction | branch_instruction;
+    // wire i_type_abnormal = store_instruction | branch_instruction;
     wire j_type_normal   = j_instruction | jal_instruction;
 
     assign reg_1_valid = ~(j_type_normal | shift_instruction);

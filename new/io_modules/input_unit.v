@@ -5,16 +5,17 @@ module input_unit (
     input clk, rst_n,
     
     input      [7:0] key_coord,                         // from keypad_decoder with format {row_val, col_val}
-    input      [`SWITCH_CNT - 1:0] switch_map,          // from toggle switches directly
 
     input      ignore_input,                            // from hazard_unit (whether user input is ignored during UART transmission)
 
     input      input_enable,                            // from data_mem (the keypad input will be memory data)
     output reg input_complete,                          // for hazard_unit (user pressed enter)
-    output     [`ISA_WIDTH - 1:0] input_data,           // for data_mem (data from user input)
+    output reg [`ISA_WIDTH - 1:0] keypad_data,          // for (1) mem_wb_reg (data from user keypad input)
+                                                        //     (2) seven_seg_unit (data to be displayed during user input)
     
     output reg switch_enable,                           // for (1) seven_seg_unit (user is using switches)
                                                         //     (2) output_unit (display that input is switches)
+                                                        //     (3) mem_wb_reg (select the appropriate value from switch or keypad)
     output reg cpu_pause,                               // for hazard_unit (user pressed pause)
     output     overflow_9th,                            // for hardware LED to indicate a overflow of the 9th  digit on tube display
     output     overflow_10th                            // for hardware LED to indicate a overflow of the 10th digit on tube display
@@ -44,9 +45,7 @@ module input_unit (
     
     reg [1:0] input_state;
     reg [3:0] digit_counter;
-    reg [`ISA_WIDTH - 1:0] keypad_data;
 
-    assign input_data    = switch_enable ? {{(`ISA_WIDTH - `SWITCH_CNT){1'b0}}, switch_map} : keypad_data;
     assign overflow_9th  = (9 <= digit_counter);
     assign overflow_10th = (10 == digit_counter);
 

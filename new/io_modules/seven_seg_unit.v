@@ -6,7 +6,8 @@ module seven_seg_unit #(parameter
     DELAY_PERIOD = `TUBE_DEFAULT_DELAY_PERIOD
     )(
     input clk, rst_n,                               // note this is a clock for tube 1ms refresh
-    input      [`ISA_WIDTH - 1:0] display_value,    // from keypad_unit (value to be displayed)
+    input      [`ISA_WIDTH - 1:0] keypad_data,      // from keypad_unit (data from user keypad input)
+    input      [`SWITCH_CNT - 1:0] switch_map,      // from toggle switches hardware directly
     input      switch_enable,                       // from keypad_unit (show binary switch input)
     input      input_enable,                        // from hazard_unit (whether to display)
     
@@ -29,7 +30,7 @@ module seven_seg_unit #(parameter
             seg_enable      = 8'b1111_1111;
         end else case ({input_enable, switch_enable})
             2'b11  : begin
-                diaplay_digit = display_value[(display_counter)+:1];
+                diaplay_digit = switch_map[(display_counter)+:1];
                 seg_enable = 8'b1111_1111;
                 seg_enable[(display_counter)+:1] = 1'b0;
                 display_counter = display_counter + 1;
@@ -37,14 +38,14 @@ module seven_seg_unit #(parameter
             2'b10  : begin
                 case (display_counter)
                     3'd0: begin 
-                        diaplay_digit = (display_value % 1_0000_0000) / 1000_0000;
+                        diaplay_digit = (keypad_data % 1_0000_0000) / 1000_0000;
                         if (diaplay_digit == 0) begin
                             seg_enable = 8'b1111_1111;
                             has_zero = 1'b1;
                         end else seg_enable = 8'b0111_1111;
                     end
                     3'd1: begin
-                        diaplay_digit = ((display_value % 1_0000_0000) 
+                        diaplay_digit = ((keypad_data % 1_0000_0000) 
                                                         % 1000_0000) / 100_0000;
                         if (has_zero && diaplay_digit == 0) seg_enable = 8'b1111_1111;
                         else begin
@@ -53,7 +54,7 @@ module seven_seg_unit #(parameter
                         end
                     end
                     3'd2: begin
-                        diaplay_digit = (((display_value % 1_0000_0000) 
+                        diaplay_digit = (((keypad_data % 1_0000_0000) 
                                                         % 1000_0000) 
                                                         % 100_0000) / 10_0000;
                         if (has_zero && diaplay_digit == 0) seg_enable = 8'b1111_1111;
@@ -63,7 +64,7 @@ module seven_seg_unit #(parameter
                         end
                     end
                     3'd3: begin
-                        diaplay_digit = ((((display_value % 1_0000_0000) 
+                        diaplay_digit = ((((keypad_data % 1_0000_0000) 
                                                         % 1000_0000) 
                                                         % 100_0000) 
                                                         % 10_0000) / 1_0000;
@@ -74,7 +75,7 @@ module seven_seg_unit #(parameter
                         end
                     end
                     3'd4: begin
-                        diaplay_digit = (((((display_value % 1_0000_0000) 
+                        diaplay_digit = (((((keypad_data % 1_0000_0000) 
                                                         % 1000_0000) 
                                                         % 100_0000) 
                                                         % 10_0000)
@@ -86,7 +87,7 @@ module seven_seg_unit #(parameter
                         end
                     end
                     3'd5: begin
-                        diaplay_digit = ((((((display_value % 1_0000_0000)
+                        diaplay_digit = ((((((keypad_data % 1_0000_0000)
                                                             % 1000_0000) 
                                                             % 100_0000) 
                                                             % 10_0000)
@@ -99,7 +100,7 @@ module seven_seg_unit #(parameter
                         end
                     end
                     3'd6: begin
-                        diaplay_digit = (((((((display_value % 1_0000_0000) 
+                        diaplay_digit = (((((((keypad_data % 1_0000_0000) 
                                                             % 1000_0000) 
                                                             % 100_0000) 
                                                             % 10_0000)
@@ -113,7 +114,7 @@ module seven_seg_unit #(parameter
                         end
                     end
                     3'd7: begin
-                        diaplay_digit = (((((((display_value % 1_0000_0000) 
+                        diaplay_digit = (((((((keypad_data % 1_0000_0000) 
                                                             % 1000_0000) 
                                                             % 100_0000) 
                                                             % 10_0000)

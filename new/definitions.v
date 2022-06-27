@@ -58,7 +58,7 @@
 `define DIGIT_H_WIDTH       4               // height 16 <= 2^4
 
 `define STATUS_WIDTH        88
-`define STATUS_W_WIDTH      6               // width 58 <= 2^6
+`define STATUS_W_WIDTH      7               // width 88 <= 2^7
 `define STATUS_HEIGHT       22
 `define STATUS_H_WIDTH      5               // height 22 <= 2^5
 `define STATUS_X            291

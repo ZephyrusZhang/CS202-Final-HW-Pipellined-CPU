@@ -16,7 +16,7 @@ module register_file (
     input [`REG_FILE_ADDR_WIDTH - 1 : 0]    read_reg_addr_1, read_reg_addr_2, write_reg_addr,
     input [`ISA_WIDTH - 1 : 0]              write_data,
     input                                   write_en,
-    input                                   wb_no_op, id_no_op,
+    input                                   wb_no_op,
     output [`ISA_WIDTH - 1 : 0]             read_data_1, read_data_2
 );
 

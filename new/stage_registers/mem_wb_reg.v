@@ -26,8 +26,12 @@ module mem_wb_reg (
     output reg [`ISA_WIDTH - 1:0] wb_alu_result,                // for (1) reg_write_select (result from alu)
                                                                 //     (2) alu (forwarding)
 
-    input      [`ISA_WIDTH - 1:0] mem_mem_read_data,            // from data_mem (data read)
-    output reg [`ISA_WIDTH - 1:0] wb_mem_read_data,             // for reg_write_select (data from memory)
+    input      input_enable,                                    // from data_mem (whether data is read from user input)
+    input      switch_enable,                                   // from input_unit (whether data is read from toggle switches)
+    input      [`ISA_WIDTH - 1:0] mem_mem_read_data,            // from data_mem (data read from memory)
+    input      [`ISA_WIDTH - 1:0] keypad_data,                  // from input_unit (data from user keypad input)
+    input      [`SWITCH_CNT - 1:0] switch_map,                  // from toggle switches hardware directly
+    output reg [`ISA_WIDTH - 1:0] wb_mem_read_data,             // for reg_write_select (data to write back)
 
     input      [`REG_FILE_ADDR_WIDTH - 1:0] mem_dest_reg_idx,   // from ex_mem_reg (index of destination resgiter)
     output reg [`REG_FILE_ADDR_WIDTH - 1:0] wb_dest_reg_idx     // for (1) forwarding_unit
@@ -58,8 +62,10 @@ module mem_wb_reg (
                     wb_reg_write_enable <= mem_reg_write_enable;
                     wb_mem_read_enable  <= mem_mem_read_enable;
                     wb_alu_result       <= mem_alu_result;
-                    wb_mem_read_data    <= mem_mem_read_data;
                     wb_dest_reg_idx     <= mem_dest_reg_idx;
+
+                    if (input_enable) wb_mem_read_data <= switch_enable ? {{(`ISA_WIDTH - `SWITCH_CNT){1'b0}}, switch_map} : keypad_data;
+                    else              wb_mem_read_data <= mem_mem_read_data;
                 end
             endcase
         end

@@ -52,8 +52,8 @@ module instruction_mem #(parameter
         .addra  (uart_disable ? pc[ROM_DEPTH + 1:2] : uart_addr[ROM_DEPTH - 1:0]), // pc address is in unit of bytes
         .douta  (instruction),
 
-        .dina   (uart_disable ? 0 : uart_data),
-        .wea    (uart_disable ? 0 : uart_instruction_write_enable)
+        .dina   (uart_disable ? 1'b0 : uart_data),
+        .wea    (uart_disable ? 1'b0 : uart_instruction_write_enable)
     );
     
     always @(*) begin

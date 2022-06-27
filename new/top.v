@@ -160,7 +160,7 @@ module top (
          hazard_unit_ignore_input;
 
     // input unit
-    wire [`ISA_WIDTH - 1:0] input_unit_input_data;
+    wire [`ISA_WIDTH - 1:0] input_unit_keypad_data;
     wire input_unit_input_complete,
          input_unit_switch_enable,
          input_unit_cpu_pause;
@@ -315,8 +315,6 @@ module top (
         .write_data             (reg_write_select_reg_write_data),
         .write_en               (mem_wb_reg_reg_write_enable),
         .wb_no_op               (mem_wb_reg_no_op),
-
-        .id_no_op               (if_id_reg_no_op),
 
         .read_data_1            (reg_file_reg_1_data),
         .read_data_2            (reg_file_reg_2_data)
@@ -487,10 +485,7 @@ module top (
 
         .input_enable           (data_mem_input_enable),
 
-        .input_data             (input_unit_input_data),
-
-        .vga_write_enable       (data_mem_vga_write_enable),
-        .vga_store_data         (data_mem_vga_store_data)
+        .vga_write_enable       (data_mem_vga_write_enable)
     );
     mem_wb_reg mem_wb_reg(
         .clk                    (clk_cpu),
@@ -511,7 +506,11 @@ module top (
         .mem_alu_result         (ex_mem_reg_alu_result),
         .wb_alu_result          (mem_wb_reg_alu_result),
 
+        .input_enable           (data_mem_input_enable),
+        .switch_enable          (input_unit_switch_enable),
         .mem_mem_read_data      (data_mem_read_data),
+        .keypad_data            (input_unit_keypad_data),
+        .switch_map             (switch_map),
         .wb_mem_read_data       (mem_wb_reg_read_data),
 
         .mem_dest_reg_idx       (ex_mem_reg_reg_dest_idx),
@@ -553,11 +552,10 @@ module top (
         .clk                    (clk_raw),
         .rst_n                  (rst_n),
         .key_coord              (keypad_unit_key_coord),
-        .switch_map             (switch_map),
         .ignore_input           (hazard_unit_ignore_input),
         .input_enable           (data_mem_input_enable),
         .input_complete         (input_unit_input_complete),
-        .input_data             (input_unit_input_data),
+        .keypad_data            (input_unit_keypad_data),
         .switch_enable          (input_unit_switch_enable),
         .cpu_pause              (input_unit_cpu_pause),
         .overflow_9th           (digit_overflow_9th),
@@ -568,7 +566,8 @@ module top (
     seven_seg_unit seven_seg_unit(
         .clk                    (clk_raw),
         .rst_n                  (rst_n),
-        .display_value          (input_unit_input_data),
+        .keypad_data            (input_unit_keypad_data),
+        .switch_map             (switch_map),
         .switch_enable          (input_unit_switch_enable),
         .input_enable           (data_mem_input_enable),
         .seg_tube               (seg_tube),
@@ -590,7 +589,7 @@ module top (
         .x                      (vga_unit_x),
         .y                      (vga_unit_y),
         .vga_write_enable       (data_mem_vga_write_enable),
-        .vga_store_data         (data_mem_vga_store_data),
+        .vga_store_data         (ex_mem_reg_store_data),
         .issue_type             (hazard_unit_issue_type),
         .switch_enable          (input_unit_switch_enable),
         .vga_rgb                (vga_signal)
