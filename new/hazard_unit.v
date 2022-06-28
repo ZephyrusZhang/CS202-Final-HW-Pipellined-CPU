@@ -70,7 +70,7 @@ module hazard_unit (
     
     wire data_hazard  = (branch_instruction  & (ex_conflict | mem_conflict)) |          // data hazard when branch depends on data from previous stages 
                         (ex_mem_read_enable  & ex_conflict);                            // data hazard when alu depends on data from memory at the next stage
-    wire uart_hazard  = `PC_MAX_VALUE < pc & ~if_no_op;                                 // uart hazard when next instruction is valid and not in memory 
+    wire uart_hazard  = `PC_MAX_VALUE < pc   & ~if_no_op;                               // uart hazard when next instruction is valid and not in memory 
 
     always @(negedge clk, negedge rst_n) begin
         if (~rst_n) begin
@@ -97,6 +97,8 @@ module hazard_unit (
                         /* data hazard will hold all stages hence covers the other hazards */
                         4'b1xxx: begin
                             issue_type          <= `ISSUE_DATA;
+                            cpu_state           <= HAZARD;
+
                             if_hazard_control   <= `HAZD_CTL_RETRY; // retry if stage
                             id_hazard_control   <= `HAZD_CTL_RETRY; // retry id stage 
                             ex_hazard_control   <= `HAZD_CTL_NO_OP; // the ex stage will be a bubble
@@ -140,6 +142,17 @@ module hazard_unit (
                 end
                 HAZARD: 
                     case (issue_type)
+                        `ISSUE_DATA       : begin
+                            if (~data_hazard) begin
+                                issue_type        <= `ISSUE_NONE;
+                                cpu_state         <= EXECUTE;
+
+                                if_hazard_control <= `HAZD_CTL_NORMAL; // reset the control registers
+                                id_hazard_control <= `HAZD_CTL_NORMAL;
+                                ex_hazard_control <= `HAZD_CTL_NORMAL;
+                            end else
+                                cpu_state         <= cpu_state;
+                        end
                         `ISSUE_FALLTHROUGH: 
                             casex ({~uart_hazard, uart_write_enable, cpu_pause})
                                 /* jump instruction is the last instruction and the control hazard have been resolved */

@@ -56,9 +56,9 @@ module input_unit (
                 keypad_data,
                 switch_enable,
                 cpu_pause,
-                input_state,
                 digit_counter
-            } <= 0;
+            }           <= 0;
+            input_state <= BLOCK;
         end else begin
             case (input_state)
                 SWITCH : begin

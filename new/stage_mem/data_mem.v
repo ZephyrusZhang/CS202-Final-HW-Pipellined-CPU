@@ -49,8 +49,8 @@ module data_mem #(parameter
     wire io_active = (mem_addr[`IO_END_BIT:`IO_START_BIT] == `IO_HIGH_ADDR);
     wire uart_instruction_write_enable = uart_write_enable & uart_addr[ROM_DEPTH];
 
-    assign input_enable     = (~mem_addr[`IO_TYPE_BIT] & io_active & mem_control[`MEM_READ_BIT]) ? 1'b1 : 1'b0;
-    assign vga_write_enable = (mem_addr[`IO_TYPE_BIT] & io_active & mem_control[`MEM_WRITE_BIT]) ? 1'b1 : 1'b0;
+    assign input_enable     = (~mem_addr[`IO_TYPE_BIT] & io_active & mem_control[`MEM_READ_BIT])  ? 1'b1 : 1'b0;
+    assign vga_write_enable = (mem_addr [`IO_TYPE_BIT] & io_active & mem_control[`MEM_WRITE_BIT]) ? 1'b1 : 1'b0;
 
     RAM ram(
         .ena    (~no_op), // disabled unpon no_op
