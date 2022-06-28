@@ -75,7 +75,9 @@ module instruction_mem #(parameter
             case (hazard_control)
                 `HAZD_CTL_NO_OP: begin
                     if_no_op <= 1'b1;
-                    pc       <= pc_next;
+                    
+                    if (pc_offset | pc_overload) pc <= pc_next;
+                    else                         pc <= pc;      // prevent auto latches
                 end
                 `HAZD_CTL_RETRY: 
                     if_no_op <= 1'b0;
