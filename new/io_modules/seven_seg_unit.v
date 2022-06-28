@@ -9,7 +9,7 @@ module seven_seg_unit #(parameter
     input      [`ISA_WIDTH - 1:0] keypad_data,      // from keypad_unit (data from user keypad input)
     input      [`SWITCH_CNT - 1:0] switch_map,      // from toggle switches hardware directly
     input      switch_enable,                       // from keypad_unit (show binary switch input)
-    input      input_enable,                        // from hazard_unit (whether to display)
+    input      input_enable,                        // from data_mem (the keypad input is needed)
     
     output reg [7:0] seg_tube,                      // control signal for tube segments
     output reg [7:0] seg_enable                     // control signal for tube positions
@@ -130,7 +130,8 @@ module seven_seg_unit #(parameter
                 display_counter = display_counter + 1;
             end
             // display is not enabled
-            default: seg_enable = 8'b1111_1111;
+            default: 
+                seg_enable = 8'b1111_1111;
         endcase
     end
     

@@ -1,7 +1,7 @@
 `timescale 1ns / 1ps
 
 module top_complete_testbench ();
-    reg clk = 0, rst_n = 1, instruction_mem_no_op_input = 0;
+    reg clk = 0, rst_n = 1;
     wire uart_in_progress = 0, hsync = 0, vsync = 0, uart_tx = 0;
     reg [3:0] row_in = 4'b1111;
     wire [3:0] col_out = 0;
@@ -41,13 +41,17 @@ module top_complete_testbench ();
         
         #10000040
         #2500010
+            // row_in = 4'b1110;
+        #2500010
+            // row_in = 4'b1111;
+        #2500010
+            // row_in = 4'b0111;
+        #2500010
+            // row_in = 4'b1111;
+        
+        #2500000
+        #2500000
             row_in = 4'b1110;
-        #2500010
-            row_in = 4'b1111;
-        #2500010
-            row_in = 4'b0111;
-        #2500010
-            row_in = 4'b1111;
         
         #10000040
         #2500010

@@ -37,7 +37,7 @@ module hazard_unit (
     input      input_enable,                                    // from data_mem (the keypad input is needed)
     input      input_complete,                                  // from input_unit (user pressed enter)
     input      cpu_pause,                                       // from input_unit (user pressed pause)
-    output reg ignore_input,                                    // for input_unit (ignore the user resume action during uart transmission)
+    output reg ignore_pause,                                    // for input_unit (ignore the user resume action during uart transmission)
 
     output reg pc_reset,                                        // for instruction_mem (reset the pc to 0)
     
@@ -83,7 +83,7 @@ module hazard_unit (
                 control_snapshot,
                 pc_reset,
                 ignore_no_op,
-                ignore_input
+                ignore_pause
             }            <= 0;
             cpu_state    <= IDLE;
             issue_type   <= `ISSUE_NONE;
@@ -142,7 +142,7 @@ module hazard_unit (
                 end
                 HAZARD: 
                     case (issue_type)
-                        `ISSUE_DATA       : begin
+                        `ISSUE_DATA       : 
                             if (~data_hazard) begin
                                 issue_type        <= `ISSUE_NONE;
                                 cpu_state         <= EXECUTE;
@@ -152,7 +152,6 @@ module hazard_unit (
                                 ex_hazard_control <= `HAZD_CTL_NORMAL;
                             end else
                                 cpu_state         <= cpu_state;
-                        end
                         `ISSUE_FALLTHROUGH: 
                             casex ({~uart_hazard, uart_write_enable, cpu_pause})
                                 /* jump instruction is the last instruction and the control hazard have been resolved */
@@ -164,7 +163,7 @@ module hazard_unit (
                                 end
                                 3'b01x : begin
                                     issue_type        <= `ISSUE_UART;
-                                    ignore_input      <= 1'b1;
+                                    ignore_pause      <= 1'b1;
                                 end
                                 3'b001 : begin
                                     issue_type        <= `ISSUE_PAUSE;
@@ -175,9 +174,10 @@ module hazard_unit (
                             endcase
                         `ISSUE_PAUSE      : begin
                             pc_reset <= 1'b0;
+
                             if (uart_write_enable) begin
                                 issue_type        <= `ISSUE_UART;
-                                ignore_input      <= 1'b1;
+                                ignore_pause      <= 1'b1;
                             end else if (~cpu_pause) begin
                                 issue_type        <= `ISSUE_NONE;
                                 cpu_state         <= EXECUTE;
@@ -186,32 +186,62 @@ module hazard_unit (
                             end else 
                                 cpu_state         <= cpu_state;
                         end
-                        `ISSUE_UART       : begin
+                        `ISSUE_UART       : 
                             if (uart_complete) begin
                                 issue_type        <= `ISSUE_PAUSE;
-                                ignore_input      <= 1'b0;
+                                ignore_pause      <= 1'b0;
                                 pc_reset          <= 1'b1;
                             end else
                                 cpu_state         <= cpu_state; // prevent auto latches
-                        end
                         default           : 
                             cpu_state <= cpu_state; // prevent auto latches
                     endcase
                 INTERRUPT: 
-                    if (input_complete) begin
-                        issue_type   <= `ISSUE_NONE;
-                        cpu_state    <= EXECUTE;
-                        ignore_no_op <= 1'b0; // ignore no_op signals from previous stages and only comply to the snapshot
-                        
-                        {
-                            if_hazard_control,
-                            id_hazard_control,
-                            ex_hazard_control,
-                            mem_hazard_control,
-                            wb_hazard_control
-                        }            <= control_snapshot; // resume with the snapshot taken before interrupt
-                    end else 
-                        cpu_state <= cpu_state; // prevent auto latches
+                    case (issue_type)
+                        `ISSUE_KEYPAD: 
+                            casex ({input_complete, cpu_pause})
+                                2'b1x  : begin
+                                    issue_type   <= `ISSUE_NONE;
+                                    cpu_state    <= EXECUTE;
+                                    ignore_no_op <= 1'b1; // ignore no_op signals from previous stages and only comply to the snapshot
+                                    
+                                    {
+                                        if_hazard_control,
+                                        id_hazard_control,
+                                        ex_hazard_control,
+                                        mem_hazard_control,
+                                        wb_hazard_control
+                                    }            <= control_snapshot; // resume with the snapshot taken before interrupt
+                                end
+                                2'b01  : begin
+                                    issue_type   <= `ISSUE_PAUSE;
+                                    uart_disable <= 1'b0;
+                                end
+                                default: 
+                                    cpu_state    <= cpu_state; // prevent auto latches
+                            endcase
+                        `ISSUE_PAUSE : begin
+                            pc_reset <= 1'b0;
+
+                            if (uart_write_enable) begin
+                                issue_type   <= `ISSUE_UART;
+                                ignore_pause <= 1'b1;
+                            end else if (~cpu_pause) begin
+                                issue_type   <= `ISSUE_KEYPAD;
+                                uart_disable <= 1'b1;
+                            end else 
+                                cpu_state    <= cpu_state;
+                        end
+                        `ISSUE_UART       : 
+                            if (uart_complete) begin
+                                issue_type   <= `ISSUE_PAUSE;
+                                ignore_pause <= 1'b0;
+                                pc_reset     <= 1'b1;
+                            end else
+                                cpu_state    <= cpu_state; // prevent auto latches
+                        default      : 
+                            cpu_state <= cpu_state; // prevent auto latches
+                    endcase
                 /* this is the IDLE state, gives one cycle for the CPU to reset properly */
                 default: 
                     cpu_state <= EXECUTE;

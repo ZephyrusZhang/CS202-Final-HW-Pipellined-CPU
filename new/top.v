@@ -10,7 +10,7 @@ module top (
     output     [7:0] seg_tube,   
     output     [7:0] seg_enable,
     output     [`VGA_BIT_DEPTH - 1:0] vga_signal,
-    output reg uart_in_progress,                            // LED indicator for UART process
+    output     uart_in_progress,                            // LED indicator for UART process
     output     digit_overflow_9th,                          // LED indicator for seven seg tube digit overflow of 9th digit
     output     digit_overflow_10th,
     output     hsync, vsync,
@@ -20,9 +20,9 @@ module top (
     //// wire list, format: [signal_source]_[signal_name]
     
     // clocks
-    wire clk_uart;           // for uart_unit (10MHz)
-    wire clk_vga;            // for vga_unit (25MHz)
-    wire clk_cpu, clk_cpu_n; // for cpu components except hazard_unit (50MHz)
+    wire clk_uart; // for uart_unit (10MHz)
+    wire clk_vga;  // for vga_unit (25MHz)
+    wire clk_cpu;  // for cpu components except hazard_unit (100MHz)
     
     clk_generator #(4)  vga_clk_generator (clk_raw, rst_n, clk_vga);
     clk_generator #(10) uart_clk_generator(clk_raw, rst_n, clk_uart);
@@ -85,7 +85,7 @@ module top (
 
     // signal multiplexor result
     wire [`ISA_WIDTH - 1:0] mux_operand_1,
-                            mux_operand_2,      // this is pc_offset value as well
+                            mux_operand_2,       // this is pc_offset value as well
                             id_ex_reg_operand_1,
                             id_ex_reg_operand_2,
                             mux_pc_overload_value;
@@ -157,7 +157,7 @@ module top (
     wire hazard_unit_pc_reset,
          hazard_unit_uart_disable,
          hazard_unit_ignore_no_op,
-         hazard_unit_ignore_input;
+         hazard_unit_ignore_pause;
 
     // input unit
     wire [`ISA_WIDTH - 1:0] input_unit_keypad_data;
@@ -181,11 +181,13 @@ module top (
             
 
     // LED
-    always @(posedge clk_cpu, negedge rst_n) begin
-        if (~rst_n)                         uart_in_progress <= 1'b0;
-        else if (~hazard_unit_uart_disable) uart_in_progress <= 1'b1;
-        else                                uart_in_progress <= 1'b0;
-    end
+    assign uart_in_progress = hazard_unit_uart_disable ? 1'b0 : 1'b1;
+
+    // always @(posedge clk_cpu, negedge rst_n) begin
+    //     if (~rst_n)                         uart_in_progress <= 1'b0;
+    //     else if (~hazard_unit_uart_disable) uart_in_progress <= 1'b1;
+    //     else                                uart_in_progress <= 1'b0;
+    // end
 
     //// module list
 
@@ -244,7 +246,7 @@ module top (
         .input_enable           (data_mem_input_enable),
         .input_complete         (input_unit_input_complete),
         .cpu_pause              (input_unit_cpu_pause),
-        .ignore_input           (hazard_unit_ignore_input),
+        .ignore_pause           (hazard_unit_ignore_pause),
 
         .pc_reset               (hazard_unit_pc_reset),
 
@@ -552,7 +554,7 @@ module top (
         .clk                    (clk_raw),
         .rst_n                  (rst_n),
         .key_coord              (keypad_unit_key_coord),
-        .ignore_input           (hazard_unit_ignore_input),
+        .ignore_pause           (hazard_unit_ignore_pause),
         .input_enable           (data_mem_input_enable),
         .input_complete         (input_unit_input_complete),
         .keypad_data            (input_unit_keypad_data),

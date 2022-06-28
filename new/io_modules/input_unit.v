@@ -6,7 +6,7 @@ module input_unit (
     
     input      [7:0] key_coord,                         // from keypad_decoder with format {row_val, col_val}
 
-    input      ignore_input,                            // from hazard_unit (whether user input is ignored during UART transmission)
+    input      ignore_pause,                            // from hazard_unit (whether user input is ignored during UART transmission)
 
     input      input_enable,                            // from data_mem (the keypad input will be memory data)
     output reg input_complete,                          // for hazard_unit (user pressed enter)
@@ -43,7 +43,7 @@ module input_unit (
                 KEYPAD      = 2'b10,
                 HALT        = 2'b11;
     
-    reg [1:0] input_state;
+    reg [1:0] input_state, prev_state;
     reg [3:0] digit_counter;
 
     assign overflow_9th  = (9 <= digit_counter);
@@ -59,6 +59,7 @@ module input_unit (
                 digit_counter
             }           <= 0;
             input_state <= BLOCK;
+            prev_state  <= BLOCK;
         end else begin
             case (input_state)
                 SWITCH : begin
@@ -74,17 +75,15 @@ module input_unit (
                         end
                         PAUSE  : begin
                             input_state    <= HALT;
+                            prev_state     <= input_state;
                             cpu_pause      <= 1'b1;
-                            
-                            input_complete <= 1'b1;
-                            digit_counter  <= 4'h0;
                         end
                         default:
                             input_state    <= input_state;
                     endcase
                 end
                 KEYPAD : begin
-                    if (input_enable == 1'b1) begin 
+                    if (input_enable) begin 
                         case (key_coord)
                             TOGGLE   : begin
                                 input_state    <= SWITCH;
@@ -104,10 +103,8 @@ module input_unit (
                             end
                             PAUSE  : begin
                                 input_state    <= HALT;
+                                prev_state     <= input_state;
                                 cpu_pause      <= 1'b1;
-
-                                input_complete <= 1'b1;
-                                digit_counter  <= 4'h0;
                             end
                             default  : begin
                                 if (digit_counter < 10) begin
@@ -163,8 +160,8 @@ module input_unit (
                         input_state        <= BLOCK;
                 end
                 HALT   : begin
-                    if (~ignore_input & key_coord == PAUSE) begin
-                        input_state        <= BLOCK;
+                    if (~ignore_pause & key_coord == PAUSE) begin
+                        input_state        <= prev_state;
                         cpu_pause          <= 1'b0;
                     end else
                         cpu_pause          <= cpu_pause; // prevent auto latches
@@ -174,6 +171,7 @@ module input_unit (
                     casex ({key_coord == PAUSE, input_enable})
                         2'b1x  : begin
                             input_state    <= HALT;
+                            prev_state     <= input_state;
                             cpu_pause      <= 1'b1;
                         end 
                         2'b01  : begin
