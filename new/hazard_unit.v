@@ -97,11 +97,12 @@ module hazard_unit (
                         /* data hazard will hold all stages hence covers the other hazards */
                         4'b1xxx: begin
                             issue_type          <= `ISSUE_DATA;
-                            cpu_state           <= HAZARD;
 
                             if_hazard_control   <= `HAZD_CTL_RETRY; // retry if stage
                             id_hazard_control   <= `HAZD_CTL_RETRY; // retry id stage 
                             ex_hazard_control   <= `HAZD_CTL_NO_OP; // the ex stage will be a bubble
+                            mem_hazard_control  <= `HAZD_CTL_NORMAL;
+                            wb_hazard_control   <= `HAZD_CTL_NORMAL;
                         end
                         /* CPU waits for the user's keypad input, this preceeds pause as pause will loose the keypad interrupt */
                         4'b01xx: begin
@@ -128,6 +129,10 @@ module hazard_unit (
                             cpu_state           <= HAZARD;
                             uart_disable        <= 1'b0;
                             if_hazard_control   <= `HAZD_CTL_NO_OP; // start pumping no_op signals into the pipeline (pc will still react to pc updates)
+                            id_hazard_control   <= `HAZD_CTL_NORMAL;
+                            ex_hazard_control   <= `HAZD_CTL_NORMAL;
+                            mem_hazard_control  <= `HAZD_CTL_NORMAL;
+                            wb_hazard_control   <= `HAZD_CTL_NORMAL;
                         end
                         /* the user did not pause the CPU but the pc overflowed, the CPU will await user resumption upon UART completion */
                         4'b0001: begin
@@ -135,23 +140,22 @@ module hazard_unit (
                             cpu_state           <= HAZARD;
                             uart_disable        <= 1'b0;
                             if_hazard_control   <= `HAZD_CTL_NO_OP; // start pumping no_op signals into the pipeline (pc will still react to pc updates)
+                            id_hazard_control   <= `HAZD_CTL_NORMAL;
+                            ex_hazard_control   <= `HAZD_CTL_NORMAL;
+                            mem_hazard_control  <= `HAZD_CTL_NORMAL;
+                            wb_hazard_control   <= `HAZD_CTL_NORMAL;
                         end
-                        default: 
-                            cpu_state           <= cpu_state; // prevent auto latches
+                        default: begin
+                            if_hazard_control   <= `HAZD_CTL_NORMAL;
+                            id_hazard_control   <= `HAZD_CTL_NORMAL;
+                            ex_hazard_control   <= `HAZD_CTL_NORMAL;
+                            mem_hazard_control  <= `HAZD_CTL_NORMAL;
+                            wb_hazard_control   <= `HAZD_CTL_NORMAL;
+                        end
                     endcase
                 end
                 HAZARD: 
                     case (issue_type)
-                        `ISSUE_DATA       : 
-                            if (~data_hazard) begin
-                                issue_type        <= `ISSUE_NONE;
-                                cpu_state         <= EXECUTE;
-
-                                if_hazard_control <= `HAZD_CTL_NORMAL; // reset the control registers
-                                id_hazard_control <= `HAZD_CTL_NORMAL;
-                                ex_hazard_control <= `HAZD_CTL_NORMAL;
-                            end else
-                                cpu_state         <= cpu_state;
                         `ISSUE_FALLTHROUGH: 
                             casex ({~uart_hazard, uart_write_enable, cpu_pause})
                                 /* jump instruction is the last instruction and the control hazard have been resolved */
