@@ -197,7 +197,7 @@ module hazard_unit (
                                     uart_disable       <= 1'b0;
                                     if_hazard_control  <= `HAZD_CTL_NO_OP; // start pumping no_op signals into the pipeline (pc will still react to pc updates)
                                 end
-                                /* data hazard have been solved, the CPU can resume without any problems */
+                                /* data hazard have been solved, the CPU can resume without any problems, this is also used before resuming from interrupt */
                                 4'b0001: begin
                                     issue_type         <= `ISSUE_NONE;
                                     cpu_state          <= EXECUTE;
