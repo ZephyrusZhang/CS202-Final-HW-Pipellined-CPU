@@ -1,7 +1,7 @@
 `include "../definitions.v"
 `timescale 1ns / 1ps
 
-module reg_with_select (
+module reg_write_select (
     input [`ISA_WIDTH - 1 : 0] wb_mem_read_data,
     input [`ISA_WIDTH - 1 : 0] wb_alu_result,
     input wb_mem_read_enable,

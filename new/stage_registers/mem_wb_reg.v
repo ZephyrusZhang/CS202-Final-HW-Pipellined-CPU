@@ -64,8 +64,10 @@ module mem_wb_reg (
                     wb_alu_result       <= mem_alu_result;
                     wb_dest_reg_idx     <= mem_dest_reg_idx;
 
-                    if (input_enable) wb_mem_read_data <= switch_enable ? {{(`ISA_WIDTH - `SWITCH_CNT){1'b0}}, switch_map} : keypad_data;
-                    else              wb_mem_read_data <= mem_mem_read_data;
+                    if (input_enable & (~mem_no_op | ignore_no_op)) 
+                        wb_mem_read_data <= switch_enable ? {{(`ISA_WIDTH - `SWITCH_CNT){1'b0}}, switch_map} : keypad_data;
+                    else
+                        wb_mem_read_data <= mem_mem_read_data;
                 end
             endcase
         end

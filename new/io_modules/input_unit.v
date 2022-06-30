@@ -83,81 +83,80 @@ module input_unit (
                     endcase
                 end
                 KEYPAD : begin
-                    if (input_enable) begin 
-                        case (key_coord)
-                            TOGGLE   : begin
-                                input_state    <= SWITCH;
-                                switch_enable  <= 1'b1;
-                            end
-                            BACKSPACE: begin
-                                if (digit_counter != 0) begin
-                                    keypad_data   <= keypad_data / 10;
-                                    digit_counter <= digit_counter - 1;
-                                end else
-                                    keypad_data   <= keypad_data;
-                            end
-                            ENTER    : begin
-                                input_state    <= BLOCK;
-                                input_complete <= 1'b1;
-                                digit_counter  <= 4'h0;
-                            end
-                            PAUSE  : begin
-                                input_state    <= HALT;
-                                prev_state     <= input_state;
-                                cpu_pause      <= 1'b1;
-                            end
-                            default  : begin
-                                if (digit_counter < 10) begin
-                                    case (key_coord)
-                                        ONE    : begin
-                                            keypad_data   <= keypad_data * 10 + 1;
-                                            digit_counter <= digit_counter + 1;
-                                        end
-                                        TWO    : begin
-                                            keypad_data   <= keypad_data * 10 + 2;
-                                            digit_counter <= digit_counter + 1;
-                                        end
-                                        THREE  : begin
-                                            keypad_data   <= keypad_data * 10 + 3;
-                                            digit_counter <= digit_counter + 1;
-                                        end
-                                        FOUR   : begin
-                                            keypad_data   <= keypad_data * 10 + 4;
-                                            digit_counter <= digit_counter + 1;
-                                        end
-                                        FIVE   : begin
-                                            keypad_data   <= keypad_data * 10 + 5;
-                                            digit_counter <= digit_counter + 1;
-                                        end
-                                        SIX    : begin
-                                            keypad_data   <= keypad_data * 10 + 6;
-                                            digit_counter <= digit_counter + 1;
-                                        end
-                                        SEVEN  : begin
-                                            keypad_data   <= keypad_data * 10 + 7;
-                                            digit_counter <= digit_counter + 1;
-                                        end
-                                        EIGHT  : begin
-                                            keypad_data   <= keypad_data * 10 + 8;
-                                            digit_counter <= digit_counter + 1;
-                                        end
-                                        NINE   : begin
-                                            keypad_data   <= keypad_data * 10 + 9;
-                                            digit_counter <= digit_counter + 1;
-                                        end
-                                        ZERO   : begin
+                    case (key_coord)
+                        TOGGLE   : begin
+                            input_state    <= SWITCH;
+                            switch_enable  <= 1'b1;
+                        end
+                        BACKSPACE: begin
+                            if (digit_counter != 0) begin
+                                keypad_data   <= keypad_data / 10;
+                                digit_counter <= digit_counter - 1;
+                            end else
+                                input_state   <= input_state;
+                        end
+                        ENTER    : begin
+                            input_state    <= BLOCK;
+                            input_complete <= 1'b1;
+                            digit_counter  <= 4'h0;
+                        end
+                        PAUSE  : begin
+                            input_state    <= HALT;
+                            prev_state     <= input_state;
+                            cpu_pause      <= 1'b1;
+                        end
+                        default  : begin
+                            if (digit_counter < 10) begin
+                                case (key_coord)
+                                    ONE    : begin
+                                        keypad_data   <= keypad_data * 10 + 1;
+                                        digit_counter <= digit_counter + 1;
+                                    end
+                                    TWO    : begin
+                                        keypad_data   <= keypad_data * 10 + 2;
+                                        digit_counter <= digit_counter + 1;
+                                    end
+                                    THREE  : begin
+                                        keypad_data   <= keypad_data * 10 + 3;
+                                        digit_counter <= digit_counter + 1;
+                                    end
+                                    FOUR   : begin
+                                        keypad_data   <= keypad_data * 10 + 4;
+                                        digit_counter <= digit_counter + 1;
+                                    end
+                                    FIVE   : begin
+                                        keypad_data   <= keypad_data * 10 + 5;
+                                        digit_counter <= digit_counter + 1;
+                                    end
+                                    SIX    : begin
+                                        keypad_data   <= keypad_data * 10 + 6;
+                                        digit_counter <= digit_counter + 1;
+                                    end
+                                    SEVEN  : begin
+                                        keypad_data   <= keypad_data * 10 + 7;
+                                        digit_counter <= digit_counter + 1;
+                                    end
+                                    EIGHT  : begin
+                                        keypad_data   <= keypad_data * 10 + 8;
+                                        digit_counter <= digit_counter + 1;
+                                    end
+                                    NINE   : begin
+                                        keypad_data   <= keypad_data * 10 + 9;
+                                        digit_counter <= digit_counter + 1;
+                                    end
+                                    ZERO   :
+                                        if (0 < keypad_data) begin
                                             keypad_data   <= keypad_data * 10;
-                                            if (0 < keypad_data) digit_counter <= digit_counter + 1;
-                                        end
-                                        default: 
-                                            keypad_data <= keypad_data; // 0 key_coord will be handled here
-                                    endcase
-                                end else
-                                    keypad_data <= keypad_data;
-                            end
-                        endcase
-                    end else
-                        input_state        <= BLOCK;
+                                            digit_counter <= digit_counter + 1;
+                                        end else
+                                            input_state   <= input_state;
+                                    default: 
+                                        input_state   <= input_state; // 0 key_coord will be handled here
+                                endcase
+                            end else
+                                input_state   <= input_state;
+                        end
+                    endcase
                 end
                 HALT   : begin
                     if (~ignore_pause & key_coord == PAUSE) begin

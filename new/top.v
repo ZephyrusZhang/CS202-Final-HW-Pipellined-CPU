@@ -227,6 +227,7 @@ module top (
         .store_instruction      (store_instruction),
 
         .if_no_op               (instruction_mem_no_op),
+        .id_no_op               (if_id_reg_no_op),
 
         .ex_mem_read_enable     (id_ex_reg_mem_control[`MEM_READ_BIT]),
         .ex_reg_write_enable    (id_ex_reg_reg_write_enable),
@@ -520,7 +521,7 @@ module top (
     );
 
     //--------------------------------stage-wb------------------------------------//
-    reg_with_select reg_with_select(
+    reg_write_select reg_write_select(
         // select signal
         .wb_mem_read_enable     (mem_wb_reg_mem_read_enable),
         // to be selected

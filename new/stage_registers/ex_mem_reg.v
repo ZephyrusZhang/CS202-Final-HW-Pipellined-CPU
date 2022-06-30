@@ -70,10 +70,10 @@ module ex_mem_reg (
                     mem_dest_reg_idx     <= ex_dest_reg_idx;
 
                     case (store_data_select)
-                        `FORW_SEL_INPUT:    mem_store_data <= ex_store_data;
-                        `FORW_SEL_ALU_RES:  mem_store_data <= mem_alu_result_prev;
-                        `FORW_SEL_MEM_RES:  mem_store_data <= wb_reg_write_data;
-                        default:            mem_store_data <= 0;
+                        `FORW_SEL_INPUT:   mem_store_data <= ex_store_data;
+                        `FORW_SEL_ALU_RES: mem_store_data <= mem_alu_result_prev;
+                        `FORW_SEL_MEM_RES: mem_store_data <= wb_reg_write_data;
+                        default:           mem_store_data <= 0;
                     endcase
                 end
             endcase
