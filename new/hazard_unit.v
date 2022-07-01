@@ -263,7 +263,7 @@ module hazard_unit (
                                 2'b1x  : begin
                                     ignore_no_op <= 1'b1; // ignore no_op signals from previous stages and only comply to the snapshot
 
-                                    issue_type   <= `ISSUE_NONE; 
+                                    issue_type   <= `ISSUE_DATA; 
                                     cpu_state    <= HAZARD; // hijacking the data hazard recovery step to reset all the control signals
 
                                     {

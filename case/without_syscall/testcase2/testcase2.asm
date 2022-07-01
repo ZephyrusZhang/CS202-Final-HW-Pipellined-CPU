@@ -1,109 +1,102 @@
-.data  0x00
-	buf: .word  0xFFFFFC60,0xFFFFFC70,0x09EF2EAA
-	info:.word  0x00000000     	 # store n
- 	array:.word 0x00000000	 	 # store element
+.data 0x00
+	buf  : .word 0xFFFFFC60, 0xFFFFFC70, 0x09EF2EAA
+	info : .word 0x00000000		# store n
+ 	array: .word 0x00000000		# store element
 	
-.text	  0x0000
+.text 0x0000
 
-#notice: the input can not be more than 255 in these cases
+# note that the input cannot exceed 255 in these cases
 
 start:
-	lw $v0, buf($zero)	#read the no. of case
+	lw $v0, buf($zero)			# read the number of cases
 	lw $v0, 0($v0)
-
 	
-	ori $t0,$zero,0
-	ori $t1,$zero,1
-	ori $t2,$zero,2
-	ori $t3,$zero,3
-	ori $t4,$zero,4
-	ori $t5,$zero,5
-	ori $t6,$zero,6
-	ori $t7,$zero,7		
+	ori $t0, $zero, 0
+	ori $t1, $zero, 1
+	ori $t2, $zero, 2
+	ori $t3, $zero, 3
+	ori $t4, $zero, 4
+	ori $t5, $zero, 5
+	ori $t6, $zero, 6
+	ori $t7, $zero, 7		
 				
-	beq $v0,$t0,case_000
-	beq $v0,$t1,case_001
-	beq $v0,$t2,case_010
-	beq $v0,$t3,case_011
-	beq $v0,$t4,case_100
-	beq $v0,$t5,case_101
-	beq $v0,$t6,case_110
-	beq $v0,$t7,case_111
+	beq $v0, $t0, case_000
+	beq $v0, $t1, case_001
+	beq $v0, $t2, case_010
+	beq $v0, $t3, case_011
+	beq $v0, $t4, case_100
+	beq $v0, $t5, case_101
+	beq $v0, $t6, case_110
+	beq $v0, $t7, case_111
 	j start
 	
 case_000:
-
-	lw $v0, buf($zero)	  #read the n
+	lw $v0, buf($zero)	  		# read n from keypad
 	lw $v0, 0($v0)
 	
-	
-	sw $v0,info($zero) 	  #reserve n in the memory
+	sw $v0, info($zero) 	 	# save n in the memory
 	 
-	addi $t0, $zero,0  	  # t0: offset
-	lw $t1,info($zero) 	  # t1 <- n
+	addi $t0, $zero, 0  	  	# t0: offset
+	lw $t1, info($zero) 	  	# t1 <- n
 	
-	
-	addi $t0,$zero,4	    	  # write -> s5	
+	addi $t0, $zero, 4			# write -> s5
+
   	lw $v0, buf($t0)
 	sw $t1, 0($v0)
 
-	
-init_000:	
-	beq $t1,$zero,finish_init_000
+init_000:
+	beq $t1, $zero, finish_init_000
 
-	lw $v0, buf($zero)	   #read the num i
+	lw $v0, buf($zero)			# read the num i
 	lw $v0, 0($v0)
 
+	## addi $t0, $zero, 0
+	sw $v0, array($t0)			# fill array[0-4]
+	
+	lw $t2, array($t0) 	
+	addi $t0, $zero, 4			# write -> data to array 
 
-	sw $v0,array($t0) 	   # fill array[0-4]
-	
-	
-	lw $t2,array($t0) 	
-	addi $t0,$zero,4	    	    # write -> data to array 	
-  	lw $v0, buf($t0)
+  	lw $v0, buf($t0)			# display num i
 	sw $t2, 0($v0)
-
 	
 	addi $t0, $t0, 4
-	addi $t1, $t1,-1
-	
-	
+	addi $t1, $t1, -1
 
 	j init_000
 	
-finish_init_000:	
-      j start
+finish_init_000:
+	j start
        	
 case_001:
-	lw $t1,info($zero) 		# t1 <- n
-	addi $t0, $zero,0  		# t0: address (a)
-	sll $t2,$t1,2			# t2 <- offset = n * 4
+	lw $t1, info($zero)			# t1 <- n
+	addi $t0, $zero, 0			# t0: address (a)
+	sll $t2, $t1, 2				# t2 <- offset = n * 4
 	
 init_001:	
-	beq $t1,$zero,bubble_sort_001
+	beq $t1, $zero, bubble_sort_001
 
-	lw $v0,array($t0) 		#array[a] -> v0 -> array[a+4 * n]
-	add $t0,$t0,$t2
-	sw $v0,array($t0)
-	sub $t0,$t0,$t2
+	lw $v0, array($t0)			# array[a] -> v0 -> array[a + 4 * n]
+	add $t0, $t0, $t2
+	sw $v0, array($t0)
+	sub $t0, $t0, $t2
 		
 	addi $t0, $t0, 4	
-	addi $t1,$t1,-1
+	addi $t1, $t1, -1
+
 	j init_001
 	
-	
 bubble_sort_001:
-       	
-     lw $s0,info($zero) 		  # s0 <- n
-     addi $s1,$zero,0			  # s1 <- i init i = 0
-     sll $s3,$s0,2			  # s3 <- 4n
-     addi $t8,$s0,-1			  # t8 <- n-1
+    lw $s0, info($zero)			# s0 <- n
+    addi $s1, $zero, 0			# s1 <- i init i = 0
+    sll $s3, $s0, 2				# s3 <- 4n
+    addi $t8, $s0, -1			# t8 <- n - 1
      
 forout_001:
-	beq  $s1,$t8,forout_end_001  # while  i < n - 1
+	beq  $s1, $t8, forout_end_001	# while  i < n - 1
 	
-	add $s2,$zero,$zero	       # init s2 <- j  <-0
-	sub $t9,$t8,$s1              # t9 <- (n - i - 1)
+	addi $s2, $zero, 0			# init s2 <- j  <-0
+	sub $t9, $t8, $s1			# t9 <- (n - i - 1)
+
 forin_001:		
 	beq $s2,$t9,forin_end_001	  # when j < (n - i - 1)
 	sll $s7,$s2,2	   		  # s7 <- 4j align address
@@ -163,8 +156,8 @@ finish_init_010:
 	j start
 
 
-#we assume the numbers here are only 8-bits long
-#move the nums from part3 to part4
+# we assume the numbers here are only 8-bits long
+# move the nums from part3 to part4
 case_011:
 	lw $t1,info($zero) 		# t1 <- n
 	sll $t0,$t1,3			# t0 <- 8n

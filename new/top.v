@@ -26,6 +26,7 @@ module top (
     
     clk_generator #(4)  vga_clk_generator (clk_raw, rst_n, clk_vga);
     clk_generator #(10) uart_clk_generator(clk_raw, rst_n, clk_uart);
+    // clk_generator #(2)  cpu_clk_generator (clk_raw, rst_n, clk_cpu);
 
     assign clk_cpu = clk_raw;
         

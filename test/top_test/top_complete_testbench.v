@@ -30,8 +30,15 @@ module top_complete_testbench ();
     initial begin
         #5 rst_n = 0;
         #5 rst_n = 1;
-        #7500030
-            row_in = 4'b1110; // one
+
+        #2500010
+            row_in = 4'b1110; // three
+        #2500010
+            // row_in = 4'b1110; // two
+            row_in = 4'b1111; // none
+        #2500010
+            // row_in = 4'b1110; // one
+            row_in = 4'b1111; // none
         #2500010
             row_in = 4'b1111; // none
         #2500010
@@ -41,7 +48,8 @@ module top_complete_testbench ();
         
         #10000040
         #2500010
-            row_in = 4'b1110;
+            // row_in = 4'b1110; // one
+            row_in = 4'b1111;
         #2500010
             row_in = 4'b1111;
         #2500010
