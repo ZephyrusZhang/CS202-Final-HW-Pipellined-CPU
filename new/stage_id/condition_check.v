@@ -19,7 +19,7 @@ always @(*) begin
     case (condition_type)
         `COND_TYPE_BEQ: condition_satisfied <= eq;
         `COND_TYPE_BNQ: condition_satisfied <= ~eq;
-        default:             condition_satisfied <= 0;
+        default:        condition_satisfied <= 0;
     endcase
 end
 

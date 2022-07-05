@@ -31,14 +31,13 @@ reg [`ISA_WIDTH - 1:0] registers [`ISA_WIDTH - 1:0];
 
 integer i;
 always @(negedge clk, negedge rst_n) begin
-    if (~rst_n) begin
+    if (~rst_n)
         for (i = 0; i < `ISA_WIDTH; i = i + 1)
             registers[i] <= 0;
-    end else if (write_en && ~wb_no_op && write_reg_addr != 0) begin
+    else if (write_en & ~wb_no_op & (write_reg_addr != 0)) 
         registers[write_reg_addr] <= write_data;
-    end else begin
+    else 
         registers[0] <= 0;
-    end
 end
 
 assign read_data_1 = (registers[read_reg_addr_1]);
