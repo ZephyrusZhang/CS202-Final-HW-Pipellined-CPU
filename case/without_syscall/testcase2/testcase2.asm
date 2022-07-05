@@ -43,32 +43,27 @@ case_000:
 	lw $t1,info($zero) 	  # t1 <- n
 	
 	
-	addi $t0,$zero,4	    	  # write -> s5	
-  	lw $v0, buf($t0)
+	addi $t2,$zero,4	    	  # write -> s5	
+  	lw $v0, buf($t2)
 	sw $t1, 0($v0)
 
 	
 init_000:	
 	beq $t1,$zero,finish_init_000
 
-	lw $v0, buf($zero)	   #read the num i
+	lw $v0, buf($zero)	   #read n input
 	lw $v0, 0($v0)
 
-
+	addi $t0,$zero,0		   # reset register t0
 	sw $v0,array($t0) 	   # fill array[0-4]
+	lw $t2,array($t0) 	   # save input number as temp
 	
-	
-	lw $t2,array($t0) 	
-	addi $t0,$zero,4	    	    # write -> data to array 	
+	addi $t0,$zero,4	    	   # print temp data	
   	lw $v0, buf($t0)
 	sw $t2, 0($v0)
-
 	
 	addi $t0, $t0, 4
 	addi $t1, $t1,-1
-	
-	
-
 	j init_000
 	
 finish_init_000:	
@@ -87,7 +82,7 @@ init_001:
 	sw $v0,array($t0)
 	sub $t0,$t0,$t2
 		
-	addi $t0, $t0, 4	
+	addi $t0,$t0,4	
 	addi $t1,$t1,-1
 	j init_001
 	
@@ -100,7 +95,7 @@ bubble_sort_001:
      addi $t8,$s0,-1			  # t8 <- n-1
      
 forout_001:
-	beq  $s1,$t8,forout_end_001  # while  i < n - 1
+	beq $s1,$t8,forout_end_001   # while  i < n - 1
 	
 	add $s2,$zero,$zero	       # init s2 <- j  <-0
 	sub $t9,$t8,$s1              # t9 <- (n - i - 1)
@@ -112,7 +107,7 @@ forin_001:
 	addi $t4,$t3,4			  # t4 <- 4n + 4j + 4
 	lw $s4,array($t3)
 	lw $s5,array($t4)
-	sltu $s6,$s4,$s5	#unsigned bubble sort
+	sltu $s6,$s4,$s5		     	  #unsigned bubble sort
 	bne $s6,$zero,miss_001	  # s4 <= s5 , miss
 	
 swap_001:					  # s4 >s5 ,  swap and sw	
@@ -132,7 +127,7 @@ forout_end_001:
 
 case_010:					# to 2's complement
 	lw $t1,info($zero) 		# t1 <- n
-	addi $t0, $zero,0  		# t0: 0
+	addi $t0,$zero,0  		# t0: 0
 	sll $t2,$t1,3			# t2 <- offset = n * 8
 	
 init_010:	
@@ -155,7 +150,7 @@ isPositive:				# positive no operation
 	sw $v0,array($t0)
 	sub $t0,$t0,$t2
 		
-	addi $t0, $t0, 4	
+	addi $t0,$t0,4	
 	addi $t1,$t1,-1
 	j init_010
 	
@@ -182,10 +177,7 @@ init_011:
 	addi $t1,$t1,-1
 	j init_011
 	
-finish_init_011:
-	
-#bubble_sort_011:
-       	
+finish_init_011:       	
      lw $s0,info($zero) 		# s0 <- n
 
      sll $s3,$s0,2			# s3 <- 4n
@@ -245,7 +237,7 @@ case_100:
        	
      subu $s3,$s2,$s1		# s3 = s2 - s1
        	  	
-  	addi $t0,$zero,4	     #  write -> s3                	
+  	addi $t0,$zero,4	     # print difference                	
   	lw $v0, buf($t0)
 	sw $s3, 0($v0)
 	
@@ -262,28 +254,30 @@ case_101:
      lw $s3,array($s3)	# s3 <- min
      lw $s1,array($s1)	# s1 <- max
       
-     subu $s4,$s1,$s3	# s4 = s1 - s3
+     subu $s4,$s1,$s3		# s4 = s1 - s3
        	
   	addi $t0,$zero,4	     #  write -> s4               	
-  	lw $v0, buf($t0)
-	sw $s4, 0($v0)
+  	lw $v0,buf($t0)
+	sw $s4,0($v0)
 
 	j start
 
-# here we return the 32 bit num, but we only have to show low 8-bit num on the board
+# Here we return the 32 bit num but we only have to show low 8-bit num on the board
 
 case_110:	
-
-	lw $v0, buf($zero)	#read the no. of the datasets -> v0
-	lw $v0, 0($v0)
+	
+	addi $t0,$zero,0      #init t0
+	lw $t0, buf($zero)	#read the no. of the datasets -> v0
+	lw $v0, 0($t0)
 
 	addi $s0,$v0,0		# s0 = dataset no. 1 OR 2 OR 3
 
 	lw $s2,info($zero) 	# s2 <- n
 	addi $s4,$zero,0		# s4 <- 0
 	
-	lw $v0, buf($zero)	#read the index -> v0
-	lw $v0, 0($v0)
+	addi $t0,$zero,0      #init t0
+	lw $t0, buf($zero)	#read the index -> v0
+	lw $v0, 0($t0)
 
 	
 	addi $s1,$v0,0		# s1 = index
@@ -315,14 +309,15 @@ finish_mul_110:			# s4 <- s0 * 4n
 
 case_111:	
 	
-	lw $v0,buf($zero)	#read the index -> v0
-	lw $v0,0($v0)
+	addi $t0,$zero,0		#init t0
+	lw $t0,buf($zero)	#read the index -> v0
+	lw $v0,0($t0)
 	
 	
 	lw $s0,info($zero) 	# s0 <- n
 	addi $s1,$v0,0		# s1 = index
 	
-	sll $s2,$s1,2		# s2 <-  4 * s1 
+	sll $s2,$s1,2		# s2 <- 4 * s1 
 	addi $s3,$s2,0		# s3 = 0 + 4 * s1
 	sll $s4,$s0,3		# s4 <- 8n
 	add $s4,$s4,$s2		# s4 <- 8n + 4 * s1
@@ -331,6 +326,7 @@ case_111:
 	lw $s4,array($s4)	# s4 <- num in data set 2
 	
 	# unify num s3 -> s5 (0) and num s4 -> s6 (2)
+	# splicing the info together
  	
  	add $s5,$zero,$s1
  	add $s6,$zero,$s1
@@ -339,7 +335,7 @@ case_111:
  	sll $s6,$s6,16
  	add $s6,$s6,$s4
  	
- 	addi $s7,$zero,1
+ 	addi $s7,$zero,1		# representing dataset 2
  	sll $s7,$s7,31	
  	or $s6,$s6,$s7
  		
