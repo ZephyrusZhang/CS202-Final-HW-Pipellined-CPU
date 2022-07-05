@@ -71,7 +71,7 @@ module signal_mux (
     always @(*) begin
         case ({i_type_instruction, branch_instruction | jr_instruction, jal_instruction})
             3'b100 : mux_reg_dest_idx <= id_reg_2_idx;       // I type instruction
-            3'b010 : mux_reg_dest_idx <= 0;                  // store or branch or jump register instruction
+            3'b010 : mux_reg_dest_idx <= 0;                  // branch or jump register instruction
             3'b001 : mux_reg_dest_idx <= `JAL_REG_IDX;       // jump and link store to 31st register
             // 4'b0001: mux_reg_dest_idx <= id_reg_1_idx;       // jump register reterives from 1st register
             default: mux_reg_dest_idx <= id_reg_dest_idx;    // R type instruction
