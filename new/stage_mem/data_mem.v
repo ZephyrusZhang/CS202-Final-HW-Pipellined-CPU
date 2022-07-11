@@ -56,7 +56,7 @@ module data_mem #(parameter
         .ena    (~no_op), // disabled unpon no_op
 
         .clka   (uart_disable ? ~clk                      : uart_clk),
-        .addra  (uart_disable ? mem_addr[ROM_DEPTH + 1:2] : uart_addr[ROM_DEPTH - 1:0]),  // address unit in bytes
+        .addra  (uart_disable ? mem_addr[ROM_DEPTH + 1:2] : uart_addr[ROM_DEPTH - 1:0]),  // address unit in words
         .douta  (mem_read_data),
 
         .dina   (uart_disable ? (vga_write_enable ? 1'b0 : mem_store_data) : uart_data),
