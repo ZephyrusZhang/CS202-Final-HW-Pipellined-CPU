@@ -20,15 +20,15 @@ module top (
     //// wire list, format: [signal_source]_[signal_name]
     
     // clocks
-    wire clk_uart; // for uart_unit (10MHz)
-    wire clk_vga;  // for vga_unit (25MHz)
     wire clk_cpu;  // for cpu components except hazard_unit (100MHz)
+    wire clk_vga;  // for vga_unit (25MHz)
+    wire clk_uart; // for uart_unit (10MHz)
+    wire clk_tube; // for seven_seg_unit
     
-    clk_generator #(4)  vga_clk_generator (clk_raw, rst_n, clk_vga);
-    clk_generator #(10) uart_clk_generator(clk_raw, rst_n, clk_uart);
-    // clk_generator #(2)  cpu_clk_generator (clk_raw, rst_n, clk_cpu);
-
-    assign clk_cpu = clk_raw;
+    clk_generator #(`CPU_DELAY_PERIOD)  cpu_clk_generator (clk_raw, rst_n, clk_cpu);
+    clk_generator #(`VGA_DELAY_PERIOD)  vga_clk_generator (clk_raw, rst_n, clk_vga);
+    clk_generator #(`UART_DELAY_PERIOD) uart_clk_generator(clk_raw, rst_n, clk_uart);
+    clk_generator #(`TUBE_DELAY_PERIOD) tube_clk_generator(clk_raw, rst_n, clk_tube);
         
     // no_op
     wire instruction_mem_no_op,

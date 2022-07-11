@@ -1,137 +1,123 @@
 `timescale 1ns / 1ps
 `include "../definitions.v"
-`define TUBE_DEFAULT_DELAY_PERIOD 10_0000
 
-module seven_seg_unit #(parameter
-    DELAY_PERIOD = `TUBE_DEFAULT_DELAY_PERIOD
-    )(
-    input clk, rst_n,                               // note this is a clock for tube 1ms refresh
+module seven_seg_unit (
+    input clk_tube, rst_n,                          
     input      [`ISA_WIDTH - 1:0] keypad_data,      // from keypad_unit (data from user keypad input)
     input      [`SWITCH_CNT - 1:0] switch_map,      // from toggle switches hardware directly
     input      switch_enable,                       // from keypad_unit (show binary switch input)
     input      input_enable,                        // from data_mem (the keypad input is needed)
     
-    output reg [7:0] seg_tube,                      // control signal for tube segments
-    output reg [7:0] seg_enable                     // control signal for tube positions
+    output reg [`SEGMENT_CNT - 1:0] seg_tube,       // control signal for tube segments
+    output reg [`DIGIT_CNT - 1:0] seg_enable        // control signal for digits on the segment display
     );
     
-    reg [2:0] display_counter;
-    reg [3:0] diaplay_digit;
+    reg [`DIGIT_CNT_WIDTH - 1:0] display_counter;
+    reg [`DIGIT_RADIX_WIDTH - 1:0] diaplay_digit;
     reg has_zero;
-
-    wire clk_tube;
-    clk_generator #(DELAY_PERIOD) tube_clk_generator(clk, rst_n, clk_tube);
     
     always @(posedge clk_tube, negedge rst_n) begin
         if (~rst_n) begin
-            display_counter = 3'd0;
-            diaplay_digit   = 4'h0;
-            has_zero        = 1'b0;
-            seg_enable      = 8'b1111_1111;
+            {
+                display_counter,
+                diaplay_digit
+            }           = 0;
+            has_zero    = 1'b0;
+            seg_enable  = `DISABLE_ALL_DIGITS;
         end else case ({input_enable, switch_enable})
             2'b11  : begin
                 diaplay_digit = switch_map[(display_counter)+:1];
-                seg_enable = 8'b1111_1111;
+                seg_enable = `DISABLE_ALL_DIGITS;
                 seg_enable[(display_counter)+:1] = 1'b0;
                 display_counter = display_counter + 1;
             end
             2'b10  : begin
                 case (display_counter)
                     3'd0: begin 
-                        diaplay_digit = (keypad_data % 1_0000_0000) / 1000_0000;
+                        diaplay_digit = (keypad_data % `DIGIT_1_MOD) / `DIGHT_2_MOD;
+
                         if (diaplay_digit == 0) begin
-                            seg_enable = 8'b1111_1111;
-                            has_zero = 1'b1;
-                        end else seg_enable = 8'b0111_1111;
+                            seg_enable = `DISABLE_ALL_DIGITS;
+                            has_zero   = 1'b1;
+                        end else 
+                            seg_enable = `ENABLE_DIGHT_1;
                     end
                     3'd1: begin
-                        diaplay_digit = ((keypad_data % 1_0000_0000) 
-                                                        % 1000_0000) / 100_0000;
-                        if (has_zero && diaplay_digit == 0) seg_enable = 8'b1111_1111;
+                        diaplay_digit = (keypad_data % `DIGHT_2_MOD) / `DIGHT_3_MOD;
+
+                        if (has_zero & (diaplay_digit == 0)) 
+                            seg_enable = `DISABLE_ALL_DIGITS;
                         else begin
-                            seg_enable = 8'b1011_1111;
-                            has_zero = 1'b0;
+                            seg_enable = `ENABLE_DIGHT_2;
+                            has_zero   = 1'b0;
                         end
                     end
                     3'd2: begin
-                        diaplay_digit = (((keypad_data % 1_0000_0000) 
-                                                        % 1000_0000) 
-                                                        % 100_0000) / 10_0000;
-                        if (has_zero && diaplay_digit == 0) seg_enable = 8'b1111_1111;
+                        diaplay_digit = (keypad_data % `DIGHT_3_MOD) / `DIGHT_4_MOD;
+
+                        if (has_zero & (diaplay_digit == 0)) 
+                            seg_enable = `DISABLE_ALL_DIGITS;
                         else begin
-                            seg_enable = 8'b1101_1111;
-                            has_zero = 1'b0;
+                            seg_enable = `ENABLE_DIGHT_3;
+                            has_zero   = 1'b0;
                         end
                     end
                     3'd3: begin
-                        diaplay_digit = ((((keypad_data % 1_0000_0000) 
-                                                        % 1000_0000) 
-                                                        % 100_0000) 
-                                                        % 10_0000) / 1_0000;
-                        if (has_zero && diaplay_digit == 0) seg_enable = 8'b1111_1111;
+                        diaplay_digit = (keypad_data % `DIGHT_4_MOD) / `DIGHT_5_MOD;
+
+                        if (has_zero & (diaplay_digit == 0)) 
+                            seg_enable = `DISABLE_ALL_DIGITS;
                         else begin
-                            seg_enable = 8'b1110_1111;
-                            has_zero = 1'b0;
+                            seg_enable = `ENABLE_DIGHT_4;
+                            has_zero   = 1'b0;
                         end
                     end
                     3'd4: begin
-                        diaplay_digit = (((((keypad_data % 1_0000_0000) 
-                                                        % 1000_0000) 
-                                                        % 100_0000) 
-                                                        % 10_0000)
-                                                        % 1_0000) / 1000;
-                        if (has_zero && diaplay_digit == 0) seg_enable = 8'b1111_1111;
+                        diaplay_digit = (keypad_data % `DIGHT_5_MOD) / `DIGHT_6_MOD;
+
+                        if (has_zero & (diaplay_digit == 0)) 
+                            seg_enable = `DISABLE_ALL_DIGITS;
                         else begin
-                            seg_enable = 8'b1111_0111;
-                            has_zero = 1'b0;
+                            seg_enable = `ENABLE_DIGHT_5;
+                            has_zero   = 1'b0;
                         end
                     end
                     3'd5: begin
-                        diaplay_digit = ((((((keypad_data % 1_0000_0000)
-                                                            % 1000_0000) 
-                                                            % 100_0000) 
-                                                            % 10_0000)
-                                                            % 1_0000)
-                                                            % 1000) / 100;
-                        if (has_zero && diaplay_digit == 0) seg_enable = 8'b1111_1111;
+                        diaplay_digit = (keypad_data % `DIGHT_6_MOD) / `DIGHT_7_MOD;
+
+                        if (has_zero & (diaplay_digit == 0)) 
+                            seg_enable = `DISABLE_ALL_DIGITS;
                         else begin
-                            seg_enable = 8'b1111_1011;
-                            has_zero = 1'b0;
+                            seg_enable = `ENABLE_DIGHT_6;
+                            has_zero   = 1'b0;
                         end
                     end
                     3'd6: begin
-                        diaplay_digit = (((((((keypad_data % 1_0000_0000) 
-                                                            % 1000_0000) 
-                                                            % 100_0000) 
-                                                            % 10_0000)
-                                                            % 1_0000)
-                                                            % 1000)
-                                                            % 100) / 10;
-                        if (has_zero && diaplay_digit == 0) seg_enable = 8'b1111_1111;
+                        diaplay_digit = (keypad_data % `DIGHT_7_MOD) / `DIGHT_8_MOD;
+
+                        if (has_zero & (diaplay_digit == 0)) 
+                            seg_enable = `DISABLE_ALL_DIGITS;
                         else begin
-                            seg_enable = 8'b1111_1101;
-                            has_zero = 1'b0;
+                            seg_enable = `ENABLE_DIGHT_7;
+                            has_zero   = 1'b0;
                         end
                     end
                     3'd7: begin
-                        diaplay_digit = (((((((keypad_data % 1_0000_0000) 
-                                                            % 1000_0000) 
-                                                            % 100_0000) 
-                                                            % 10_0000)
-                                                            % 1_0000)
-                                                            % 1000)
-                                                            % 100)
-                                                            % 10;
-                        if (has_zero && diaplay_digit == 0) seg_enable = 8'b1111_1111;
-                        else seg_enable = 8'b1111_1110;
+                        diaplay_digit = keypad_data % `DIGHT_8_MOD;
+
+                        if (has_zero & (diaplay_digit == 0)) 
+                            seg_enable = `DISABLE_ALL_DIGITS;
+                        else 
+                            seg_enable = `ENABLE_DIGHT_8;
                     end
-                    default: seg_enable = 8'b1111_1111;
+                    default: 
+                        seg_enable = `DISABLE_ALL_DIGITS;
                 endcase
                 display_counter = display_counter + 1;
             end
             // display is not enabled
             default: 
-                seg_enable = 8'b1111_1111;
+                seg_enable = `DISABLE_ALL_DIGITS;
         endcase
     end
     

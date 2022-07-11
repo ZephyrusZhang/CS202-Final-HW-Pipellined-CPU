@@ -7,6 +7,13 @@
 `define IMMEDIATE_WIDTH     16
 //------------------------------------------------------------------------------//
 
+//---------------------------------Clocks---------------------------------------//
+`define TUBE_DELAY_PERIOD   10_0000             // for tube to be refershed every 1ms
+`define UART_DELAY_PERIOD   10                  // for uart_unit (from 100MHz to 10MHz)
+`define VGA_DELAY_PERIOD    4                   // for vga_unit (from 100MHz 50 25MHz)
+`define CPU_DELAY_PERIOD    1                   // for for cpu components except hazard_unit (100MHz)
+//------------------------------------------------------------------------------//
+
 //---------------------------------Memory---------------------------------------//
 `define DEFAULT_RAM_DEPTH   14                  // ram size = 2^DEFAULT_RAM_DEPTH
 `define DEFAULT_ROM_DEPTH   14                  // rom size = 2^DEFAULT_ROM_DEPTH
@@ -20,8 +27,34 @@
 `define IO_START_BIT        8                   // lowest bit of memory_mapped IO address
 `define IO_END_BIT          31                  // highest bit of memory-mapped IO address
 `define IO_HIGH_ADDR        24'hFFFFFC          // address used identify memory-mapped IO
-`define IO_TYPE_BIT         4                   // bit for determining IO type 
+`define IO_TYPE_BIT         4                   // bit for determining IO type
+
 `define SWITCH_CNT          8                   // number of physical switches used
+
+// seven seg tube parameters
+`define SEGMENT_CNT         8                   // number of segments (including the dot segment)
+`define DIGIT_CNT           8                   // number of digits on the segment display
+`define DIGIT_CNT_WIDTH     3                   // 8 == 2^3
+`define DIGIT_RADIX_WIDTH   4                   // decimal needs at least 4 bits per digit
+
+`define DIGIT_1_MOD         1_0000_0000
+`define DIGHT_2_MOD         1_000_0000
+`define DIGHT_3_MOD         1_00_0000
+`define DIGHT_4_MOD         1_0_0000
+`define DIGHT_5_MOD         1_0000
+`define DIGHT_6_MOD         1_000
+`define DIGHT_7_MOD         1_00
+`define DIGHT_8_MOD         1_0
+
+`define DISABLE_ALL_DIGITS  8'b1111_1111
+`define ENABLE_DIGHT_1      8'b0111_1111
+`define ENABLE_DIGHT_2      8'b1011_1111
+`define ENABLE_DIGHT_3      8'b1101_1111
+`define ENABLE_DIGHT_4      8'b1110_1111
+`define ENABLE_DIGHT_5      8'b1111_0111
+`define ENABLE_DIGHT_6      8'b1111_1011
+`define ENABLE_DIGHT_7      8'b1111_1101
+`define ENABLE_DIGHT_8      8'b1111_1110
 
 // VGA display parameters
 `define DISPLAY_WIDTH       640
