@@ -7,8 +7,8 @@ module top (
     input  uart_rx,                             // for uart_unit
     input  [3:0] row_in,
     output [3:0] col_out,
-    output [7:0] seg_tube,   
-    output [7:0] seg_enable,
+    output [`SEGMENT_CNT - 1:0] seg_tube,
+    output [`DIGIT_CNT - 1:0] seg_enable,
     output [`VGA_BIT_DEPTH - 1:0] vga_signal,
     output uart_in_progress,                    // LED indicator for UART process
     output digit_overflow_9th,                  // LED indicator for seven seg tube digit overflow of 9th digit

@@ -37,6 +37,7 @@
 `define DIGIT_CNT_WIDTH     3                   // 8 == 2^3
 `define DIGIT_RADIX_WIDTH   4                   // decimal needs at least 4 bits per digit
 
+// mods used to isolate each digit of the tube
 `define DIGIT_1_MOD         1_0000_0000
 `define DIGHT_2_MOD         1_000_0000
 `define DIGHT_3_MOD         1_00_0000
@@ -45,7 +46,9 @@
 `define DIGHT_6_MOD         1_000
 `define DIGHT_7_MOD         1_00
 `define DIGHT_8_MOD         1_0
+`define DIGHT_9_MOD         1
 
+// control for tube digit enabling
 `define DISABLE_ALL_DIGITS  8'b1111_1111
 `define ENABLE_DIGHT_1      8'b0111_1111
 `define ENABLE_DIGHT_2      8'b1011_1111

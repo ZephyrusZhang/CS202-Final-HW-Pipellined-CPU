@@ -103,12 +103,14 @@ module seven_seg_unit (
                         end
                     end
                     3'd7: begin
-                        diaplay_digit = keypad_data % `DIGHT_8_MOD;
+                        diaplay_digit = (keypad_data % `DIGHT_8_MOD) / `DIGHT_9_MOD;
 
                         if (has_zero & (diaplay_digit == 0)) 
                             seg_enable = `DISABLE_ALL_DIGITS;
-                        else 
+                        else begin
                             seg_enable = `ENABLE_DIGHT_8;
+                            has_zero   = 1'b0;
+                        end
                     end
                     default: 
                         seg_enable = `DISABLE_ALL_DIGITS;
