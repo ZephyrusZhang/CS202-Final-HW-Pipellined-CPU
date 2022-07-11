@@ -153,8 +153,8 @@ module hazard_unit (
                             casex ({input_interrupt, cpu_pause, uart_hazard, ~data_hazard})
                                 /* CPU waits for the user's keypad input, this preceeds pause as pause will loose the keypad interrupt */
                                 4'b1xxx: begin
-                                    issue_type        <= `ISSUE_KEYPAD;
-                                    cpu_state         <= INTERRUPT;
+                                    issue_type         <= `ISSUE_KEYPAD;
+                                    cpu_state          <= INTERRUPT;
                                     
                                     if_hazard_control  <= `HAZD_CTL_NO_OP; // stop all stages
                                     id_hazard_control  <= `HAZD_CTL_NO_OP;
@@ -293,7 +293,7 @@ module hazard_unit (
                             end else 
                                 cpu_state    <= cpu_state;
                         end
-                        `ISSUE_UART       : 
+                        `ISSUE_UART  : 
                             if (uart_complete) begin
                                 issue_type   <= `ISSUE_PAUSE;
                                 ignore_pause <= 1'b0;

@@ -23,19 +23,19 @@ start:
 	j start
 	
 case_000:
-	addi $v0,$zero,5	#read the input : n
+	addi $v0,$zero,5			#read the input : n
 	syscall 
-	sw $v0,info($zero) 	#reserve n in the memory
+	sw $v0,info($zero) 		#reserve n in the memory
 	
-	addi $t0, $zero,0  	# t0: offset
-	lw $t1,info($zero) 	# t1 <- n
+	addi $t0, $zero,0  		# t0: offset
+	lw $t1,info($zero) 		# t1 <- n
 	
 init_000:	beq $t1,$zero,finish_init_000
 
-	addi $v0,$zero,5	# read n inputs
+	addi $v0,$zero,5			# read n inputs
 	syscall 
 
-	sw $v0,array($t0) 	# fill array[0-4]
+	sw $v0,array($t0) 		# fill array[0-4]
 	addi $t0, $t0, 4
 	addi,$t1,$t1,-1
 	j init_000

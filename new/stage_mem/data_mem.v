@@ -55,12 +55,12 @@ module data_mem #(parameter
     RAM ram(
         .ena    (~no_op), // disabled unpon no_op
 
-        .clka   ((uart_disable == 1'b1) ? ~clk                      : uart_clk),
-        .addra  ((uart_disable == 1'b1) ? mem_addr[ROM_DEPTH + 1:2] : uart_addr[ROM_DEPTH - 1:0]),  // address unit in bytes
+        .clka   (uart_disable ? ~clk                      : uart_clk),
+        .addra  (uart_disable ? mem_addr[ROM_DEPTH + 1:2] : uart_addr[ROM_DEPTH - 1:0]),  // address unit in bytes
         .douta  (mem_read_data),
 
-        .dina   ((uart_disable == 1'b1) ? (vga_write_enable ? 1'b0 : mem_store_data) : uart_data),
-        .wea    ((uart_disable == 1'b1) ? (vga_write_enable ? 1'b0 : mem_control[`MEM_WRITE_BIT]) : uart_instruction_write_enable)
+        .dina   (uart_disable ? (vga_write_enable ? 1'b0 : mem_store_data) : uart_data),
+        .wea    (uart_disable ? (vga_write_enable ? 1'b0 : mem_control[`MEM_WRITE_BIT]) : uart_instruction_write_enable)
     );
 
 endmodule
