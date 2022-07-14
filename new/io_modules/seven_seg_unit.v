@@ -21,9 +21,9 @@ module seven_seg_unit (
             {
                 display_counter,
                 diaplay_digit
-            }           = 0;
-            has_zero    = 1'b0;
-            seg_enable  = `DISABLE_ALL_DIGITS;
+            }          = 0;
+            has_zero   = 1'b0;
+            seg_enable = `DISABLE_ALL_DIGITS;
         end else case ({input_enable, switch_enable})
             2'b11  : begin
                 diaplay_digit = switch_map[(display_counter)+:1];

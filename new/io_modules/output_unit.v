@@ -1,5 +1,5 @@
-`include "../definitions.v"
 `timescale 1ns / 1ps
+`include "../definitions.v"
 
 module output_unit (
     input clk, rst_n,

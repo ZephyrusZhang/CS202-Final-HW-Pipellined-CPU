@@ -55,8 +55,8 @@ module signal_mux (
     assign pc_offset         = condition_satisfied & branch_instruction & ~id_no_op;
     assign pc_overload       = (j_type_normal | jr_instruction) & ~id_no_op;
     assign pc_overload_value = j_type_normal ? {
-                                    id_pc[`ISA_WIDTH - 1:`ADDRES_WIDTH + 2],
-                                    id_instruction[`ADDRES_WIDTH - 1:0], 
+                                    id_pc[`ISA_WIDTH - 1:`ADDRESS_WIDTH + 2],
+                                    id_instruction[`ADDRESS_WIDTH - 1:0], 
                                     2'b00
                                 } : id_reg_1; // for J type instruction address extension 
 

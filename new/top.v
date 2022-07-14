@@ -178,7 +178,7 @@ module top (
          uart_unit_write_enable,
          uart_unit_uart_complete;
     wire [`ISA_WIDTH - 1:0] uart_unit_write_data;
-    wire [`DEFAULT_RAM_DEPTH:0] uart_unit_write_address;
+    wire [`RAM_DEPTH:0] uart_unit_write_address;
             
 
     // LED
@@ -390,9 +390,7 @@ module top (
         .reg_1_valid            (mux_reg_1_valid),
         .reg_2_valid            (mux_reg_2_valid)
     );
-
-    //--------------------------------stage-if------------------------------------//
-    id_ex_reg id_ex_reg(
+     id_ex_reg id_ex_reg(
         .clk                    (clk_cpu),
         .rst_n                  (rst_n),
 
@@ -553,7 +551,7 @@ module top (
         .key_coord              (keypad_unit_key_coord)
     );
     input_unit input_unit(
-        .clk                    (clk_raw),
+        .clk                    (clk_tube),
         .rst_n                  (rst_n),
         .key_coord              (keypad_unit_key_coord),
         .ignore_pause           (hazard_unit_ignore_pause),

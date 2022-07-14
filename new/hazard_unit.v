@@ -79,19 +79,21 @@ module hazard_unit (
     always @(negedge clk, negedge rst_n) begin
         if (~rst_n) begin
             {
-                if_hazard_control, 
-                id_hazard_control,
-                ex_hazard_control,
-                mem_hazard_control,
-                wb_hazard_control,
                 control_snapshot,
                 pc_reset,
                 ignore_no_op,
                 ignore_pause
-            }            <= 0;
-            cpu_state    <= IDLE;
-            issue_type   <= `ISSUE_NONE;
-            uart_disable <= 1'b1;
+            }                  <= 0;
+            uart_disable       <= 1'b1;
+
+            issue_type         <= `ISSUE_NONE;
+            cpu_state          <= IDLE;
+
+            if_hazard_control  <= `HAZD_CTL_NORMAL;
+            id_hazard_control  <= `HAZD_CTL_NORMAL;
+            ex_hazard_control  <= `HAZD_CTL_NORMAL;
+            mem_hazard_control <= `HAZD_CTL_NORMAL;
+            wb_hazard_control  <= `HAZD_CTL_NORMAL;
         end else begin
             case (cpu_state) 
                 EXECUTE: begin

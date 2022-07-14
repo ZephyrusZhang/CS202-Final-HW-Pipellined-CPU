@@ -21,16 +21,14 @@ address utilized:
         VGA     1  - 32 [0xFFFFFC70, 0xFFFFFC73] capable of displaying 32bits in binary
  */
 
-module data_mem #(parameter 
-    ROM_DEPTH = `DEFAULT_ROM_DEPTH                      // size of addressable memory
-    )(
+module data_mem #(
     input clk,
 
     input      uart_disable,                            // from hazard_unit (whether reading from uart)
     input      uart_clk,                                // from uart_unit (upg_clk_i)
     input      uart_write_enable,                       // from uart_unit (upg_wen_i)
     input      [`ISA_WIDTH - 1:0] uart_data,            // from uart_unit (upg_dat_i)
-    input      [ROM_DEPTH:0] uart_addr,                 // from uart_unit (upg_adr_i)
+    input      [`ROM_DEPTH:0] uart_addr,                 // from uart_unit (upg_adr_i)
 
     input      no_op,                                   // from ex_mem_reg (stop read and write)
     input      [1:0] mem_control,                       // from ex_mem_reg (by control_unit)
@@ -47,7 +45,7 @@ module data_mem #(parameter
     );
 
     wire io_active = (mem_addr[`IO_END_BIT:`IO_START_BIT] == `IO_HIGH_ADDR);
-    wire uart_instruction_write_enable = uart_write_enable & uart_addr[ROM_DEPTH];
+    wire uart_instruction_write_enable = uart_write_enable & uart_addr[`ROM_DEPTH];
 
     assign input_enable     = (~mem_addr[`IO_TYPE_BIT] & io_active & mem_control[`MEM_READ_BIT])  ? 1'b1 : 1'b0;
     assign vga_write_enable = (mem_addr [`IO_TYPE_BIT] & io_active & mem_control[`MEM_WRITE_BIT]) ? 1'b1 : 1'b0;
@@ -55,8 +53,8 @@ module data_mem #(parameter
     RAM ram(
         .ena    (~no_op), // disabled unpon no_op
 
-        .clka   (uart_disable ? ~clk                      : uart_clk),
-        .addra  (uart_disable ? mem_addr[ROM_DEPTH + 1:2] : uart_addr[ROM_DEPTH - 1:0]),  // address unit in words
+        .clka   (uart_disable ? ~clk                       : uart_clk),
+        .addra  (uart_disable ? mem_addr[`ROM_DEPTH + 1:2] : uart_addr[`ROM_DEPTH - 1:0]), // address unit in words
         .douta  (mem_read_data),
 
         .dina   (uart_disable ? (vga_write_enable ? 1'b0 : mem_store_data) : uart_data),

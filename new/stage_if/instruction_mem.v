@@ -15,16 +15,14 @@ for UART:
         [0x4000, 0x7FFF] data to update data memory
  */
 
-module instruction_mem #(parameter 
-    ROM_DEPTH = `DEFAULT_ROM_DEPTH
-    )(
+module instruction_mem (
     input clk, rst_n,
 
     input      uart_disable,                            // from hazard_unit (whether reading from uart)
     input      uart_clk,                                // from uart_unit (upg_clk_i)
     input      uart_write_enable,                       // from uart_unit (upg_wen_i)
     input      [`ISA_WIDTH - 1:0] uart_data,            // from uart_unit (upg_dat_i)
-    input      [ROM_DEPTH:0] uart_addr,                 // from uart_unit (upg_adr_i)
+    input      [`ROM_DEPTH:0] uart_addr,                // from uart_unit (upg_adr_i)
     
     input      pc_offset,                               // from signal_mux
     input      [`ISA_WIDTH - 1:0] pc_offset_value,      // from signal_mux (mux_operand_2)
@@ -42,14 +40,14 @@ module instruction_mem #(parameter
     output     [`ISA_WIDTH - 1:0] instruction           // for if_id_reg (the current instruction)
     );
 
-    wire uart_instruction_write_enable = uart_write_enable & ~uart_addr[ROM_DEPTH];
+    wire uart_instruction_write_enable = uart_write_enable & ~uart_addr[`ROM_DEPTH];
     reg [`ISA_WIDTH - 1:0] pc_next;
 
     ROM rom(
         .ena    (~if_no_op), // disabled unpon no_op
 
-        .clka   (uart_disable ? ~clk                : uart_clk),
-        .addra  (uart_disable ? pc[ROM_DEPTH + 1:2] : uart_addr[ROM_DEPTH - 1:0]), // pc address is in unit of words
+        .clka   (uart_disable ? ~clk                 : uart_clk),
+        .addra  (uart_disable ? pc[`ROM_DEPTH + 1:2] : uart_addr[`ROM_DEPTH - 1:0]), // pc address is in unit of words
         .douta  (instruction),
 
         .dina   (uart_disable ? 1'b0 : uart_data),

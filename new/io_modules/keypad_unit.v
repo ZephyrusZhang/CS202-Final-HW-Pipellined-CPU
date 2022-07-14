@@ -1,9 +1,7 @@
 `timescale 1ns / 1ps
-`define KEYPAD_DEFAULT_DEBOUNCE_PERIOD 100_0000 //20ms for 100MHz
+`include "../definitions.v"
 
-module keypad_unit #(parameter 
-    DEBOUNCE_PERIOD = `KEYPAD_DEFAULT_DEBOUNCE_PERIOD
-    )(
+module keypad_unit (
     input wire clk, rst_n,
     
     input wire [3:0] row_in,
@@ -17,8 +15,8 @@ module keypad_unit #(parameter
                 SCAN_COL3   = 2'b10,
                 SCAN_COL4   = 2'b11;
 
-    localparam  RESPONSE_PERIOD = DEBOUNCE_PERIOD / 8,
-                SCAN_PERIOD     = DEBOUNCE_PERIOD / 4;
+    localparam  RESPONSE_PERIOD = `KEYPAD_DELAY_PERIOD / 8,
+                SCAN_PERIOD     = `KEYPAD_DELAY_PERIOD / 4;
     
     reg [1:0] stage;
     reg [20:0] delay_duration;
