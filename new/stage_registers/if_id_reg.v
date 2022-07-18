@@ -35,22 +35,22 @@ module if_id_reg (
 
                 id_pc,
                 id_instruction
-            }                      <= 0;
-        end else begin
-            case (hazard_control)
-                `HAZD_CTL_NO_OP: 
-                    id_no_op       <= 1'b1;
-                `HAZD_CTL_RETRY: 
-                    id_no_op       <= 1'b0;
-                /* this is the `HAZD_CTL_NORMAL state */
-                default        : begin
-                    id_no_op       <= pc_abnormal | (if_no_op & ~ignore_no_op);
-                    
-                    id_pc          <= if_pc;
-                    id_instruction <= if_instruction;
-                end
-            endcase
-        end
+            }                  <= 0;
+        end else if (pc_abnormal | (if_no_op & ~ignore_no_op))
+                id_no_op       <= 1'b1;
+        else case (hazard_control)
+            `HAZD_CTL_NO_OP: 
+                id_no_op       <= 1'b1;
+            `HAZD_CTL_RETRY: 
+                id_no_op       <= 1'b0;
+            /* this is the `HAZD_CTL_NORMAL state */
+            default        : begin
+                id_no_op       <= 1'b0;
+                
+                id_pc          <= if_pc;
+                id_instruction <= if_instruction;
+            end
+        endcase
     end
     
 endmodule

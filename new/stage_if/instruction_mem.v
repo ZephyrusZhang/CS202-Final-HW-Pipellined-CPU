@@ -68,24 +68,22 @@ module instruction_mem (
             {
                 if_no_op,
                 pc
-            }                <= 0;
-        end else begin
-            case (hazard_control)
-                `HAZD_CTL_NO_OP: begin
-                    if_no_op <= 1'b1;
-                    
-                    if (pc_offset | pc_overload) pc <= pc_next;
-                    else                         pc <= pc; // prevent auto latches
-                end
-                `HAZD_CTL_RETRY: 
-                    if_no_op <= 1'b0;
-                /* this is the `HAZD_CTL_NORMAL state */
-                default        : begin
-                    if_no_op <= 1'b0;
-                    pc       <= pc_next;
-                end
-            endcase
-        end
+            }            <= 0;
+        end else case (hazard_control)
+            `HAZD_CTL_NO_OP: begin
+                if_no_op <= 1'b1;
+                
+                if (pc_offset | pc_overload) pc <= pc_next;
+                else                         pc <= pc; // prevent auto latches
+            end
+            `HAZD_CTL_RETRY: 
+                if_no_op <= 1'b0;
+            /* this is the `HAZD_CTL_NORMAL state */
+            default        : begin
+                if_no_op <= 1'b0;
+                pc       <= pc_next;
+            end
+        endcase
     end
     
 endmodule

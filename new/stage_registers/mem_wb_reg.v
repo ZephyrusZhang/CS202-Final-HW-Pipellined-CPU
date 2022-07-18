@@ -48,29 +48,29 @@ module mem_wb_reg (
                 wb_alu_result,
                 wb_mem_read_data,
                 wb_dest_reg_idx
-            }                           <= 0;
-        end else begin
-            case (hazard_control)
-                `HAZD_CTL_NO_OP: 
-                    wb_no_op            <= 1'b1;
-                `HAZD_CTL_RETRY: 
-                    wb_no_op            <= 1'b0;
-                /* this is the `HAZD_CTL_NORMAL state */
-                default        : begin
-                    wb_no_op            <= mem_no_op & ~ignore_no_op;
-                    
-                    wb_reg_write_enable <= mem_reg_write_enable;
-                    wb_mem_read_enable  <= mem_mem_read_enable;
-                    wb_alu_result       <= mem_alu_result;
-                    wb_dest_reg_idx     <= mem_dest_reg_idx;
+            }                        <= 0;
+        end else if (mem_no_op & ~ignore_no_op) 
+                wb_no_op             <= 1'b1;
+        else case (hazard_control)
+            `HAZD_CTL_NO_OP: 
+                wb_no_op             <= 1'b1;
+            `HAZD_CTL_RETRY: 
+                wb_no_op             <= 1'b0;
+            /* this is the `HAZD_CTL_NORMAL state */
+            default        : begin
+                wb_no_op             <= 1'b0;
+                
+                wb_reg_write_enable  <= mem_reg_write_enable;
+                wb_mem_read_enable   <= mem_mem_read_enable;
+                wb_alu_result        <= mem_alu_result;
+                wb_dest_reg_idx      <= mem_dest_reg_idx;
 
-                    if (input_enable & (~mem_no_op | ignore_no_op)) 
-                        wb_mem_read_data <= switch_enable ? {{(`ISA_WIDTH - `SWITCH_CNT){1'b0}}, switch_map} : keypad_data;
-                    else
-                        wb_mem_read_data <= mem_mem_read_data;
-                end
-            endcase
-        end
+                if (input_enable) 
+                    wb_mem_read_data <= switch_enable ? {{(`ISA_WIDTH - `SWITCH_CNT){1'b0}}, switch_map} : keypad_data;
+                else
+                    wb_mem_read_data <= mem_mem_read_data;
+            end
+        endcase
     end
     
 endmodule

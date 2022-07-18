@@ -359,7 +359,6 @@ module top (
         .jr_instruction         (jr_instruction),
         .jal_instruction        (jal_instruction),
         .branch_instruction     (branch_instruction),
-        .store_instruction      (store_instruction),
         .shift_instruction      (shift_instruction),
 
         .condition_satisfied    (condition_check_satisfied),

@@ -117,7 +117,7 @@ module seven_seg_unit (
                 endcase
                 display_counter = display_counter + 1;
             end
-            // display is not enabled
+            /* display is not enabled */
             default: 
                 seg_enable = `DISABLE_ALL_DIGITS;
         endcase

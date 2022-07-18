@@ -17,7 +17,7 @@ module hazard_unit (
     input      reg_1_valid,                                     // from signal_mux (whether register 1 is valid)
     input      reg_2_valid,                                     // from signal_mux (whether register 2 is valid)
     input      branch_instruction,                              // from control_unit (whether it is a branch instruction)
-    input      store_instruction,                               // from control_unit
+    input      store_instruction,                               // from control_unit (whether it is a strore instruction)
 
     input      if_no_op,                                        // from instruction_mem  (the if stage is a bubble)
     input      id_no_op,                                        // from if_id_reg  (the id stage is a bubble)
@@ -305,7 +305,7 @@ module hazard_unit (
                         default      : 
                             cpu_state <= cpu_state; // prevent auto latches
                     endcase
-                /* this is the IDLE state, gives one cycle for the CPU to reset properly */
+                /* this is the IDLE state, gives one cycle for the IF stage to complete */
                 default: 
                     cpu_state <= EXECUTE;
             endcase   

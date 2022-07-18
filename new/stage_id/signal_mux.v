@@ -12,7 +12,6 @@ module signal_mux (
     input      jr_instruction,                                  // from control_unit (whether it is a jr instruction)
     input      jal_instruction,                                 // from control_unit (whether it is a jal insutrction)
     input      branch_instruction,                              // from control_unit (whether it is a branch instruction)
-    input      store_instruction,                               // from control_unit (whether it is a strore instruction)
     input      shift_instruction,                               // from control_unit (whether it is a shift instruction) 
     
     input      condition_satisfied,                             // from condition_check (whether the branch condition is met)
@@ -47,7 +46,7 @@ module signal_mux (
     );
 
     // wire i_type_abnormal = store_instruction | branch_instruction;
-    wire j_type_normal   = j_instruction | jal_instruction;
+    wire j_type_normal = j_instruction | jal_instruction;
 
     assign reg_1_valid = ~(j_type_normal | shift_instruction);
     assign reg_2_valid = r_type_instruction | branch_instruction;

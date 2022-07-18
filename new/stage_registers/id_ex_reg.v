@@ -58,32 +58,32 @@ module id_ex_reg (
                 ex_reg_1_idx,
                 ex_reg_2_idx,
                 ex_reg_dest_idx
-            }                           <= 0;
-        end else begin
-            case (hazard_control)
-                `HAZD_CTL_NO_OP: 
-                    ex_no_op            <= 1'b1;
-                `HAZD_CTL_RETRY: 
-                    ex_no_op            <= 1'b0;
-                /* this is the `HAZD_CTL_NORMAL state */
-                default        : begin
-                    ex_no_op            <= id_no_op & ~ignore_no_op;
-                    
-                    ex_reg_write_enable <= id_reg_write_enable;
-                    ex_mem_control      <= id_mem_control;
-                    ex_alu_control      <= id_alu_control;
-                    
-                    ex_operand_1        <= mux_operand_1;
-                    ex_operand_2        <= mux_operand_2;
+            }                       <= 0;
+        end else if (id_no_op & ~ignore_no_op) 
+                ex_no_op            <= 1'b1;
+        else case (hazard_control)
+            `HAZD_CTL_NO_OP: 
+                ex_no_op            <= 1'b1;
+            `HAZD_CTL_RETRY: 
+                ex_no_op            <= 1'b0;
+            /* this is the `HAZD_CTL_NORMAL state */
+            default        : begin
+                ex_no_op            <= 1'b0;
+                
+                ex_reg_write_enable <= id_reg_write_enable;
+                ex_mem_control      <= id_mem_control;
+                ex_alu_control      <= id_alu_control;
+                
+                ex_operand_1        <= mux_operand_1;
+                ex_operand_2        <= mux_operand_2;
 
-                    ex_store_data       <= id_reg_2;
+                ex_store_data       <= id_reg_2;
 
-                    ex_reg_1_idx        <= mux_reg_1_idx;
-                    ex_reg_2_idx        <= mux_reg_2_idx;
-                    ex_reg_dest_idx     <= mux_reg_dest_idx;
-                end
-            endcase
-        end
+                ex_reg_1_idx        <= mux_reg_1_idx;
+                ex_reg_2_idx        <= mux_reg_2_idx;
+                ex_reg_dest_idx     <= mux_reg_dest_idx;
+            end
+        endcase
     end
     
 endmodule
