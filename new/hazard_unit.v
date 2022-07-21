@@ -66,15 +66,13 @@ module hazard_unit (
                         ((reg_1_valid & id_reg_1_idx == mem_reg_dest_idx) |             // valid and conflict
                          (reg_2_valid & id_reg_2_idx == mem_reg_dest_idx));             // valid and conflict
     wire ex_conflict  = ex_reg_write_enable  & ~ex_no_op  &                             // wirte enabled and operational
-                        ((reg_1_valid & id_reg_1_idx == ex_reg_dest_idx)  |             // valid and conflict
-                         (reg_2_valid & id_reg_2_idx == ex_reg_dest_idx)  |             // valid and conflict
+                        ((reg_1_valid & id_reg_1_idx == ex_reg_dest_idx ) |             // valid and conflict
+                         (reg_2_valid & id_reg_2_idx == ex_reg_dest_idx ) |             // valid and conflict
                          (store_instruction  & id_reg_dest_idx == ex_reg_dest_idx));    // the value to store is the previous result
     
     wire data_hazard  = (branch_instruction  & (ex_conflict | mem_conflict)) |          // data hazard when branch depends on data from previous stages 
                         (ex_mem_read_enable  & ex_conflict);                            // data hazard when alu depends on data from memory at the next stage
     wire uart_hazard  = `PC_MAX_VALUE < pc   & ~if_no_op;                               // uart hazard when next instruction is valid and not in memory 
-
-    wire input_interrupt = ~mem_no_op & input_enable;
 
     always @(negedge clk, negedge rst_n) begin
         if (~rst_n) begin
@@ -96,10 +94,8 @@ module hazard_unit (
             wb_hazard_control  <= `HAZD_CTL_NORMAL;
         end else begin
             case (cpu_state) 
-                EXECUTE: begin
-                    ignore_no_op <= 1'b0;
-
-                    casex ({data_hazard, input_interrupt, cpu_pause, uart_hazard})
+                EXECUTE: 
+                    casex ({data_hazard, input_enable, cpu_pause, uart_hazard})
                         /* data hazard will hold all stages hence covers the other hazards */
                         4'b1xxx: begin
                             issue_type          <= `ISSUE_DATA;
@@ -145,14 +141,13 @@ module hazard_unit (
                         default: 
                             cpu_state <= cpu_state; // prevent auto latches
                     endcase
-                end
                 HAZARD: 
                     case (issue_type)
                         `ISSUE_NONE,
                         `ISSUE_DATA       : begin
                             ignore_no_op <= 1'b0;
 
-                            casex ({input_interrupt, cpu_pause, uart_hazard, ~data_hazard})
+                            casex ({input_enable, cpu_pause, uart_hazard, ~data_hazard})
                                 /* CPU waits for the user's keypad input, this preceeds pause as pause will loose the keypad interrupt */
                                 4'b1xxx: begin
                                     issue_type         <= `ISSUE_KEYPAD;
@@ -166,20 +161,14 @@ module hazard_unit (
 
                                     if (data_hazard) 
                                         control_snapshot <= {
-                                                                `ISSUE_DATA,
-                                                                HAZARD,
                                                                 `HAZD_CTL_RETRY,
                                                                 `HAZD_CTL_RETRY,
                                                                 `HAZD_CTL_NO_OP,
                                                                 ex_no_op  ? `HAZD_CTL_NO_OP : `HAZD_CTL_NORMAL,
                                                                 mem_no_op ? `HAZD_CTL_NO_OP : `HAZD_CTL_NORMAL
-                                                            };  // takes a snapshot of (1) issue type
-                                                                //                     (2) cpu state
-                                                                //                     (2) hazard control signals
-                                    else // when the data hazard have already been handled
+                                                            }; // takes a snapshot of no op signals currently in the pipeline
+                                    else // when no data hazards are present, let the flow of no_op proceed
                                         control_snapshot <= {
-                                                                `ISSUE_NONE,
-                                                                EXECUTE,
                                                                 `HAZD_CTL_NORMAL,
                                                                 if_no_op  ? `HAZD_CTL_NO_OP : `HAZD_CTL_NORMAL,
                                                                 id_no_op  ? `HAZD_CTL_NO_OP : `HAZD_CTL_NORMAL,
@@ -220,6 +209,7 @@ module hazard_unit (
                                 3'b1xx : begin
                                     issue_type        <= `ISSUE_NONE;
                                     cpu_state         <= EXECUTE;
+
                                     uart_disable      <= 1'b1;
                                     if_hazard_control <= `HAZD_CTL_NORMAL; // resuming the entire cpu from the next instruction
                                 end
@@ -243,6 +233,7 @@ module hazard_unit (
                             end else if (~cpu_pause) begin
                                 issue_type        <= `ISSUE_NONE;
                                 cpu_state         <= EXECUTE;
+                                
                                 uart_disable      <= 1'b1;
                                 if_hazard_control <= `HAZD_CTL_NORMAL; // resuming the entire cpu from the next instruction
                             end else 
@@ -265,7 +256,7 @@ module hazard_unit (
                                 2'b1x  : begin
                                     ignore_no_op <= 1'b1; // ignore no_op signals from previous stages and only comply to the snapshot
 
-                                    issue_type   <= `ISSUE_DATA; 
+                                    issue_type   <= `ISSUE_NONE;
                                     cpu_state    <= HAZARD; // hijacking the data hazard recovery step to reset all the control signals
 
                                     {
@@ -293,7 +284,7 @@ module hazard_unit (
                                 issue_type   <= `ISSUE_KEYPAD;
                                 uart_disable <= 1'b1;
                             end else 
-                                cpu_state    <= cpu_state;
+                                cpu_state    <= cpu_state; // prevent auto latches
                         end
                         `ISSUE_UART  : 
                             if (uart_complete) begin

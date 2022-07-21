@@ -36,29 +36,37 @@ module data_mem #(
     input      [`ISA_WIDTH - 1:0] mem_store_data,       // from ex_mem_reg (by general_reg)    
     output     [`ISA_WIDTH - 1:0] mem_read_data,        // for mem_wb_reg (the data read from memory)
 
+    output     input_select,                            // for mem_wb_reg (select the appropriate data to write back)
     output     input_enable,                            // for (1) input_unit (signal the keypad and switch to start reading)
                                                         //     (2) hazard_unit (trigger keypad hazard)
                                                         //     (3) seven_seg_unit (display input value)
-                                                        //     (4) mem_wb_reg (select the appropriate data to write back)
 
     output     vga_write_enable                         // for output_unit (write to vga display value register)
     );
 
-    wire io_active = (mem_addr[`IO_END_BIT:`IO_START_BIT] == `IO_HIGH_ADDR);
-    wire uart_instruction_write_enable = uart_write_enable & uart_addr[`ROM_DEPTH];
+    wire io_active = (mem_addr[`IO_END_BIT:`IO_START_BIT] == {(`IO_END_BIT - `IO_START_BIT + 1){1'b1}});
 
-    assign input_enable     = (~mem_addr[`IO_TYPE_BIT] & io_active & mem_control[`MEM_READ_BIT])  ? 1'b1 : 1'b0;
-    assign vga_write_enable = (mem_addr [`IO_TYPE_BIT] & io_active & mem_control[`MEM_WRITE_BIT]) ? 1'b1 : 1'b0;
+    assign input_select     =          io_active & ~mem_addr[`IO_TYPE_BIT] & mem_control[`MEM_READ_BIT];
+    assign input_enable     = ~no_op & input_select
+    assign vga_write_enable = ~no_op & io_active &  mem_addr[`IO_TYPE_BIT] & mem_control[`MEM_WRITE_BIT];
+
+    wire uart_instruction_write_enable = uart_write_enable & uart_addr[`ROM_DEPTH];
 
     RAM ram(
         .ena    (~no_op), // disabled unpon no_op
 
         .clka   (uart_disable ? ~clk                       : uart_clk),
-        .addra  (uart_disable ? mem_addr[`ROM_DEPTH + 1:2] : uart_addr[`ROM_DEPTH - 1:0]), // address unit in words
+        .addra  (uart_disable ? mem_addr[`ROM_DEPTH + 1:2] : uart_addr[`ROM_DEPTH - 1:0]), // address unit in bytes
         .douta  (mem_read_data),
 
-        .dina   (uart_disable ? (vga_write_enable ? 1'b0 : mem_store_data) : uart_data),
-        .wea    (uart_disable ? (vga_write_enable ? 1'b0 : mem_control[`MEM_WRITE_BIT]) : uart_instruction_write_enable)
+        .dina   (uart_disable ? (
+                                    vga_write_enable ? 1'b0 : mem_store_data
+                                )              
+                                    : uart_data),
+        .wea    (uart_disable ? (
+                                    vga_write_enable ? 1'b0 : mem_control[`MEM_WRITE_BIT]
+                                ) 
+                                    : uart_instruction_write_enable)
     );
 
 endmodule

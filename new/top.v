@@ -142,7 +142,8 @@ module top (
     wire [`ISA_WIDTH - 1:0] data_mem_read_data,
                             mem_wb_reg_read_data,
                             data_mem_vga_store_data;
-    wire data_mem_input_enable,
+    wire data_mem_input_select,
+         data_mem_input_enable,
          data_mem_vga_write_enable;
     
     // reg wirte data selector
@@ -194,22 +195,21 @@ module top (
 
     //----------------------------forwarding_unit----------------------------------//
     forwarding_unit forwarding_unit(
-        .src1                   (id_ex_reg_reg_1_idx),
-        .src2                   (id_ex_reg_reg_2_idx),
-        .st_src                 (id_ex_reg_reg_dest_idx),
-
-        .dest_mem               (ex_mem_reg_reg_dest_idx),
-        .dest_wb                (mem_wb_reg_reg_dest_idx),
-
-        .dest_mem_no_op         (ex_mem_reg_no_op), 
-        .dest_wb_no_op          (mem_wb_reg_no_op),
+        .ex_reg_1_idx           (id_ex_reg_reg_1_idx),
+        .ex_reg_2_idx           (id_ex_reg_reg_2_idx),
+        .ex_reg_dest_idx        (id_ex_reg_reg_dest_idx),
 
         .mem_wb_en              (ex_mem_reg_reg_write_enable),
-        .wb_en                  (mem_wb_reg_reg_write_enable),
+        .mem_no_op              (ex_mem_reg_no_op), 
+        .mem_reg_dest_idx       (ex_mem_reg_reg_dest_idx),
 
-        .val1_sel               (forwarding_oeprand_1_data_selection),
-        .val2_sel               (forwarding_oeprand_2_data_selection),
-        .st_sel                 (forwarding_store_data_selection)
+        .wb_wb_en               (mem_wb_reg_reg_write_enable),
+        .wb_no_op               (mem_wb_reg_no_op),
+        .wb_reg_dest_idx        (mem_wb_reg_reg_dest_idx),
+
+        .oeprand_1_data_selection(forwarding_oeprand_1_data_selection),
+        .operand_2_select       (forwarding_oeprand_2_data_selection),
+        .store_data_select      (forwarding_store_data_selection)
     );
 
     //-------------------------------hazard-unit------------------------------------//
@@ -459,7 +459,6 @@ module top (
         .store_data_select      (forwarding_store_data_selection),
         // to be selected
         .ex_store_data          (id_ex_reg_store_data),
-        .mem_alu_result_prev    (ex_mem_reg_alu_result),
         .wb_reg_write_data      (reg_write_select_reg_write_data),
         // select output
         .mem_store_data         (ex_mem_reg_store_data),
@@ -484,6 +483,7 @@ module top (
         .mem_store_data         (ex_mem_reg_store_data),
         .mem_read_data          (data_mem_read_data),
 
+        .input_select           (data_mem_input_select),
         .input_enable           (data_mem_input_enable),
 
         .vga_write_enable       (data_mem_vga_write_enable)
@@ -507,7 +507,7 @@ module top (
         .mem_alu_result         (ex_mem_reg_alu_result),
         .wb_alu_result          (mem_wb_reg_alu_result),
 
-        .input_enable           (data_mem_input_enable),
+        .input_select           (data_mem_input_select),
         .switch_enable          (input_unit_switch_enable),
         .mem_mem_read_data      (data_mem_read_data),
         .keypad_data            (input_unit_keypad_data),

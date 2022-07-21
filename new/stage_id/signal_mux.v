@@ -51,8 +51,8 @@ module signal_mux (
     assign reg_1_valid = ~(j_type_normal | shift_instruction);
     assign reg_2_valid = r_type_instruction | branch_instruction;
 
-    assign pc_offset         = condition_satisfied & branch_instruction & ~id_no_op;
-    assign pc_overload       = (j_type_normal | jr_instruction) & ~id_no_op;
+    assign pc_offset         = ~id_no_op & branch_instruction & condition_satisfied;
+    assign pc_overload       = ~id_no_op & (j_type_normal | jr_instruction);
     assign pc_overload_value = j_type_normal ? {
                                     id_pc[`ISA_WIDTH - 1:`ADDRESS_WIDTH + 2],
                                     id_instruction[`ADDRESS_WIDTH - 1:0], 
@@ -60,9 +60,12 @@ module signal_mux (
                                 } : id_reg_1; // for J type instruction address extension 
 
     assign mux_operand_1 = jal_instruction    ? id_pc                 : (
-                           shift_instruction  ? shift_amount          : id_reg_1);
+                           shift_instruction  ? {
+                                                    {(`ISA_WIDTH - `SHIFT_AMOUNT_WIDTH){1'b0}}, 
+                                                    shift_amount
+                                                }                     : id_reg_1);
     assign mux_operand_2 = i_type_instruction ? id_sign_extend_result : (
-                           jal_instruction    ? 4                     : id_reg_2);
+                           jal_instruction    ? (`ISA_WIDTH / 8)      : id_reg_2);
 
     assign mux_reg_1_idx = reg_1_valid ? id_reg_1_idx : 0;
     assign mux_reg_2_idx = reg_2_valid ? id_reg_2_idx : 0;

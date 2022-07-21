@@ -18,9 +18,8 @@
 `define MEM_WRITE_BIT       0                   // bit for determining memory write enable
 `define MEM_READ_BIT        1                   // bit for determining memory read enable
 
-`define IO_START_BIT        8                   // lowest bit of memory_mapped IO address
+`define IO_START_BIT        10                  // lowest bit of memory_mapped IO address
 `define IO_END_BIT          31                  // highest bit of memory-mapped IO address
-`define IO_HIGH_ADDR        24'hFFFFFC          // address used identify memory-mapped IO
 `define IO_TYPE_BIT         4                   // bit for determining IO type
 //------------------------------------------------------------------------------//
 

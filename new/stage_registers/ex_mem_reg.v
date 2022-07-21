@@ -30,7 +30,7 @@ module ex_mem_reg (
 
     input      [`FORW_SEL_WIDTH - 1:0] store_data_select,       // from forwarding_unit (select which data to store)
     input      [`ISA_WIDTH - 1:0] ex_store_data,                // from id_ex_reg (data read from rt register, for sw)
-    input      [`ISA_WIDTH - 1:0] mem_alu_result_prev,          // from ex_mem_reg (result of previous ex stage)
+    // input      [`ISA_WIDTH - 1:0] mem_alu_result_prev,          // from ex_mem_reg (result of previous ex stage)
     input      [`ISA_WIDTH - 1:0] wb_reg_write_data,            // from reg_write_select (the data to write to general_reg)
     output reg [`ISA_WIDTH - 1:0] mem_store_data,               // for (1) data_mem (the data to be stored)
                                                                 //     (2) for output_unit (data to vga)
@@ -71,10 +71,10 @@ module ex_mem_reg (
                 mem_dest_reg_idx     <= ex_dest_reg_idx;
 
                 case (store_data_select)
-                    `FORW_SEL_INPUT:   mem_store_data <= ex_store_data;
-                    `FORW_SEL_ALU_RES: mem_store_data <= mem_alu_result_prev;
+                    `FORW_SEL_INPUT  : mem_store_data <= ex_store_data;
+                    `FORW_SEL_ALU_RES: mem_store_data <= mem_alu_result; // previously mem_alu_result_prev
                     `FORW_SEL_MEM_RES: mem_store_data <= wb_reg_write_data;
-                    default:           mem_store_data <= 0;
+                    default          : mem_store_data <= 0;
                 endcase
             end
         endcase
