@@ -115,7 +115,7 @@ module hazard_unit (
                         cpu_state             = cpu_state; // prevent auto latches
                     /* 
                         step 2:
-                                (1) data hazard is prioritize as pause can wait till the data hazard is resolved
+                                (1) data hazard is prioritized as pause can wait till data hazard is resolved
                      */
                     if (data_hazard) begin
                         issue_type            = `ISSUE_DATA;

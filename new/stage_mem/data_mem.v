@@ -21,7 +21,7 @@ address utilized:
         VGA     1  - 32 [0xFFFFFC70, 0xFFFFFC73] capable of displaying 32bits in binary
  */
 
-module data_mem #(
+module data_mem (
     input clk,
 
     input      uart_disable,                            // from hazard_unit (whether reading from uart)
@@ -47,7 +47,7 @@ module data_mem #(
     wire io_active = (mem_addr[`IO_END_BIT:`IO_START_BIT] == {(`IO_END_BIT - `IO_START_BIT + 1){1'b1}});
 
     assign input_select     =          io_active & ~mem_addr[`IO_TYPE_BIT] & mem_control[`MEM_READ_BIT];
-    assign input_enable     = ~no_op & input_select
+    assign input_enable     = ~no_op & input_select;
     assign vga_write_enable = ~no_op & io_active &  mem_addr[`IO_TYPE_BIT] & mem_control[`MEM_WRITE_BIT];
 
     wire uart_instruction_write_enable = uart_write_enable & uart_addr[`ROM_DEPTH];

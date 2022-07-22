@@ -39,7 +39,7 @@ module signal_mux (
     input      [`REG_FILE_ADDR_WIDTH - 1:0] id_reg_dest_idx,    // from if_id_reg (index of destination resgiter)
     output     [`REG_FILE_ADDR_WIDTH - 1:0] mux_reg_1_idx,      // for id_ex_reg (to pass on to forwarding_unit)
     output     [`REG_FILE_ADDR_WIDTH - 1:0] mux_reg_2_idx,      // for id_ex_reg (to pass on to forwarding_unit)
-    output reg [`REG_FILE_ADDR_WIDTH - 1:0] mux_reg_dest_idx,   // for id_ex_reg
+    output reg [`REG_FILE_ADDR_WIDTH - 1:0] mux_reg_dest_idx    // for id_ex_reg
     );
 
     // wire i_type_abnormal = store_instruction | branch_instruction;

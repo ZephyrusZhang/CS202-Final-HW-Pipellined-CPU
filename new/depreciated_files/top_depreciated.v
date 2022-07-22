@@ -1,19 +1,19 @@
-`include "definitions.v"
-`timescale 1ns / 1ps
+// `include "definitions.v"
+// `timescale 1ns / 1ps
 
-module top_depreciated (
-    input  clk_raw, rst_n,
-    input  [7:0] switch_map,
-    input  upg_rx,                                          // from uart_unit
-    input  [3:0] row_in,
-    output [3:0] col_out,
-    output [6:0] seg_tube,   
-    output [7:0] seg_enable, 
-    output [7:0] led_signal,
-    output [`VGA_BIT_DEPTH - 1:0] vga_signal,
-    output hsync, vsync,
-    output utg_tx                                           // from uart_unit
-    );
+// module top_depreciated (
+//     input  clk_raw, rst_n,
+//     input  [7:0] switch_map,
+//     input  upg_rx,                                          // from uart_unit
+//     input  [3:0] row_in,
+//     output [3:0] col_out,
+//     output [6:0] seg_tube,   
+//     output [7:0] seg_enable, 
+//     output [7:0] led_signal,
+//     output [`VGA_BIT_DEPTH - 1:0] vga_signal,
+//     output hsync, vsync,
+//     output utg_tx                                           // from uart_unit
+//     );
     
     // //--------------------------------stage-if------------------------------------//
     // wire [`ISA_WIDTH - 1:0] if_pc;                          // from instruction_mem (pc + 4)
@@ -149,4 +149,4 @@ module top_depreciated (
     // //--------------------------------------------vga_unit----------------------------------------//
     // wire display_en;                                    // for input_unit
 
-endmodule
+// endmodule

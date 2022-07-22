@@ -379,7 +379,7 @@ module top (
         .id_reg_dest_idx        (rd),
         .mux_reg_1_idx          (mux_reg_1_idx),
         .mux_reg_2_idx          (mux_reg_2_idx),
-        .mux_reg_dest_idx       (mux_reg_dest_idx),
+        .mux_reg_dest_idx       (mux_reg_dest_idx)
     );
      id_ex_reg id_ex_reg(
         .clk                    (clk_cpu),
