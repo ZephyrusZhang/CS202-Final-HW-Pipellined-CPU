@@ -128,7 +128,7 @@ module hazard_unit (
                                 (2) if the user paused the CPU, the user can do UART rewrite during this period
                                 (3) if the pc overflowed, the CPU will await user resumption upon UART completion
                      */
-                    end else if (cpu_pause | fallthrough)
+                    end else if (cpu_pause | fallthrough) begin
                         if_hazard_control     = `HAZD_CTL_NO_OP; // pump no_op signals into the pipeline (pc can still be altered)
 
                         if (gap_counter == `STAGE_CNT) begin
@@ -139,7 +139,7 @@ module hazard_unit (
                             uart_disable      = 1'b0;
                         end else
                             gap_counter       = gap_counter + 1;
-                    else begin
+                    end else begin
                         gap_counter           = 0;
                         if_hazard_control     = `HAZD_CTL_NORMAL;
                     end
