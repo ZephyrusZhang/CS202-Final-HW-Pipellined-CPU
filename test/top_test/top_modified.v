@@ -166,7 +166,7 @@ module top_modified (
             uart_unit_write_enable,
             uart_unit_uart_complete;
     wire [`ISA_WIDTH - 1:0] uart_unit_write_data;
-    wire [`DEFAULT_RAM_DEPTH:0] uart_unit_write_address;
+    wire [`RAM_DEPTH:0] uart_unit_write_address;
             
 
     // LED

@@ -7,7 +7,7 @@ module uart_unit (
     input  uart_rx,                             // upg_rx_i
     output uart_tx,                             // upg_tx_o
     output uart_clk_out,                        // upg_clk_o
-    output [`DEFAULT_RAM_DEPTH:0] uart_addr,    // upg_adr_o
+    output [`RAM_DEPTH:0] uart_addr,    // upg_adr_o
     output [`ISA_WIDTH - 1:0] uart_data,        // upg_dat_o
     output uart_write_enable,                   // upg_wen_o
     output uart_complete                        // upg_done_o
