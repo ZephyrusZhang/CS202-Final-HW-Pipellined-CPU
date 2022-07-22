@@ -56,9 +56,11 @@ module hazard_unit (
                 EXECUTE     = 2'b01,
                 HAZARD      = 2'b10,
                 INTERRUPT   = 2'b11;
-    reg [STATE_WIDTH - 1:0] cpu_state;    
+    reg [STATE_WIDTH - 1:0] cpu_state;
 
-    reg [(`HAZD_CTL_WIDTH * `STAGE_CNT) - 1:0] control_snapshot;
+    reg [`STAGE_CNT_WIDTH - 1:0] gap_counter;
+
+    reg [`ISSUE_TYPE_WIDTH + STATE_WIDTH + (`HAZD_CTL_WIDTH * `STAGE_CNT) - 1:0] control_snapshot;
 
     wire reg_1_valid  = (id_reg_1_idx != 0);                                            // whether register 1 is valid
     wire reg_2_valid  = (id_reg_2_idx != 0);                                            // whether register 2 is valid
@@ -73,7 +75,7 @@ module hazard_unit (
     
     wire data_hazard  = (branch_instruction  & (ex_conflict | mem_conflict)) |          // data hazard when branch depends on data from previous stages 
                         (ex_mem_read_enable  & ex_conflict);                            // data hazard when alu depends on data from memory at the next stage
-    wire fallthrough  = `PC_MAX_VALUE < pc   & ~if_no_op;                               // uart hazard when next instruction is valid and not in memory 
+    wire fallthrough  = `PC_MAX_VALUE == pc  & ~if_no_op;                               // uart hazard when next instruction is valid and not in memory 
 
 
     always @(negedge clk, negedge rst_n) begin
@@ -82,238 +84,283 @@ module hazard_unit (
                 control_snapshot,
                 pc_reset,
                 ignore_no_op,
-                ignore_pause
-            }                  <= 0;
-            uart_disable       <= 1'b1;
+                ignore_pause,
+                gap_counter
+            }                  = 0;
+            uart_disable       = 1'b1;
 
-            issue_type         <= `ISSUE_NONE;
-            cpu_state          <= IDLE;
+            issue_type         = `ISSUE_NONE;
+            cpu_state          = IDLE;
 
-            if_hazard_control  <= `HAZD_CTL_NORMAL;
-            id_hazard_control  <= `HAZD_CTL_NORMAL;
-            ex_hazard_control  <= `HAZD_CTL_NORMAL;
-            mem_hazard_control <= `HAZD_CTL_NORMAL;
-            wb_hazard_control  <= `HAZD_CTL_NORMAL;
+            if_hazard_control  = `HAZD_CTL_NORMAL;
+            id_hazard_control  = `HAZD_CTL_NORMAL;
+            ex_hazard_control  = `HAZD_CTL_NORMAL;
+            mem_hazard_control = `HAZD_CTL_NORMAL;
+            wb_hazard_control  = `HAZD_CTL_NORMAL;
         end else begin
             case (cpu_state) 
-                EXECUTE: 
-                    casex ({input_enable, data_hazard, cpu_pause, fallthrough})
-                        /* CPU waits for the user's keypad input, will hold all stages hence covers the other hazards */
-                        4'b1xxx: begin
-                            issue_type         <= `ISSUE_KEYPAD;
-                            cpu_state          <= INTERRUPT;
-                            
-                            control_snapshot   <= {
-                                                      `HAZD_CTL_NORMAL,
-                                                      if_no_op               ? `HAZD_CTL_NO_OP : (
-                                                                 data_hazard ? `HAZD_CTL_RETRY : `HAZD_CTL_NORMAL),
-                                                      id_no_op | data_hazard ? `HAZD_CTL_NO_OP : `HAZD_CTL_NORMAL,
-                                                      ex_no_op               ? `HAZD_CTL_NO_OP : `HAZD_CTL_NORMAL,
-                                                      mem_no_op              ? `HAZD_CTL_NO_OP : `HAZD_CTL_NORMAL
-                                                  }; // resumes while dealing with the data hazard
-                            
-                            if_hazard_control  <= `HAZD_CTL_NO_OP; // stop all stages
-                            id_hazard_control  <= `HAZD_CTL_NO_OP;
-                            ex_hazard_control  <= `HAZD_CTL_NO_OP;
-                            mem_hazard_control <= `HAZD_CTL_NO_OP;
-                            wb_hazard_control  <= `HAZD_CTL_NO_OP;
-                        end
-                        /* data hazard preceeds pause as pause will leave the data hazard undealt with */
-                        4'b01xx: begin
-                            issue_type         <= `ISSUE_DATA;
-                            cpu_state          <= HAZARD;
+                EXECUTE: begin
+                    /*
+                        step 1: cleanse the control signals if resuming from interrupt
+                     */
+                    if (ignore_no_op) begin
+                        ignore_no_op          = 1'b0;
 
-                            if_hazard_control  <= `HAZD_CTL_RETRY; // retry if stage
-                            id_hazard_control  <= `HAZD_CTL_RETRY; // retry id stage 
-                            ex_hazard_control  <= `HAZD_CTL_NO_OP; // the ex stage will be a bubble
-                        end
-                        /* the user paused the CPU, the user can do UART rewrite during this period */
-                        4'b001x: begin
-                            issue_type         <= `ISSUE_PAUSE;
-                            cpu_state          <= HAZARD;
-                            uart_disable       <= 1'b0;
-                            
-                            if_hazard_control  <= `HAZD_CTL_NO_OP; // start pumping no_op signals into the pipeline (pc will still react to pc updates)
-                        end
-                        /* the user did not pause the CPU but the pc overflowed, the CPU will await user resumption upon UART completion */
-                        4'b0001: begin
-                            issue_type         <= `ISSUE_FALLTHROUGH;
-                            cpu_state          <= HAZARD;
-                            uart_disable       <= 1'b0;
+                        if_hazard_control     = `HAZD_CTL_NORMAL;
+                        id_hazard_control     = `HAZD_CTL_NORMAL;
+                        ex_hazard_control     = `HAZD_CTL_NORMAL;
+                        mem_hazard_control    = `HAZD_CTL_NORMAL;
+                        wb_hazard_control     = `HAZD_CTL_NORMAL;
+                    end else
+                        cpu_state             = cpu_state; // prevent auto latches
+                    /* 
+                        step 2:
+                                (1) data hazard is prioritize as pause can wait till the data hazard is resolved
+                     */
+                    if (data_hazard) begin
+                        issue_type            = `ISSUE_DATA;
+                        cpu_state             = HAZARD;
 
-                            if_hazard_control  <= `HAZD_CTL_NO_OP; // start pumping no_op signals into the pipeline (pc will still react to pc updates)
-                        end
-                        default: 
-                            cpu_state <= cpu_state; // prevent auto latches
-                    endcase
+                        if_hazard_control     = `HAZD_CTL_RETRY; // retry if stage
+                        id_hazard_control     = `HAZD_CTL_RETRY; // retry id stage
+                        ex_hazard_control     = `HAZD_CTL_NO_OP; // the ex stage will be a bubble
+                    /* 
+                                (2) if the user paused the CPU, the user can do UART rewrite during this period
+                                (3) if the pc overflowed, the CPU will await user resumption upon UART completion
+                     */
+                    end else if (cpu_pause | fallthrough)
+                        if_hazard_control     = `HAZD_CTL_NO_OP; // pump no_op signals into the pipeline (pc can still be altered)
+
+                        if (gap_counter == `STAGE_CNT) begin
+                            gap_counter       = 0;
+
+                            issue_type        = cpu_pause ? `ISSUE_PAUSE : `ISSUE_FALLTHROUGH;
+                            cpu_state         = HAZARD;
+                            uart_disable      = 1'b0;
+                        end else
+                            gap_counter       = gap_counter + 1;
+                    else begin
+                        gap_counter           = 0;
+                        if_hazard_control     = `HAZD_CTL_NORMAL;
+                    end
+                    /*
+                        step 3: if the CPU need user input, it will hold all the stages and resume to the next state
+                     */
+                    if (input_enable) begin
+                        control_snapshot      = {
+                                                    issue_type,
+                                                    cpu_state,
+
+                                                                                  if_hazard_control,
+                                                    if_no_op  ? `HAZD_CTL_NO_OP : id_hazard_control,
+                                                    id_no_op  ? `HAZD_CTL_NO_OP : ex_hazard_control,
+                                                    ex_no_op  ? `HAZD_CTL_NO_OP : mem_hazard_control,
+                                                    mem_no_op ? `HAZD_CTL_NO_OP : wb_hazard_control 
+                                                }; // resumes with the operation snapshot
+                        
+                        issue_type            = `ISSUE_KEYPAD;
+                        cpu_state             = INTERRUPT;
+                        
+                        if_hazard_control     = `HAZD_CTL_NO_OP; // stop all stages
+                        id_hazard_control     = `HAZD_CTL_NO_OP;
+                        ex_hazard_control     = `HAZD_CTL_NO_OP;
+                        mem_hazard_control    = `HAZD_CTL_NO_OP;
+                        wb_hazard_control     = `HAZD_CTL_NO_OP;
+                    end else
+                        cpu_state             = cpu_state; // prevent auto latches
+                end
                 HAZARD: 
                     case (issue_type)
-                        `ISSUE_NONE,
                         `ISSUE_DATA       : begin
-                            ignore_no_op <= 1'b0; // for resuming from INTERRUPT
+                            /*
+                                step 1: cleanse the control signals if resuming from interrupt
+                             */
+                            if (ignore_no_op) begin
+                                ignore_no_op          = 1'b0;
 
-                            casex ({input_enable, data_hazard, cpu_pause, fallthrough})
-                                /* CPU waits for the user's keypad input, will hold all stages hence covers the other hazards */
-                                4'b1xxx: begin
-                                    issue_type         <= `ISSUE_KEYPAD;
-                                    cpu_state          <= INTERRUPT;
-                                    
-                                    control_snapshot   <= {
-                                                              `HAZD_CTL_NORMAL,
-                                                              if_no_op               ? `HAZD_CTL_NO_OP : (
-                                                                         data_hazard ? `HAZD_CTL_RETRY : `HAZD_CTL_NORMAL),
-                                                              id_no_op | data_hazard ? `HAZD_CTL_NO_OP : `HAZD_CTL_NORMAL,
-                                                              ex_no_op               ? `HAZD_CTL_NO_OP : `HAZD_CTL_NORMAL,
-                                                              mem_no_op              ? `HAZD_CTL_NO_OP : `HAZD_CTL_NORMAL
-                                                          }; // resumes while dealing with the data hazard
-                                    
-                                    if_hazard_control  <= `HAZD_CTL_NO_OP; // stop all stages
-                                    id_hazard_control  <= `HAZD_CTL_NO_OP;
-                                    ex_hazard_control  <= `HAZD_CTL_NO_OP;
-                                    mem_hazard_control <= `HAZD_CTL_NO_OP;
-                                    wb_hazard_control  <= `HAZD_CTL_NO_OP;
-                                end
-                                /* data hazard preceeds pause as pause will leave the data hazard undealt with */
-                                4'b01xx: begin
-                                    issue_type         <= `ISSUE_DATA;
+                                if_hazard_control     = `HAZD_CTL_NORMAL;
+                                id_hazard_control     = `HAZD_CTL_NORMAL;
+                                ex_hazard_control     = `HAZD_CTL_NORMAL;
+                                mem_hazard_control    = `HAZD_CTL_NORMAL;
+                                wb_hazard_control     = `HAZD_CTL_NORMAL;
+                            end else
+                                cpu_state             = cpu_state; // prevent auto latches
+                            /*
+                                step 2: 
+                                        (1) check if data hazard has been resolved
+                             */
+                            if (~data_hazard) begin
+                                issue_type            = `ISSUE_NONE;
+                                cpu_state             = EXECUTE;
 
-                                    if_hazard_control  <= `HAZD_CTL_RETRY;  // retry if stage
-                                    id_hazard_control  <= `HAZD_CTL_RETRY;  // retry id stage 
-                                    ex_hazard_control  <= `HAZD_CTL_NO_OP;  // the ex stage will be a bubble
-                                    mem_hazard_control <= `HAZD_CTL_NORMAL; // cleanse the control signal from INTERRUPT
-                                    wb_hazard_control  <= `HAZD_CTL_NORMAL; // cleanse the control signal from INTERRUPT
-                                end
-                                /* the user paused the CPU, the user can do UART rewrite during this period */
-                                4'b001x: begin
-                                    issue_type         <= `ISSUE_PAUSE;
-                                    uart_disable       <= 1'b0;
-
-                                    if_hazard_control  <= `HAZD_CTL_NO_OP;  // start pumping no_op signals into the pipeline (pc will still react to pc updates)
-                                    id_hazard_control  <= `HAZD_CTL_NORMAL; // cleanse the control signal from INTERRUPT
-                                    ex_hazard_control  <= `HAZD_CTL_NORMAL; // cleanse the control signal from INTERRUPT
-                                    mem_hazard_control <= `HAZD_CTL_NORMAL; // cleanse the control signal from INTERRUPT
-                                    wb_hazard_control  <= `HAZD_CTL_NORMAL; // cleanse the control signal from INTERRUPT
-                                end
-                                /* the user did not pause the CPU but the pc overflowed, the CPU will await user resumption upon UART completion */
-                                4'b0001: begin
-                                    issue_type         <= `ISSUE_FALLTHROUGH;
-                                    uart_disable       <= 1'b0;
-
-                                    if_hazard_control  <= `HAZD_CTL_NO_OP;  // start pumping no_op signals into the pipeline (pc will still react to pc updates)
-                                    id_hazard_control  <= `HAZD_CTL_NORMAL; // cleanse the control signal from INTERRUPT
-                                    ex_hazard_control  <= `HAZD_CTL_NORMAL; // cleanse the control signal from INTERRUPT
-                                    mem_hazard_control <= `HAZD_CTL_NORMAL; // cleanse the control signal from INTERRUPT
-                                    wb_hazard_control  <= `HAZD_CTL_NORMAL; // cleanse the control signal from INTERRUPT
-                                end
-                                /* data hazard have been solved, the CPU can resume without any problems, also used before resuming from INTERRUPT */
-                                default: begin
-                                    issue_type         <= `ISSUE_NONE;
-                                    cpu_state          <= EXECUTE;
-
-                                    if_hazard_control  <= `HAZD_CTL_NORMAL;
-                                    id_hazard_control  <= `HAZD_CTL_NORMAL;
-                                    ex_hazard_control  <= `HAZD_CTL_NORMAL;
-                                    mem_hazard_control <= `HAZD_CTL_NORMAL;
-                                    wb_hazard_control  <= `HAZD_CTL_NORMAL;
-                                end
-                            endcase
+                                if_hazard_control     = `HAZD_CTL_NORMAL;
+                                id_hazard_control     = `HAZD_CTL_NORMAL;
+                                ex_hazard_control     = `HAZD_CTL_NORMAL;
+                                /*
+                                        (2) handle pause and offset issues
+                                 */
+                                if (cpu_pause | fallthrough) begin
+                                    if_hazard_control = `HAZD_CTL_NO_OP; // pump no_op signals into the pipeline (pc can still be altered)
+                                    gap_counter       = gap_counter + 1; // impossible for the pipeline filled with gaps to have data hazard
+                                end else
+                                    gap_counter       = 0;
+                            end else 
+                                cpu_state             = cpu_state; // prevent auto latches
+                            /*
+                                step 3: if the CPU need user input, it will hold all the stages
+                            */
+                            if (input_enable) begin
+                                issue_type            = `ISSUE_KEYPAD;
+                                cpu_state             = INTERRUPT;
+                                
+                                control_snapshot      = {
+                                                                                          if_hazard_control,
+                                                            if_no_op  ? `HAZD_CTL_NO_OP : id_hazard_control,
+                                                            id_no_op  ? `HAZD_CTL_NO_OP : ex_hazard_control,
+                                                            ex_no_op  ? `HAZD_CTL_NO_OP : mem_hazard_control,
+                                                            mem_no_op ? `HAZD_CTL_NO_OP : wb_hazard_control 
+                                                        }; // resumes with the operation snapshot
+                                
+                                if_hazard_control     = `HAZD_CTL_NO_OP; // stop all stages
+                                id_hazard_control     = `HAZD_CTL_NO_OP;
+                                ex_hazard_control     = `HAZD_CTL_NO_OP;
+                                mem_hazard_control    = `HAZD_CTL_NO_OP;
+                                wb_hazard_control     = `HAZD_CTL_NO_OP;
+                            end else
+                                cpu_state             = cpu_state; // prevent auto latches
                         end
-                        `ISSUE_FALLTHROUGH: 
+                        `ISSUE_FALLTHROUGH: begin
+                            /*
+                                step 1: cleanse the control signals if resuming from interrupt
+                             */
+                            if (ignore_no_op) begin
+                                ignore_no_op          = 1'b0;
+
+                                if_hazard_control     = `HAZD_CTL_NORMAL;
+                                id_hazard_control     = `HAZD_CTL_NORMAL;
+                                ex_hazard_control     = `HAZD_CTL_NORMAL;
+                                mem_hazard_control    = `HAZD_CTL_NORMAL;
+                                wb_hazard_control     = `HAZD_CTL_NORMAL;
+                            end else
+                                cpu_state             = cpu_state; // prevent auto latches
+                            /*
+                                step 2: decide what's next
+                             */
                             casex ({~fallthrough, uart_write_enable, cpu_pause})
                                 /* jump instruction is the last instruction and the control hazard have been resolved */
                                 3'b1xx : begin
-                                    issue_type        <= `ISSUE_NONE;
-                                    cpu_state         <= EXECUTE;
+                                    issue_type        = `ISSUE_NONE;
+                                    cpu_state         = EXECUTE;
 
-                                    uart_disable      <= 1'b1;
-                                    if_hazard_control <= `HAZD_CTL_NORMAL; // resuming the entire cpu from the next instruction
+                                    uart_disable      = 1'b1;
+                                    if_hazard_control = `HAZD_CTL_NORMAL; // resuming the entire cpu from the next instruction
                                 end
                                 3'b01x : begin
-                                    issue_type        <= `ISSUE_UART;
-                                    ignore_pause      <= 1'b1;
+                                    issue_type        = `ISSUE_UART;
+                                    ignore_pause      = 1'b1;
                                 end
                                 3'b001 : begin
-                                    issue_type        <= `ISSUE_PAUSE;
-                                    pc_reset          <= 1'b1; // resets the pc when user pressed pause after a fallthrough
+                                    issue_type        = `ISSUE_PAUSE;
+                                    pc_reset          = 1'b1; // resets the pc when user pressed pause after a fallthrough
                                 end
                                 default: 
-                                    cpu_state         <= cpu_state; // prevent auto latches
+                                    cpu_state         = cpu_state; // prevent auto latches
                             endcase
+                        end
                         `ISSUE_PAUSE      : begin
-                            pc_reset <= 1'b0;
+                            /*
+                                step 1: cleanse the control signals if resuming from interrupt
+                             */
+                            if (ignore_no_op) begin
+                                ignore_no_op          = 1'b0;
 
+                                if_hazard_control     = `HAZD_CTL_NORMAL;
+                                id_hazard_control     = `HAZD_CTL_NORMAL;
+                                ex_hazard_control     = `HAZD_CTL_NORMAL;
+                                mem_hazard_control    = `HAZD_CTL_NORMAL;
+                                wb_hazard_control     = `HAZD_CTL_NORMAL;
+                            end else
+                                cpu_state             = cpu_state; // prevent auto latches
+                            /*
+                                step 2: disable pc_reset enabled from fallthrough or uart complete
+                             */
+                            pc_reset                  = 1'b0;
+                            /*
+                                step 3: decide what's next
+                             */
                             if (uart_write_enable) begin
-                                issue_type        <= `ISSUE_UART;
-                                ignore_pause      <= 1'b1;
+                                issue_type            = `ISSUE_UART;
+                                ignore_pause          = 1'b1;
                             end else if (~cpu_pause) begin
-                                issue_type        <= `ISSUE_NONE;
-                                cpu_state         <= EXECUTE;
+                                issue_type            = `ISSUE_NONE;
+                                cpu_state             = EXECUTE;
                                 
-                                uart_disable      <= 1'b1;
-                                if_hazard_control <= `HAZD_CTL_NORMAL; // resuming the entire cpu from the next instruction
+                                uart_disable          = 1'b1;
+                                if_hazard_control     = `HAZD_CTL_NORMAL; // resuming the entire cpu from the next instruction
                             end else 
-                                cpu_state         <= cpu_state;
+                                cpu_state             = cpu_state; // prevent auto latches
                         end
                         `ISSUE_UART       : 
                             if (uart_complete) begin
-                                issue_type   <= `ISSUE_PAUSE;
-                                ignore_pause <= 1'b0;
-                                pc_reset     <= 1'b1;
+                                issue_type            = `ISSUE_PAUSE;
+                                ignore_pause          = 1'b0;
+                                pc_reset              = 1'b1;
                             end else
-                                cpu_state    <= cpu_state; // prevent auto latches
+                                cpu_state             = cpu_state; // prevent auto latches
                         default           : 
-                            cpu_state <= cpu_state; // prevent auto latches
+                            cpu_state                 = cpu_state; // prevent auto latches
                     endcase
                 INTERRUPT: 
                     case (issue_type)
                         `ISSUE_KEYPAD: 
-                            casex ({input_complete, cpu_pause})
-                                2'b1x  : begin
-                                    ignore_no_op <= 1'b1; // ignore no_op signals from previous stages and only comply to the snapshot
+                            if (input_complete) begin
+                                ignore_no_op = 1'b1; // ignore no_op signals from previous stages and only comply to the snapshot
 
-                                    issue_type   <= `ISSUE_NONE; // guarenteed as INTERRUPT only when there's no data hazards
-                                    cpu_state    <= HAZARD; // hijacking the data hazard recovery step to reset all the control signals
+                                {
+                                    issue_type,
+                                    cpu_state,
 
-                                    {
-                                        if_hazard_control,
-                                        id_hazard_control,
-                                        ex_hazard_control,
-                                        mem_hazard_control,
-                                        wb_hazard_control
-                                    }            <= control_snapshot; // resume with the snapshot taken before interrupt
-                                end
-                                2'b01  : begin
-                                    issue_type   <= `ISSUE_PAUSE;
-                                    uart_disable <= 1'b0;
-                                end
-                                default: 
-                                    cpu_state    <= cpu_state; // prevent auto latches
-                            endcase
+                                    if_hazard_control,
+                                    id_hazard_control,
+                                    ex_hazard_control,
+                                    mem_hazard_control,
+                                    wb_hazard_control
+                                }            = control_snapshot; // resume with the snapshot taken before interrupt
+                            end else if (cpu_pause) begin
+                                issue_type   = `ISSUE_PAUSE;
+                                uart_disable = 1'b0;
+                            end else
+                                cpu_state    = cpu_state; // prevent auto latches
                         `ISSUE_PAUSE : begin
-                            pc_reset <= 1'b0;
-
+                            /*
+                                step 1: disable pc_reset enabled from uart complete
+                             */
+                            pc_reset         = 1'b0;
+                            /*
+                                step 2: decide what's next
+                             */
                             if (uart_write_enable) begin
-                                issue_type   <= `ISSUE_UART;
-                                ignore_pause <= 1'b1;
+                                issue_type   = `ISSUE_UART;
+                                ignore_pause = 1'b1;
                             end else if (~cpu_pause) begin
-                                issue_type   <= `ISSUE_KEYPAD;
-                                uart_disable <= 1'b1;
+                                issue_type   = `ISSUE_KEYPAD;
+                                uart_disable = 1'b1;
                             end else 
-                                cpu_state    <= cpu_state; // prevent auto latches
+                                cpu_state    = cpu_state; // prevent auto latches
                         end
                         `ISSUE_UART  : 
                             if (uart_complete) begin
-                                issue_type   <= `ISSUE_PAUSE;
-                                ignore_pause <= 1'b0;
-                                pc_reset     <= 1'b1;
+                                issue_type   = `ISSUE_PAUSE;
+                                ignore_pause = 1'b0;
+                                pc_reset     = 1'b1;
                             end else
-                                cpu_state    <= cpu_state; // prevent auto latches
+                                cpu_state    = cpu_state; // prevent auto latches
                         default      : 
-                            cpu_state <= cpu_state; // prevent auto latches
+                            cpu_state = cpu_state; // prevent auto latches
                     endcase
                 /* this is the IDLE state, gives one cycle for the IF stage to complete */
                 default: 
-                    cpu_state <= EXECUTE;
+                    cpu_state = EXECUTE;
             endcase   
         end
     end

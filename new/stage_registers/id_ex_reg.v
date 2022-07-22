@@ -59,16 +59,14 @@ module id_ex_reg (
                 ex_reg_2_idx,
                 ex_reg_dest_idx
             }                       <= 0;
-        end else if (id_no_op & ~ignore_no_op) 
-                ex_no_op            <= 1'b1;
-        else case (hazard_control)
+        end case (hazard_control)
             `HAZD_CTL_NO_OP: 
                 ex_no_op            <= 1'b1;
             `HAZD_CTL_RETRY: 
-                ex_no_op            <= 1'b0;
+                ex_no_op            <= ex_no_op;
             /* this is the `HAZD_CTL_NORMAL state */
             default        : begin
-                ex_no_op            <= 1'b0;
+                ex_no_op            <= id_no_op & ~ignore_no_op;
                 
                 ex_reg_write_enable <= id_reg_write_enable;
                 ex_mem_control      <= id_mem_control;

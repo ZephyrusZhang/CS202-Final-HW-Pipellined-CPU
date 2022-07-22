@@ -49,16 +49,14 @@ module mem_wb_reg (
                 wb_mem_read_data,
                 wb_dest_reg_idx
             }                        <= 0;
-        end else if (mem_no_op & ~ignore_no_op) 
-                wb_no_op             <= 1'b1;
-        else case (hazard_control)
+        end case (hazard_control)
             `HAZD_CTL_NO_OP: 
                 wb_no_op             <= 1'b1;
             `HAZD_CTL_RETRY: 
-                wb_no_op             <= 1'b0;
+                wb_no_op             <= wb_no_op;
             /* this is the `HAZD_CTL_NORMAL state */
             default        : begin
-                wb_no_op             <= 1'b0;
+                wb_no_op             <= mem_no_op & ~ignore_no_op;
                 
                 wb_reg_write_enable  <= mem_reg_write_enable;
                 wb_mem_read_enable   <= mem_mem_read_enable;

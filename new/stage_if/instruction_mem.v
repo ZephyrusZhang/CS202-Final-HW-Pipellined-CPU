@@ -77,7 +77,7 @@ module instruction_mem (
                 else                         pc <= pc; // prevent auto latches
             end
             `HAZD_CTL_RETRY: 
-                if_no_op <= 1'b0;
+                if_no_op <= if_no_op;
             /* this is the `HAZD_CTL_NORMAL state */
             default        : begin
                 if_no_op <= 1'b0;
