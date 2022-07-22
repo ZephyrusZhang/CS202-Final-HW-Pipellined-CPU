@@ -40,16 +40,10 @@ module signal_mux (
     output     [`REG_FILE_ADDR_WIDTH - 1:0] mux_reg_1_idx,      // for id_ex_reg (to pass on to forwarding_unit)
     output     [`REG_FILE_ADDR_WIDTH - 1:0] mux_reg_2_idx,      // for id_ex_reg (to pass on to forwarding_unit)
     output reg [`REG_FILE_ADDR_WIDTH - 1:0] mux_reg_dest_idx,   // for id_ex_reg
-    
-    output     reg_1_valid,                                     // for hazard_unit
-    output     reg_2_valid                                      // for hazard_unit
     );
 
     // wire i_type_abnormal = store_instruction | branch_instruction;
     wire j_type_normal = j_instruction | jal_instruction;
-
-    assign reg_1_valid = ~(j_type_normal | shift_instruction);
-    assign reg_2_valid = r_type_instruction | branch_instruction;
 
     assign pc_offset         = ~id_no_op & branch_instruction & condition_satisfied;
     assign pc_overload       = ~id_no_op & (j_type_normal | jr_instruction);
@@ -67,8 +61,8 @@ module signal_mux (
     assign mux_operand_2 = i_type_instruction ? id_sign_extend_result : (
                            jal_instruction    ? (`ISA_WIDTH / 8)      : id_reg_2);
 
-    assign mux_reg_1_idx = reg_1_valid ? id_reg_1_idx : 0;
-    assign mux_reg_2_idx = reg_2_valid ? id_reg_2_idx : 0;
+    assign mux_reg_1_idx = (   ~(j_type_normal | shift_instruction)) ? id_reg_1_idx : 0;
+    assign mux_reg_2_idx = (r_type_instruction | branch_instruction) ? id_reg_2_idx : 0;
 
     always @(*) begin
         case ({i_type_instruction, branch_instruction | jr_instruction, jal_instruction})

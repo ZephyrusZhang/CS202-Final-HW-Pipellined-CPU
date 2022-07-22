@@ -99,9 +99,7 @@ module top (
                                       ex_mem_reg_reg_dest_idx,
                                       mem_wb_reg_reg_dest_idx;
     wire mux_pc_offset,
-         mux_pc_overload,
-         mux_reg_1_valid,
-         mux_reg_2_valid;
+         mux_pc_overload;
 
     // control signal
     wire [`ALU_CONTROL_WIDTH - 1:0] control_alu_op_code,
@@ -207,7 +205,7 @@ module top (
         .wb_no_op               (mem_wb_reg_no_op),
         .wb_reg_dest_idx        (mem_wb_reg_reg_dest_idx),
 
-        .oeprand_1_data_selection(forwarding_oeprand_1_data_selection),
+        .operand_1_select       (forwarding_oeprand_1_data_selection),
         .operand_2_select       (forwarding_oeprand_2_data_selection),
         .store_data_select      (forwarding_store_data_selection)
     );
@@ -220,9 +218,6 @@ module top (
         .uart_complete          (uart_unit_uart_complete),
         .uart_write_enable      (uart_unit_write_enable),
         .uart_disable           (hazard_unit_uart_disable),
-
-        .reg_1_valid            (mux_reg_1_valid),
-        .reg_2_valid            (mux_reg_2_valid),
 
         .branch_instruction     (branch_instruction),
         .store_instruction      (store_instruction),
@@ -385,9 +380,6 @@ module top (
         .mux_reg_1_idx          (mux_reg_1_idx),
         .mux_reg_2_idx          (mux_reg_2_idx),
         .mux_reg_dest_idx       (mux_reg_dest_idx),
-
-        .reg_1_valid            (mux_reg_1_valid),
-        .reg_2_valid            (mux_reg_2_valid)
     );
      id_ex_reg id_ex_reg(
         .clk                    (clk_cpu),
