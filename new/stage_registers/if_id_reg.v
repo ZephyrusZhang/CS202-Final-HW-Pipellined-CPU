@@ -36,7 +36,7 @@ module if_id_reg (
                 id_pc,
                 id_instruction
             }                  <= 0;
-        end case (hazard_control)
+        end else case (hazard_control)
             `HAZD_CTL_NO_OP: 
                 id_no_op       <= 1'b1;
             `HAZD_CTL_RETRY: 

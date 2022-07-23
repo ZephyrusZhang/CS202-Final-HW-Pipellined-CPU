@@ -49,7 +49,7 @@ module mem_wb_reg (
                 wb_mem_read_data,
                 wb_dest_reg_idx
             }                        <= 0;
-        end case (hazard_control)
+        end else case (hazard_control)
             `HAZD_CTL_NO_OP: 
                 wb_no_op             <= 1'b1;
             `HAZD_CTL_RETRY: 

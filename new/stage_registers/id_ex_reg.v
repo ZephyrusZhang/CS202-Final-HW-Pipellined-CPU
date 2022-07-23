@@ -59,7 +59,7 @@ module id_ex_reg (
                 ex_reg_2_idx,
                 ex_reg_dest_idx
             }                       <= 0;
-        end case (hazard_control)
+        end else case (hazard_control)
             `HAZD_CTL_NO_OP: 
                 ex_no_op            <= 1'b1;
             `HAZD_CTL_RETRY: 

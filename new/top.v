@@ -542,7 +542,7 @@ module top (
         .key_coord              (keypad_unit_key_coord)
     );
     input_unit input_unit(
-        .clk                    (clk_tube),
+        .clk                    (clk_raw),
         .rst_n                  (rst_n),
         .key_coord              (keypad_unit_key_coord),
         .ignore_pause           (hazard_unit_ignore_pause),
@@ -557,7 +557,7 @@ module top (
 
     //-------------------------------------output----------------------------------------//
     seven_seg_unit seven_seg_unit(
-        .clk                    (clk_raw),
+        .clk_tube               (clk_tube),
         .rst_n                  (rst_n),
         .keypad_data            (input_unit_keypad_data),
         .switch_map             (switch_map),

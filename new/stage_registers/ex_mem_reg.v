@@ -53,7 +53,7 @@ module ex_mem_reg (
                 mem_store_data,
                 mem_dest_reg_idx
             }                        <= 0;
-        end case (hazard_control)
+        end else case (hazard_control)
             `HAZD_CTL_NO_OP: 
                 mem_no_op            <= 1'b1;
             `HAZD_CTL_RETRY: 
