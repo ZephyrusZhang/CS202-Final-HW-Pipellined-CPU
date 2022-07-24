@@ -31,22 +31,41 @@ module top_complete_testbench ();
         #5 rst_n = 0;
         #5 rst_n = 1;
 
+        //  col_out: 4'b0111
+            row_in = 4'b1111; // none
         #2500010
-            row_in = 4'b1110; // three
+        //  col_out: 4'b1011
+            row_in = 4'b1111; // none
+            // row_in = 4'b1110; // three
         #2500010
+        //  col_out: 4'b1101
+            row_in = 4'b1111; // none
             // row_in = 4'b1110; // two
+        #2500010
+        //  col_out: 4'b1110
+            row_in = 4'b1110; // one
+            // row_in = 4'b1111; // none
+        #2500010 
+        //  col_out: 4'b0111
             row_in = 4'b1111; // none
-        #2500010
-            // row_in = 4'b1110; // one
-            row_in = 4'b1111; // none
-        #2500010
-            row_in = 4'b1111; // none
-        #2500010
-            row_in = 4'b0111; // enter
-        #2500010
+        #2500010 
+        //  col_out: 4'b1011
             row_in = 4'b1111; // none
         
-        #10000040
+        while (col_out != 4'b0111) #2500010 row_in = 4'b1111; // until next cycle
+
+        //  col_out: 4'b0111
+            row_in = 4'b1111; // none
+        #2500010
+        //  col_out: 4'b1011
+            row_in = 4'b0111; // enter
+        #2500010
+        //  col_out: 4'b1101
+            row_in = 4'b1111; // none
+        
+        while (col_out != 4'b0111) #2500010 row_in = 4'b1111;
+        
+        // #10000040
         #2500010
             // row_in = 4'b1110; // one
             row_in = 4'b1111;
