@@ -500,6 +500,7 @@ module top (
         .wb_alu_result          (mem_wb_reg_alu_result),
 
         .input_select           (data_mem_input_select),
+        .input_complete         (input_unit_input_complete),
         .switch_enable          (input_unit_switch_enable),
         .mem_mem_read_data      (data_mem_read_data),
         .keypad_data            (input_unit_keypad_data),

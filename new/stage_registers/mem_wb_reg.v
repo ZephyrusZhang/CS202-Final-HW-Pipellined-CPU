@@ -27,6 +27,7 @@ module mem_wb_reg (
                                                                 //     (2) alu (forwarding)
 
     input      input_select,                                    // from data_mem (whether data is read from user input)
+    input      input_complete,                                  // from input_unit (the user have completed input)
     input      switch_enable,                                   // from input_unit (whether data is read from toggle switches)
     input      [`ISA_WIDTH - 1:0] mem_mem_read_data,            // from data_mem (data read from memory)
     input      [`ISA_WIDTH - 1:0] keypad_data,                  // from input_unit (data from user keypad input)
@@ -63,7 +64,7 @@ module mem_wb_reg (
                 wb_alu_result        <= mem_alu_result;
                 wb_dest_reg_idx      <= mem_dest_reg_idx;
 
-                if (input_select) 
+                if (input_select & input_complete) 
                     wb_mem_read_data <= switch_enable ? {{(`ISA_WIDTH - `SWITCH_CNT){1'b0}}, switch_map} 
                                                       : keypad_data;
                 else

@@ -60,7 +60,7 @@ module hazard_unit (
 
     reg [`STAGE_CNT_WIDTH - 1:0] gap_counter;
 
-    reg [`ISSUE_TYPE_WIDTH + STATE_WIDTH + (`HAZD_CTL_WIDTH * `STAGE_CNT) - 1:0] control_snapshot;
+    reg [`ISSUE_TYPE_WIDTH + STATE_WIDTH + (`HAZD_CTL_WIDTH * `STAGE_CNT) - 1:0] cpu_snapshot;
 
     wire reg_1_valid  = (id_reg_1_idx != 0);                                            // whether register 1 is valid
     wire reg_2_valid  = (id_reg_2_idx != 0);                                            // whether register 2 is valid
@@ -77,11 +77,10 @@ module hazard_unit (
                         (ex_mem_read_enable  & ex_conflict);                            // data hazard when alu depends on data from memory at the next stage
     wire fallthrough  = `PC_MAX_VALUE == pc  & ~if_no_op;                               // uart hazard when next instruction is valid and not in memory 
 
-
     always @(negedge clk, negedge rst_n) begin
         if (~rst_n) begin
             {
-                control_snapshot,
+                cpu_snapshot,
                 pc_reset,
                 ignore_no_op,
                 ignore_pause,
@@ -144,10 +143,10 @@ module hazard_unit (
                         if_hazard_control     = `HAZD_CTL_NORMAL;
                     end
                     /*
-                        step 3: if the CPU need user input, it will hold all the stages and resume to the next state
+                        step 3: if the CPU needs user input, it will hold all the stages and resume to the next state
                      */
                     if (input_enable) begin
-                        control_snapshot      = {
+                        cpu_snapshot          = {
                                                     issue_type,
                                                     cpu_state,
 
@@ -201,7 +200,7 @@ module hazard_unit (
                                  */
                                 if (cpu_pause | fallthrough) begin
                                     if_hazard_control = `HAZD_CTL_NO_OP; // pump no_op signals into the pipeline (pc can still be altered)
-                                    gap_counter       = gap_counter + 1; // impossible for the pipeline filled with gaps to have data hazard
+                                    gap_counter       = gap_counter + 1; // impossible for a pipeline filled with gaps to have data hazard
                                 end else
                                     gap_counter       = 0;
                             end else 
@@ -210,16 +209,19 @@ module hazard_unit (
                                 step 3: if the CPU need user input, it will hold all the stages
                             */
                             if (input_enable) begin
-                                issue_type            = `ISSUE_KEYPAD;
-                                cpu_state             = INTERRUPT;
-                                
-                                control_snapshot      = {
+                                cpu_snapshot          = {
+                                                            issue_type,
+                                                            cpu_state,
+
                                                                                           if_hazard_control,
                                                             if_no_op  ? `HAZD_CTL_NO_OP : id_hazard_control,
                                                             id_no_op  ? `HAZD_CTL_NO_OP : ex_hazard_control,
                                                             ex_no_op  ? `HAZD_CTL_NO_OP : mem_hazard_control,
                                                             mem_no_op ? `HAZD_CTL_NO_OP : wb_hazard_control 
                                                         }; // resumes with the operation snapshot
+
+                                issue_type            = `ISSUE_KEYPAD;
+                                cpu_state             = INTERRUPT;
                                 
                                 if_hazard_control     = `HAZD_CTL_NO_OP; // stop all stages
                                 id_hazard_control     = `HAZD_CTL_NO_OP;
@@ -325,7 +327,7 @@ module hazard_unit (
                                     ex_hazard_control,
                                     mem_hazard_control,
                                     wb_hazard_control
-                                }            = control_snapshot; // resume with the snapshot taken before interrupt
+                                }            = cpu_snapshot; // resume with the snapshot taken before interrupt
                             end else if (cpu_pause) begin
                                 issue_type   = `ISSUE_PAUSE;
                                 uart_disable = 1'b0;
