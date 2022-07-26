@@ -109,16 +109,16 @@ module input_unit (
                             keypad_data   = keypad_data * 10;
 
                             case (key_coord)
-                                KEY_ONE  : keypad_data + 1;
-                                KEY_TWO  : keypad_data + 2;
-                                KEY_THREE: keypad_data + 3;
-                                KEY_FOUR : keypad_data + 4;
-                                KEY_FIVE : keypad_data + 5;
-                                KEY_SIX  : keypad_data + 6;
-                                KEY_SEVEN: keypad_data + 7;
-                                KEY_EIGHT: keypad_data + 8;
-                                KEY_NINE : keypad_data + 9;
-                                default  : keypad_data + 0; // 0 key_coord and KEY_ZERO will be handled here
+                                KEY_ONE  : keypad_data = keypad_data + 1;
+                                KEY_TWO  : keypad_data = keypad_data + 2;
+                                KEY_THREE: keypad_data = keypad_data + 3;
+                                KEY_FOUR : keypad_data = keypad_data + 4;
+                                KEY_FIVE : keypad_data = keypad_data + 5;
+                                KEY_SIX  : keypad_data = keypad_data + 6;
+                                KEY_SEVEN: keypad_data = keypad_data + 7;
+                                KEY_EIGHT: keypad_data = keypad_data + 8;
+                                KEY_NINE : keypad_data = keypad_data + 9;
+                                default  : keypad_data = keypad_data + 0; // 0 key_coord and KEY_ZERO handled here
                             endcase
                         end else
                             input_state   = input_state; // prevent auto latches
