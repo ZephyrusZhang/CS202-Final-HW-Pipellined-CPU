@@ -84,7 +84,7 @@ module input_unit (
                 end
                 STATE_KEYPAD: begin
                     case (key_coord)
-                        KEY_TOGGLE   : begin
+                        KEY_SWITCH   : begin
                             input_state    <= STATE_SWITCH;
                             switch_enable  <= 1'b1;
                         end
@@ -176,9 +176,10 @@ module input_unit (
                         2'b01  : begin
                             input_state    <= STATE_KEYPAD;
                             input_complete <= 1'b0;
+                            keypad_data    <= 0;
                         end
                         default: 
-                            keypad_data    <= 0;
+                            input_state    <= input_state;
                     endcase
                 end
             endcase

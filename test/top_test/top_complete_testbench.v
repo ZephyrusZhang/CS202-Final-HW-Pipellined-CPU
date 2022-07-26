@@ -35,8 +35,8 @@ module top_complete_testbench ();
             row_in = 4'b1111; // none
         #2500010
         //  col_out: 4'b1011
-            row_in = 4'b1111; // none
-            // row_in = 4'b1110; // three
+            row_in = 4'b1110; // three
+            // row_in = 4'b1111; // none
         #2500010
         //  col_out: 4'b1101
             row_in = 4'b1111; // none
