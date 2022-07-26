@@ -57,133 +57,96 @@ module input_unit (
                 switch_enable,
                 cpu_pause,
                 digit_counter
-            }           <= 0;
-            input_state <= STATE_BLOCK;
-            prev_state  <= STATE_BLOCK;
-        end else begin
-            case (input_state)
-                STATE_SWITCH: begin
-                    case (key_coord)
-                        KEY_SWITCH: begin
-                            input_state    <= STATE_KEYPAD;
-                            switch_enable  <= 1'b0;
-                        end
-                        KEY_ENTER : begin
-                            input_state    <= STATE_BLOCK;
-                            input_complete <= 1'b1;
-                            digit_counter  <= 4'h0;
-                        end
-                        KEY_PAUSE : begin
-                            input_state    <= STATE_PAUSE;
-                            prev_state     <= input_state;
-                            cpu_pause      <= 1'b1;
-                        end
-                        default   :
-                            input_state    <= input_state; // prevent auto latches
-                    endcase
-                end
-                STATE_KEYPAD: begin
-                    case (key_coord)
-                        KEY_SWITCH   : begin
-                            input_state    <= STATE_SWITCH;
-                            switch_enable  <= 1'b1;
-                        end
-                        KEY_BACKSPACE: begin
-                            if (digit_counter != 0) begin
-                                keypad_data   <= keypad_data / 10;
-                                digit_counter <= digit_counter - 1;
-                            end else
-                                input_state   <= input_state; // prevent auto latches
-                        end
-                        KEY_ENTER    : begin
-                            input_state    <= STATE_BLOCK;
-                            input_complete <= 1'b1;
-                            digit_counter  <= 4'h0;
-                        end
-                        KEY_PAUSE    : begin
-                            input_state    <= STATE_PAUSE;
-                            prev_state     <= input_state;
-                            cpu_pause      <= 1'b1;
-                        end
-                        default      : begin
-                            if (digit_counter < 10) begin
-                                case (key_coord)
-                                    KEY_ONE  : begin
-                                        keypad_data   <= keypad_data * 10 + 1;
-                                        digit_counter <= digit_counter + 1;
-                                    end
-                                    KEY_TWO  : begin
-                                        keypad_data   <= keypad_data * 10 + 2;
-                                        digit_counter <= digit_counter + 1;
-                                    end
-                                    KEY_THREE: begin
-                                        keypad_data   <= keypad_data * 10 + 3;
-                                        digit_counter <= digit_counter + 1;
-                                    end
-                                    KEY_FOUR : begin
-                                        keypad_data   <= keypad_data * 10 + 4;
-                                        digit_counter <= digit_counter + 1;
-                                    end
-                                    KEY_FIVE : begin
-                                        keypad_data   <= keypad_data * 10 + 5;
-                                        digit_counter <= digit_counter + 1;
-                                    end
-                                    KEY_SIX  : begin
-                                        keypad_data   <= keypad_data * 10 + 6;
-                                        digit_counter <= digit_counter + 1;
-                                    end
-                                    KEY_SEVEN: begin
-                                        keypad_data   <= keypad_data * 10 + 7;
-                                        digit_counter <= digit_counter + 1;
-                                    end
-                                    KEY_EIGHT: begin
-                                        keypad_data   <= keypad_data * 10 + 8;
-                                        digit_counter <= digit_counter + 1;
-                                    end
-                                    KEY_NINE : begin
-                                        keypad_data   <= keypad_data * 10 + 9;
-                                        digit_counter <= digit_counter + 1;
-                                    end
-                                    KEY_ZERO :
-                                        if (0 < keypad_data) begin
-                                            keypad_data   <= keypad_data * 10;
-                                            digit_counter <= digit_counter + 1;
-                                        end else
-                                            input_state   <= input_state; // prevent auto latches
-                                    default  : 
-                                        input_state   <= input_state; // 0 key_coord will be handled here
-                                endcase
-                            end else
-                                input_state   <= input_state;
-                        end
-                    endcase
-                end
-                STATE_PAUSE : begin
-                    if (~ignore_pause & key_coord == KEY_PAUSE) begin
-                        input_state        <= prev_state;
-                        cpu_pause          <= 1'b0;
-                    end else
-                        cpu_pause          <= cpu_pause; // prevent auto latches
-                end
-                // this is the STATE_BLOCK state
-                default     : begin
-                    casex ({key_coord == KEY_PAUSE, input_enable})
-                        2'b1x  : begin
-                            input_state    <= STATE_PAUSE;
-                            prev_state     <= input_state;
-                            cpu_pause      <= 1'b1;
-                        end 
-                        2'b01  : begin
-                            input_state    <= STATE_KEYPAD;
-                            input_complete <= 1'b0;
-                            keypad_data    <= 0;
-                        end
-                        default: 
-                            input_state    <= input_state;
-                    endcase
-                end
-            endcase
-        end
+            }           = 0;
+            input_state = STATE_BLOCK;
+            prev_state  = STATE_BLOCK;
+        end else case (input_state)
+            STATE_SWITCH: 
+                case (key_coord)
+                    KEY_SWITCH: begin
+                        input_state    = STATE_KEYPAD;
+                        switch_enable  = 1'b0;
+                    end
+                    KEY_ENTER : begin
+                        input_state    = STATE_BLOCK;
+                        input_complete = 1'b1;
+                        digit_counter  = 4'h0;
+                    end
+                    KEY_PAUSE : begin
+                        prev_state     = input_state;
+                        input_state    = STATE_PAUSE;
+                        cpu_pause      = 1'b1;
+                    end
+                    default   :
+                        input_state    = input_state; // prevent auto latches
+                endcase
+            STATE_KEYPAD: 
+                case (key_coord)
+                    KEY_SWITCH   : begin
+                        input_state    = STATE_SWITCH;
+                        switch_enable  = 1'b1;
+                    end
+                    KEY_BACKSPACE: begin
+                        if (digit_counter != 0) begin
+                            keypad_data   = keypad_data / 10;
+                            digit_counter = digit_counter - 1;
+                        end else
+                            input_state   = input_state; // prevent auto latches
+                    end
+                    KEY_ENTER    : begin
+                        input_state    = STATE_BLOCK;
+                        input_complete = 1'b1;
+                        digit_counter  = 4'h0;
+                    end
+                    KEY_PAUSE    : begin
+                        prev_state     = input_state;
+                        input_state    = STATE_PAUSE;
+                        cpu_pause      = 1'b1;
+                    end
+                    default      : begin
+                        if (digit_counter < 10) begin
+                            digit_counter = digit_counter + 1;
+                            keypad_data   = keypad_data * 10;
+
+                            case (key_coord)
+                                KEY_ONE  : keypad_data + 1;
+                                KEY_TWO  : keypad_data + 2;
+                                KEY_THREE: keypad_data + 3;
+                                KEY_FOUR : keypad_data + 4;
+                                KEY_FIVE : keypad_data + 5;
+                                KEY_SIX  : keypad_data + 6;
+                                KEY_SEVEN: keypad_data + 7;
+                                KEY_EIGHT: keypad_data + 8;
+                                KEY_NINE : keypad_data + 9;
+                                default  : keypad_data + 0; // 0 key_coord and KEY_ZERO will be handled here
+                            endcase
+                        end else
+                            input_state   = input_state; // prevent auto latches
+                    end
+                endcase
+            STATE_PAUSE : 
+                if (~ignore_pause & key_coord == KEY_PAUSE) begin
+                    input_state = prev_state;
+                    cpu_pause   = 1'b0;
+                end else
+                    input_state = input_state; // prevent auto latches
+            /* STATE_BLOCK */
+            default     : 
+                casex ({key_coord == KEY_PAUSE, input_enable})
+                    2'b1x  : begin
+                        input_state    = STATE_PAUSE;
+                        prev_state     = input_state;
+                        cpu_pause      = 1'b1;
+                    end 
+                    2'b01  : begin
+                        input_state    = STATE_KEYPAD;
+                        input_complete = 1'b0;
+                        keypad_data    = 0;
+                    end
+                    default: 
+                        input_state    = input_state; // prevent auto latches
+                endcase
+        endcase
     end
 
 endmodule
