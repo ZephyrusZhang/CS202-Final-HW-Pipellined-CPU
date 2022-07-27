@@ -157,10 +157,12 @@ module top (
     wire hazard_unit_pc_reset,
          hazard_unit_uart_disable,
          hazard_unit_ignore_no_op,
-         hazard_unit_ignore_pause;
+         hazard_unit_ignore_pause,
+         hazard_unit_tube_enable;
 
     // input unit
     wire [`ISA_WIDTH - 1:0] input_unit_keypad_data;
+    wire [(`DIGIT_CNT + `OVERFLOW_CNT) * `DIGIT_RADIX_WIDTH - 1:0] input_unit_keypad_digits;
     wire input_unit_input_complete,
          input_unit_switch_enable,
          input_unit_cpu_pause;
@@ -254,6 +256,7 @@ module top (
         .wb_hazard_control      (hazard_unit_wb_hazard_control),
         .ignore_no_op           (hazard_unit_ignore_no_op),
 
+        .tube_enable            (hazard_unit_tube_enable),
         .issue_type             (hazard_unit_issue_type)
     );
 
@@ -550,6 +553,7 @@ module top (
         .input_enable           (data_mem_input_enable),
         .input_complete         (input_unit_input_complete),
         .keypad_data            (input_unit_keypad_data),
+        .keypad_digits          (input_unit_keypad_digits),
         .switch_enable          (input_unit_switch_enable),
         .cpu_pause              (input_unit_cpu_pause),
         .overflow_9th           (digit_overflow_9th),
@@ -560,10 +564,10 @@ module top (
     seven_seg_unit seven_seg_unit(
         .clk_tube               (clk_tube),
         .rst_n                  (rst_n),
-        .keypad_data            (input_unit_keypad_data),
+        .keypad_digits          (input_unit_keypad_digits),
         .switch_map             (switch_map),
         .switch_enable          (input_unit_switch_enable),
-        .input_enable           (data_mem_input_enable),
+        .tube_enable            (hazard_unit_tube_enable),
         .seg_tube               (seg_tube),
         .seg_enable             (seg_enable)
     );

@@ -8,38 +8,34 @@ module vga_unit (
         output [`COORDINATE_WIDTH - 1:0] x, y
     );
                
-    localparam TOTAL_WIDTH  = `DISPLAY_WIDTH  + `LEFT_BORDER + `RIGHT_BORDER +  `H_RETRACE,
-               TOTAL_HEIGHT = `DISPLAY_HEIGHT + `TOP_BORDER  + `BOTTOM_BORDER + `V_RETRACE,
-               START_H      = `H_RETRACE + `LEFT_BORDER,
-               START_V      = `V_RETRACE + `TOP_BORDER,
-               END_H        = START_H + `DISPLAY_WIDTH,
-               END_V        = START_V + `DISPLAY_HEIGHT;
+    localparam  TOTAL_WIDTH      = `DISPLAY_WIDTH   + `LEFT_BORDER + `RIGHT_BORDER  + `HORIZONTAL_GAP,
+                TOTAL_HEIGHT     = `DISPLAY_HEIGHT  + `TOP_BORDER  + `BOTTOM_BORDER + `VERTICAL_GAP,
+                HORIZONTAL_START = `HORIZONTAL_GAP  + `LEFT_BORDER,
+                VERTICAL_START   = `VERTICAL_GAP    + `TOP_BORDER,
+                HORIZONTAL_END   = HORIZONTAL_START + `DISPLAY_WIDTH,
+                VERTICAL_END     = VERTICAL_START   + `DISPLAY_HEIGHT;
     
-    reg [9:0] x_global, y_global;
+    reg [9:0] global_x, global_y;
     always @(posedge clk_vga, negedge rst_n) begin
         if (~rst_n) begin
-            x_global <= 0;
-            y_global <= 0;
-        end else begin
-            if (x_global == TOTAL_WIDTH) begin
-                x_global <= 0;
+            global_x <= 0;
+            global_y <= 0;
+        end else if (global_x == TOTAL_WIDTH) begin
+            global_x <= 0;
 
-                if (y_global == TOTAL_HEIGHT) y_global <= 0;
-                else                          y_global <= y_global + 1;
-            end else 
-                x_global <= x_global + 1;
-        end
+            if (global_y == TOTAL_HEIGHT) global_y <= 0;
+            else                          global_y <= global_y + 1;
+        end else 
+            global_x <= global_x + 1;
     end
 
-    assign hsync = (`H_RETRACE <= x_global);
-    assign vsync = (`V_RETRACE <= y_global);
+    assign hsync = (`HORIZONTAL_GAP <= global_x);
+    assign vsync = (`VERTICAL_GAP   <= global_y);
     
-    assign x = x_global - START_H;
-    assign y = y_global - START_V;
+    assign x = global_x - HORIZONTAL_START;
+    assign y = global_y - VERTICAL_START;
     
-    assign display_en = (START_H  <= x_global) & 
-                        (START_V  <= y_global) &
-                        (x_global < END_H)     & 
-                        (y_global < END_V);
-    
+    assign display_en = (HORIZONTAL_START <= global_x) & (global_x < HORIZONTAL_END) &
+                        (VERTICAL_START   <= global_y) & (global_y < VERTICAL_END);
+
 endmodule

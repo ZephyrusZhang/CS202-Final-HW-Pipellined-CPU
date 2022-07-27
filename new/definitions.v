@@ -115,19 +115,21 @@
 // seven seg tube parameters
 `define SEGMENT_CNT         8                   // number of segments (including the dot segment)
 `define DIGIT_CNT           8                   // number of digits on the segment display
-`define DIGIT_CNT_WIDTH     3                   // 8 == 2^3
+`define OVERFLOW_CNT        2                   // two excess digits to overflow, total 10 digits
+`define DIGIT_CNT_WIDTH     3                   // 8  == 2^3 for digits on the segment display
+`define DIGIT_TOTAL_WIDTH   4                   // 10 <= 2^4 for total number of digits
 `define DIGIT_RADIX_WIDTH   4                   // decimal needs at least 4 bits per digit
 
 // mods used to isolate each digit of the tube
 `define DIGIT_1_MOD         1_0000_0000
-`define DIGHT_2_MOD         1_000_0000
-`define DIGHT_3_MOD         1_00_0000
-`define DIGHT_4_MOD         1_0_0000
-`define DIGHT_5_MOD         1_0000
-`define DIGHT_6_MOD         1_000
-`define DIGHT_7_MOD         1_00
-`define DIGHT_8_MOD         1_0
-`define DIGHT_9_MOD         1
+`define DIGIT_2_MOD         1_000_0000
+`define DIGIT_3_MOD         1_00_0000
+`define DIGIT_4_MOD         1_0_0000
+`define DIGIT_5_MOD         1_0000
+`define DIGIT_6_MOD         1_000
+`define DIGIT_7_MOD         1_00
+`define DIGIT_8_MOD         1_0
+`define DIGIT_9_MOD         1
 
 // control for tube digit enabling
 `define DISABLE_ALL_DIGITS  8'b1111_1111
@@ -150,8 +152,8 @@
 `define RIGHT_BORDER        16
 `define TOP_BORDER          33
 `define BOTTOM_BORDER       10
-`define H_RETRACE           96                  // horizontal retrace duration
-`define V_RETRACE           2                   // vertical retrace duration
+`define HORIZONTAL_GAP      96                  // horizontal gap duration
+`define VERTICAL_GAP        2                   // vertical gap duration
 
 // VGA colors
 `define BG_COLOR            12'b110111011101    // light gray

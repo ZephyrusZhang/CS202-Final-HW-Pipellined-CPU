@@ -47,6 +47,7 @@ module hazard_unit (
                                        wb_hazard_control,       
     output reg ignore_no_op,                                    // for each stage register (ignore previous no_op during recovery from interrupt)
 
+    output reg tube_enable,                                     // for seven_seg_unit (show the user input on tubes)
     output reg [`ISSUE_TYPE_WIDTH - 1:0] issue_type             // for vga_unit (both hazard and interrupt)
     );
     
@@ -84,7 +85,8 @@ module hazard_unit (
                 pc_reset,
                 ignore_no_op,
                 ignore_pause,
-                gap_counter
+                gap_counter,
+                tube_enable
             }                  = 0;
             uart_disable       = 1'b1;
 
@@ -165,6 +167,8 @@ module hazard_unit (
                         ex_hazard_control     = `HAZD_CTL_NO_OP;
                         mem_hazard_control    = `HAZD_CTL_NO_OP;
                         wb_hazard_control     = `HAZD_CTL_NO_OP;
+
+                        tube_enable           = 1'b1;
                     end else
                         cpu_state             = cpu_state; // prevent auto latches
                 end
@@ -228,6 +232,8 @@ module hazard_unit (
                                 ex_hazard_control     = `HAZD_CTL_NO_OP;
                                 mem_hazard_control    = `HAZD_CTL_NO_OP;
                                 wb_hazard_control     = `HAZD_CTL_NO_OP;
+
+                                tube_enable           = 1'b1;
                             end else
                                 cpu_state             = cpu_state; // prevent auto latches
                         end
@@ -328,6 +334,8 @@ module hazard_unit (
                                     mem_hazard_control,
                                     wb_hazard_control
                                 }            = cpu_snapshot; // resume with the snapshot taken before interrupt
+
+                                tube_enable  = 1'b0;
                             end else if (cpu_pause) begin
                                 issue_type   = `ISSUE_PAUSE;
                                 uart_disable = 1'b0;
