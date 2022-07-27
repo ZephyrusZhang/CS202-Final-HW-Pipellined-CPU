@@ -162,7 +162,7 @@ module top (
 
     // input unit
     wire [`ISA_WIDTH - 1:0] input_unit_keypad_data;
-    wire [(`DIGIT_CNT + `OVERFLOW_CNT) * `DIGIT_RADIX_WIDTH - 1:0] input_unit_keypad_digits;
+    wire [`DIGIT_CNT * `DIGIT_RADIX_WIDTH - 1:0] input_unit_keypad_digits;
     wire input_unit_input_complete,
          input_unit_switch_enable,
          input_unit_cpu_pause;
@@ -384,7 +384,7 @@ module top (
         .mux_reg_2_idx          (mux_reg_2_idx),
         .mux_reg_dest_idx       (mux_reg_dest_idx)
     );
-     id_ex_reg id_ex_reg(
+    id_ex_reg id_ex_reg(
         .clk                    (clk_cpu),
         .rst_n                  (rst_n),
 

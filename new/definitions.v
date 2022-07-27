@@ -102,7 +102,7 @@
 //------------------------------------------------------------------------------//
 
 //---------------------------------Clocks---------------------------------------//
-`define KEYPAD_DELAY_PERIOD 125_000             // for keypad_unit to scan every 0.125s (0.25s needed to confirm the key)
+`define KEYPAD_DELAY_PERIOD 250_000             // for keypad_unit to scan every 0.25s (0.25s needed to confirm the key)
 `define TUBE_DELAY_PERIOD   100_000             // for tube to be refreshed every 1ms
 `define UART_DELAY_PERIOD   10                  // for uart_unit (from 100MHz to 10MHz)
 `define VGA_DELAY_PERIOD    4                   // for vga_unit (from 100MHz 50 25MHz)
@@ -117,7 +117,7 @@
 `define DIGIT_CNT           8                   // number of digits on the segment display
 `define OVERFLOW_CNT        2                   // two excess digits to overflow, total 10 digits
 `define DIGIT_CNT_WIDTH     3                   // 8  == 2^3 for digits on the segment display
-`define DIGIT_TOTAL_WIDTH   4                   // 10 <= 2^4 for total number of digits
+`define OVERFLOW_CNT_WIDTH  1                   // 10 <= 2^4 and this needs 1 more bit for total number of digits
 `define DIGIT_RADIX_WIDTH   4                   // decimal needs at least 4 bits per digit
 
 // mods used to isolate each digit of the tube

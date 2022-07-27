@@ -51,7 +51,7 @@ module keypad_unit (
                     row_old[state] == 4'hf &  // two periods ago no key is pressed
                     row_pre[state] == row_in) // one preiod ago the same key is pressed
 
-                    key_coord  = {row_in, col_out};
+                    key_coord  = {col_out, row_in};
                 else 
                     key_coord  = 0;
                 

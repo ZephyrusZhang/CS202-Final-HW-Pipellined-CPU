@@ -1,17 +1,16 @@
 `timescale 1ns / 1ps
 `include "../definitions.v"
-`define KEYPAD_DIGITS_WIDTH (`DIGIT_CNT + `OVERFLOW_CNT) * `DIGIT_RADIX_WIDTH
 
 module seven_seg_unit (
     input clk_tube, rst_n,                          
-    input      tube_enable,                                 // from hazard_unit (show the user input on tubes)
+    input      tube_enable,                                             // from hazard_unit (show the user input on tubes)
 
-    input      [`KEYPAD_DIGITS_WIDTH - 1:0] keypad_digits,  // from input_unit (digits to be displayed during user input)
-    input      switch_enable,                               // from input_unit (show binary switch input)
-    input      [`SWITCH_CNT - 1:0] switch_map,              // from toggle switches hardware directly
+    input      [`DIGIT_CNT * `DIGIT_RADIX_WIDTH - 1:0] keypad_digits,   // from input_unit (digits to be displayed during user input)
+    input      switch_enable,                                           // from input_unit (show binary switch input)
+    input      [`SWITCH_CNT - 1:0] switch_map,                          // from toggle switches hardware directly
     
-    output reg [`SEGMENT_CNT - 1:0] seg_tube,               // control signal for tube segments
-    output reg [`DIGIT_CNT - 1:0] seg_enable                // control signal for digits on the segment display
+    output reg [`SEGMENT_CNT - 1:0] seg_tube,                           // control signal for tube segments
+    output reg [`DIGIT_CNT - 1:0] seg_enable                            // control signal for digits on the segment display
     );
     
     reg [`DIGIT_CNT_WIDTH - 1:0] display_counter;
