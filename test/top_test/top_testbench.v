@@ -113,12 +113,14 @@ module top_testbench ();
         keys[19] = ENTER;
         keys[20] = SIX;         // case 6
         keys[21] = ENTER;
-        keys[22] = ZERO;        // 0th number
+        keys[22] = ONE;         // 1st dataset
         keys[23] = ENTER;
-        keys[24] = SEVEN;       // case 7
+        keys[24] = ZERO;        // 0th number
         keys[25] = ENTER;
-        keys[26] = ONE;         // 1st number
+        keys[26] = SEVEN;       // case 7
         keys[27] = ENTER;
+        keys[28] = ONE;         // 1st number
+        keys[29] = ENTER;
     end
     reg counter = 0;
     initial begin
