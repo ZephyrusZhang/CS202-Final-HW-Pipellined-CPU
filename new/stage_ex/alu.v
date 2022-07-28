@@ -51,33 +51,24 @@ module alu (
         endcase
     end
 
+    integer i;
     always @(alu_opcode, val1, val2) begin
         case (alu_opcode)
-            `EXE_SLL  : alu_output = val2 << val1;                                    // sll
-            `EXE_SRL  : alu_output = val2 >> val1;                                    // srl
-            `EXE_SLLV : alu_output = val2 << val1;                                    // sllv
-            `EXE_SRLV : alu_output = val2 >> val1;                                    // srlv
-            `EXE_SRA  : alu_output = $signed(val2) >>> val1;                          // sra
-            `EXE_SRAV : alu_output = $signed(val2) >>> val1;                          // srav
-            `EXE_ADD  : alu_output = $signed(val1) + $signed(val2);                   // add
-            `EXE_ADDU : alu_output = $unsigned(val1) + $unsigned(val2);               // addu
-            `EXE_SUB  : alu_output = $signed(val1) - $signed(val2);                   // sub
-            `EXE_SUBU : alu_output = $unsigned(val1) - $unsigned(val2);               // subu
-            `EXE_AND  : alu_output = val1 & val2;                                     // and
-            `EXE_OR   : alu_output = val1 | val2;                                     // or
-            `EXE_XOR  : alu_output = val1 ^ val2;                                     // xor
-            `EXE_NOR  : alu_output = ~(val1 | val2);                                  // nor
-            `EXE_SLT  : alu_output = ($signed(val1) < $signed(val2)) ? 1 : 0;         // slt
-            `EXE_SLTU : alu_output = ($unsigned(val1) < $unsigned(val2)) ? 1 : 0;     // sltu
-            `EXE_ADDI : alu_output = $signed(val1) + $signed(val2);                   // addi
-            `EXE_ADDIU: alu_output = $unsigned(val1) + $unsigned(val2);               // addiu
-            `EXE_SLTI : alu_output = ($signed(val1) < $signed(val2)) ? 1 : 0;         // slti
-            `EXE_SLTIU: alu_output = ($unsigned(val1) < $unsigned(val2)) ? 1 : 0;     // sltiu
-            `EXE_ANDI : alu_output = val1 & val2;                                     // andi
-            `EXE_ORI  : alu_output = val1 | val2;                                     // ori
-            `EXE_XORI : alu_output = val1 ^ val2;                                     // xori
-            `EXE_LUI  : alu_output = {val2[15:0], val1[15:0]};                        // lui
-            default   : alu_output = 0;                                               // default
+            `EXE_SLL , `EXE_SLLV : alu_output = val2 << val1;
+            `EXE_SRL , `EXE_SRLV : alu_output = val2 >> val1;
+            `EXE_SRA , `EXE_SRAV : alu_output = $signed(val2) >>> val1;
+            `EXE_ADD , `EXE_ADDI : alu_output =   $signed(val1) +   $signed(val2);
+            `EXE_ADDU, `EXE_ADDIU: alu_output = $unsigned(val1) + $unsigned(val2);
+            `EXE_SUB             : alu_output =   $signed(val1) -   $signed(val2);
+            `EXE_SUBU            : alu_output = $unsigned(val1) - $unsigned(val2);
+            `EXE_AND , `EXE_ANDI : for (i = 0; i < `ISA_WIDTH; i = i + 1) alu_output[i] = val1[i] & val2[i];
+            `EXE_OR  , `EXE_ORI  : for (i = 0; i < `ISA_WIDTH; i = i + 1) alu_output[i] = val1[i] | val2[i];
+            `EXE_XOR , `EXE_XORI : for (i = 0; i < `ISA_WIDTH; i = i + 1) alu_output[i] = val1[i] ^ val2[i];
+            `EXE_NOR             : for (i = 0; i < `ISA_WIDTH; i = i + 1) alu_output[i] = ~(val1[i] | val2[i]);
+            `EXE_SLT , `EXE_SLTI : alu_output = (  $signed(val1) <   $signed(val2)) ? 1 : 0;
+            `EXE_SLTU, `EXE_SLTIU: alu_output = ($unsigned(val1) < $unsigned(val2)) ? 1 : 0;
+            `EXE_LUI             : alu_output = {val2[15:0], val1[15:0]};
+            default              : alu_output = 0;
         endcase
     end
 

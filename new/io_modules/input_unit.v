@@ -53,55 +53,6 @@ module input_unit (
     assign overflow_9th  = ((`DIGIT_CNT + `OVERFLOW_CNT - 1) <= digit_counter);
     assign overflow_10th = ((`DIGIT_CNT + `OVERFLOW_CNT)     == digit_counter);
 
-    always @(*) begin
-        case (key_coord)
-            KEY_ZERO : begin
-                digit_value   <= 0;
-                digit_pressed <= 1'b1;
-            end
-            KEY_ONE  : begin
-                digit_value   <= 1;
-                digit_pressed <= 1'b1;
-            end
-            KEY_TWO  : begin
-                digit_value   <= 2;
-                digit_pressed <= 1'b1;
-            end
-            KEY_THREE: begin
-                digit_value   <= 3;
-                digit_pressed <= 1'b1;
-            end
-            KEY_FOUR : begin
-                digit_value   <= 4;
-                digit_pressed <= 1'b1;
-            end
-            KEY_FIVE : begin
-                digit_value   <= 5;
-                digit_pressed <= 1'b1;
-            end
-            KEY_SIX  : begin
-                digit_value   <= 6;
-                digit_pressed <= 1'b1;
-            end
-            KEY_SEVEN: begin
-                digit_value   <= 7;
-                digit_pressed <= 1'b1;
-            end
-            KEY_EIGHT: begin
-                digit_value   <= 8;
-                digit_pressed <= 1'b1;
-            end
-            KEY_NINE : begin
-                digit_value   <= 9;
-                digit_pressed <= 1'b1;
-            end
-            default  : begin
-                digit_value   <= 0;
-                digit_pressed <= 1'b0;
-            end
-        endcase
-    end
-
     always @(posedge clk, negedge rst_n) begin // posedge is chosen to reterive results from keypad (negedge)
         if (~rst_n) begin
             {
@@ -211,6 +162,55 @@ module input_unit (
                         cpu_pause          <= cpu_pause; // prevent auto latches
             endcase
         end
+    end
+
+    always @(*) begin
+        case (key_coord)
+            KEY_ZERO : begin
+                digit_value   <= 0;
+                digit_pressed <= 1'b1;
+            end
+            KEY_ONE  : begin
+                digit_value   <= 1;
+                digit_pressed <= 1'b1;
+            end
+            KEY_TWO  : begin
+                digit_value   <= 2;
+                digit_pressed <= 1'b1;
+            end
+            KEY_THREE: begin
+                digit_value   <= 3;
+                digit_pressed <= 1'b1;
+            end
+            KEY_FOUR : begin
+                digit_value   <= 4;
+                digit_pressed <= 1'b1;
+            end
+            KEY_FIVE : begin
+                digit_value   <= 5;
+                digit_pressed <= 1'b1;
+            end
+            KEY_SIX  : begin
+                digit_value   <= 6;
+                digit_pressed <= 1'b1;
+            end
+            KEY_SEVEN: begin
+                digit_value   <= 7;
+                digit_pressed <= 1'b1;
+            end
+            KEY_EIGHT: begin
+                digit_value   <= 8;
+                digit_pressed <= 1'b1;
+            end
+            KEY_NINE : begin
+                digit_value   <= 9;
+                digit_pressed <= 1'b1;
+            end
+            default  : begin
+                digit_value   <= 0;
+                digit_pressed <= 1'b0;
+            end
+        endcase
     end
 
 endmodule
