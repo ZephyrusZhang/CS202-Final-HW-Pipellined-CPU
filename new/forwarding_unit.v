@@ -30,31 +30,31 @@ module forwarding_unit (
     wire wb_valid  = ~wb_no_op  & wb_wb_en  & (wb_reg_dest_idx  != 0);
 
     always @(*) begin
-        case ({
-                  mem_valid & (ex_reg_dest_idx == mem_reg_dest_idx), 
-                  wb_valid  & (ex_reg_dest_idx == wb_reg_dest_idx )
-              })
-            2'b10  : store_data_select <= `FORW_SEL_ALU_RES;
+        casex ({
+                   mem_valid & (ex_reg_dest_idx == mem_reg_dest_idx), 
+                   wb_valid  & (ex_reg_dest_idx == wb_reg_dest_idx )
+               })
+            2'b1x  : store_data_select <= `FORW_SEL_ALU_RES;
             2'b01  : store_data_select <= `FORW_SEL_MEM_RES;
             default: store_data_select <= `FORW_SEL_INPUT;
         endcase
     end
     always @(*) begin
-        case ({
-                  mem_valid & (ex_reg_1_idx == mem_reg_dest_idx),
-                  wb_valid  & (ex_reg_1_idx == wb_reg_dest_idx )
-              })
-            2'b10  : operand_1_select  <= `FORW_SEL_ALU_RES;
+        casex ({
+                   mem_valid & (ex_reg_1_idx == mem_reg_dest_idx),
+                   wb_valid  & (ex_reg_1_idx == wb_reg_dest_idx )
+               })
+            2'b1x  : operand_1_select  <= `FORW_SEL_ALU_RES;
             2'b01  : operand_1_select  <= `FORW_SEL_MEM_RES;
             default: operand_1_select  <= `FORW_SEL_INPUT;
         endcase
     end
     always @(*) begin
-        case ({
-                  mem_valid & (ex_reg_2_idx == mem_reg_dest_idx),
-                  wb_valid  & (ex_reg_2_idx == wb_reg_dest_idx )
-              })
-            2'b10  : operand_2_select  <= `FORW_SEL_ALU_RES;
+        casex ({
+                   mem_valid & (ex_reg_2_idx == mem_reg_dest_idx),
+                   wb_valid  & (ex_reg_2_idx == wb_reg_dest_idx )
+               })
+            2'b1x  : operand_2_select  <= `FORW_SEL_ALU_RES;
             2'b01  : operand_2_select  <= `FORW_SEL_MEM_RES;
             default: operand_2_select  <= `FORW_SEL_INPUT;
         endcase
