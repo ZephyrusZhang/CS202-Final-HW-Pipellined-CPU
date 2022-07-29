@@ -17,7 +17,7 @@ module top (
     output uart_tx                              // from uart_unit
     );
     
-    //// wire list, format: [signal_source]_[signal_name]
+    //// wire naming format: [signal_source]_[signal_name]
     
     // clocks
     wire clk_cpu;  // for cpu components except hazard_unit (100MHz)

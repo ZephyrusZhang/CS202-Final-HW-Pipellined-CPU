@@ -45,8 +45,9 @@ module output_unit (
     
     // outside the digits box
     wire digits_box_clear = (y <= `DIGITS_BOX_Y) | (x <= `DIGITS_BOX_X) | (`DIGITS_BOX_Y + `DIGITS_BOX_HEIGHT <= y) | (`DIGITS_BOX_X + `DIGITS_BOX_WIDTH <= x);
+    // inside the digits box but not displaying digits
     wire digits_clear     = (y <= `DIGITS_Y)     | (x <= `DIGITS_X)     | (`DIGITS_Y     + `DIGITS_HEIGHT     <= y) | (`DIGITS_X     + `DIGITS_WIDTH     <= x)
-                            | ((digits_idx + 1) % 5 == 0);  // inside the digits box but not displaying digits
+                            | ((digits_idx + 1) % 5 == 0);
     // outside the status box
     wire status_clear     = (y <= `STATUS_Y)     | (x <= `STATUS_X)     | (`STATUS_Y     + `STATUS_HEIGHT     <= y) | (`STATUS_X     + `STATUS_WIDTH     <= x);
 
